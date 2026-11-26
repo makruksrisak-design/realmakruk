@@ -16088,7 +16088,7 @@ function olApplyDefaults(){
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);
   try{const box=$('olBox');if(box&&!$('olDefRow')){const d=document.createElement('div');d.id='olDefRow';
     d.innerHTML='<button type="button" id="olDefB" title="ตั้งธีม กระดาน ตัวหมาก และเส้นตาราง กลับเป็นค่าเริ่มต้นของเว็บ (ไม่แตะเสียงและค่าอื่น)">🎨 คืนค่าเริ่มต้นของเว็บ (ธีม กระดาน ตัวหมาก)</button><span id="olDefM" role="status"></span>';
-    box.appendChild(d);$('olDefB').onclick=()=>{olApplyDefaults();$('olDefM').textContent=' ✓ คืนค่าเริ่มต้นแล้ว'}}}catch(e){}return r}}
+    (box.querySelector('.olIn')||box).appendChild(d);$('olDefB').onclick=()=>{olApplyDefaults();$('olDefM').textContent=' ✓ คืนค่าเริ่มต้นแล้ว'}}}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent='#olDefRow{margin:10px 0 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}#olDefRow button{width:auto;margin:0}';document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent='#olBox .olRoom>b{flex:1 1 100%}#olBox .olRoom>span{flex:1 1 auto}#olBox .olRoom>button{flex:0 0 auto;white-space:nowrap}';document.head.appendChild(st)}
 /* V9.0.06: ปิดตัวช่วยตั้งแต่เข้านั่งห้อง ไม่ต้องรอเริ่มเกม (ตอนรอคู่แข่งเอนจินคิดต่อเนื่อง/แถบประเมิน/ลูกศรยังขึ้นอยู่) */
@@ -16144,8 +16144,8 @@ function olCfgSnapshot(){
 {const old=olApplyDefaults;olApplyDefaults=function(){if(olDefCfg){olApplyCfg(olDefCfg);return}return old.apply(this,arguments)}}
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);
   try{let adm=false;try{adm=localStorage.getItem('makruk-admin')==='1'}catch(e){}
-    const row=$('olDefRow');if(adm&&row&&!$('olCfgB')){
-      row.insertAdjacentHTML('beforeend','<button type="button" id="olCfgB" title="บันทึกธีม กระดาน ตัวหมาก เส้นตาราง ที่ตั้งอยู่ตอนนี้เป็นไฟล์ defaults.json แล้วอัปโหลดทับไฟล์เดิมบน GitHub">💾 บันทึกค่าตอนนี้เป็น defaults.json</button><span id="olCfgM" role="status"></span>');
+    const top=document.querySelector('#olBox .olIn #olSt');if(adm&&top&&!$('olCfgB')){
+      top.insertAdjacentHTML('afterend','<div id="olCfgRow" style="margin:6px 0"><button type="button" id="olCfgB" title="บันทึกธีม กระดาน ตัวหมาก เส้นตาราง ที่ตั้งอยู่ตอนนี้เป็นไฟล์ defaults.json แล้วอัปโหลดทับไฟล์เดิมบน GitHub">💾 บันทึกค่าตอนนี้เป็น defaults.json</button><span id="olCfgM" role="status"></span></div>');
       $('olCfgB').onclick=()=>{const s=olCfgSnapshot(),txt=JSON.stringify(s.cfg,null,1);
         try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download='defaults.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){}
         try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(e){}
