@@ -13259,7 +13259,7 @@ function olBox(){
   d=document.createElement('div');d.id='olBox';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-labelledby','olH');
   d.innerHTML='<div class="olIn"><div class="olTop"><h3 id="olH">🌐 เรียวหมากรุกออนไลน์</h3><button type="button" id="olClose" aria-label="ปิด">✖</button></div>'+
    '<div id="olSt" role="status" aria-live="polite"></div>'+
-   '<form id="olLog" autocomplete="off"><label>ใส่ชื่อเล่น <input id="olName" maxlength="20" required></label><label>ใส่รหัส 4 หลัก <input id="olPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label><button type="submit" class="pri">เข้าสู่ระบบ / สมัครใหม่</button><p class="muted">ชื่อใหม่ = สมัครอัตโนมัติ (Elo เริ่ม 1200) · ชื่อเดิม = ใส่รหัสเดิม</p></form>'+
+   '<form id="olLog" autocomplete="off"><label>ใส่ชื่อเล่น <input id="olName" maxlength="20" required></label><label>ใส่รหัส 4 หลัก <input id="olPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label><button type="submit" hidden tabindex="-1" aria-hidden="true"></button></form>'+
    '<div id="olMe"></div>'+
    '<div class="olTabs" role="tablist"><button type="button" id="olTabR" role="tab" aria-selected="true">🏠 ห้องแข่งขัน</button><button type="button" id="olTabL" role="tab" aria-selected="false">🏆 อันดับเซียน</button></div>'+
    '<div id="olRooms" role="tabpanel"></div><div id="olLb" role="tabpanel" hidden></div></div>';
@@ -15698,7 +15698,7 @@ function olGuest(){
   let s=null;try{s=JSON.parse(sessionStorage.getItem('makruk-olguest')||'null')}catch(e){}
   if(!s||!s.id){s={id:Math.random().toString(36).slice(2,8),n:'แขก-'+String(Math.floor(1000+Math.random()*9000))};try{sessionStorage.setItem('makruk-olguest',JSON.stringify(s))}catch(e){}}
   OL.me={key:'guest_'+s.id,name:s.n,elo:null,w:0,d:0,l:0,guest:true};return OL.me}
-{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!OL.me&&OL.db){olGuest();olSt('ยินดีต้อนรับ '+OL.me.name+' · เลือกห้องได้เลย')}olLobbyRender()}catch(e){}return r}}
+{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!OL.me&&OL.db){olGuest();olSt('👤 คุณคือแขกคนที่ '+String(OL.me.name).replace(/^แขก-/,'')+' · กดเล่นที่ห้องข้างล่างได้เลย ไม่คิดคะแนน ไม่ต้องลงชื่อ')}olLobbyRender()}catch(e){}return r}}
 {const old=olLogout;olLogout=function(){const r=old.apply(this,arguments);try{if(!OL.me&&!(OL.room&&!OL.spect)){olGuest();olLobbyRender()}}catch(e){}return r}}
 {const old=olLogin;olLogin=async function(){if(OL.room&&!OL.spect&&OL.me&&OL.me.guest)throw new Error('ออกจากห้องก่อนจึงลงชื่อได้');const r=await old.apply(this,arguments);OL.showLogin=false;return r}}
 /* ล็อบบี้: แขก + เลือกเวลา */
@@ -15709,7 +15709,7 @@ olLobbyRender=function(){
   $('olLog').hidden=!!me&&!(guest&&OL.showLogin);
   const tcSel='<label class="olTcL">⏱ เวลาของห้องที่จะเปิด <select id="olTc" aria-label="นาทีต่อเกม">'+OL_TC.map(m=>'<option value="'+m+'">'+(m?m+' นาที':'ไม่จับเวลา')+'</option>').join('')+'</select>'+
     ' <select id="olTi" aria-label="บวกเวลาต่อตา">'+OL_TI.map(s=>'<option value="'+s+'">'+(s?'+'+s+' วิ/ตา':'ไม่บวกเวลา')+'</option>').join('')+'</select></label>';
-  $('olMe').innerHTML=(me?(guest?'<div class="olCard"><b><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px;margin-right:3px"><circle cx="12" cy="8" r="4.5" fill="#1e6fd9"/><path d="M3 21c0-5 4-8 9-8s9 3 9 8z" fill="#1e6fd9"/></svg>คุณคือแขกคนที่ '+esc(String(me.name).replace(/^แขก-/,''))+'</b> · กดเข้าเล่นที่ห้องข้างล่างได้เลย ไม่คิดคะแนน ไม่ต้องลงชื่อเล่น '+(OL.showLogin?'':'<button type="button" id="olShowLog">🔑 ลงชื่อ / สมัคร เพื่อเก็บ Elo</button>')+'</div>':
+  $('olMe').innerHTML=(me?(guest?(OL.showLogin?'':'<div class="olCard"><button type="button" id="olShowLog">🔑 ลงชื่อ / สมัคร เพื่อเก็บ Elo</button></div>'):
     '<div class="olCard"><b>'+olRankIcon(me.elo)+' '+esc(me.name)+'</b> · Elo <b>'+me.elo+'</b> · '+olRank(me.elo)+' · ชนะ '+me.w+' เสมอ '+me.d+' แพ้ '+me.l+' <button type="button" id="olOut">🚪 ออกจากระบบ (Logout)</button></div>'):'')+tcSel;
   if(me&&!guest)$('olOut').onclick=olLogout;
   if(guest&&$('olShowLog'))$('olShowLog').onclick=()=>{OL.showLogin=true;olLobbyRender();try{$('olName').focus()}catch(e){}};
@@ -16709,7 +16709,7 @@ const OL_BOT=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('bo
   const n=(k,d)=>{const v=parseFloat(q.get(k));return isFinite(v)&&v>0?v:d};
   let rooms=(q.get('rooms')||'1,4').split(',').map(x=>+x).filter(x=>x>=1&&x<=OL_ROOMS);if(!rooms.length)rooms=[1,4];
   const embed=q.get('embed')==='1',stay=q.get('stay')==='1',nm=(q.get('name')||'').trim().slice(0,30);   // v9027: stay=1 → เล่นจบทีละเกมแล้วกลับมานั่งรอห้องเดิมทันที · name=ชื่อบอท
-  return{rooms,stay,embed,name:nm,level:String(q.get('level')||'3'),games:stay?1:Math.round(n('games',2)),tc:Math.round(n('tc',7)),
+  return{rooms,stay,embed,side:q.get('side')==='b'?'b':'w',name:nm,level:String(q.get('level')||'3'),games:stay?1:Math.round(n('games',2)),tc:Math.round(n('tc',7)),
     t:{think:[1,4],overWait:[25,45],lastWait:stay?[4,8]:[10,20],rest:stay?[2,5]:[90,240],retry:stay?5:20,waitMax:600}}}catch(e){return null}})();
 if(OL_BOT){
  OL_AIOFFER.on=false;
@@ -16734,7 +16734,7 @@ if(OL_BOT){
      const i=pool[Math.floor(Math.random()*pool.length)];
      try{const a=$('olTc');if(a)a.value=String(OL_BOT.tc);const b=$('olTi');if(b)b.value='0'}catch(e){}
      S.busy=true;try{await olRoomAct(i,'w')}catch(e){}S.busy=false;
-     if(OL.room===i){S.st='wait';S.sitAt=Date.now();S.games=0;S.lastRoom=i;S.gid=null}else S.next=Date.now()+OL_BOT.t.retry*1000;
+     if(OL.room===i){S.st='wait';S.sitAt=Date.now();S.games=0;S.lastRoom=i;S.gid=null;if(OL_BOT.side==='b'){try{await OL.db.ref('lobby/r'+i+'/side').set('b')}catch(e){}}}   /* v9030: side=b → บอทนั่งฝั่งดำ คนที่เข้ามาได้ขาว */else S.next=Date.now()+OL_BOT.t.retry*1000;
      return}
    if(!OL.room||OL.spect){S.st='idle';S.next=now+rnd(OL_BOT.t.rest);S.games=0;return}
    if(S.st==='wait'){
@@ -16881,7 +16881,7 @@ async function olBookMove(side,lv){try{if(typeof opnTry!=='function')return null
 
 /* ===== v9028: บอท 🤖 เรียวเมืองทอง ประจำห้อง — เมื่อมีคนเปิดหน้านี้ในเครื่องคอมพิวเตอร์และเข้าส่วนออนไลน์ หน้านั้นจะเปิดเฟรมซ่อน (โหมดบอท) ไปนั่งรอในห้องที่ตั้งไว้
    · ห้องไหนมีบอท/คนนั่งอยู่แล้วก็ข้าม (ห้องหนึ่งมีบอทตัวเดียว) · ปิดหน้า = บอทหายและห้องว่างเอง · เจ้าของหน้ากดปิดบอทได้จากป้ายมุมซ้ายล่าง · ไม่ทำงานบนมือถือ/จอแคบ ===== */
-const OL_AUTOBOT={on:true,rooms:[1,3],name:'🤖 เรียวเมืองทอง (AI)',level:'3',tc:7,minWidth:900};
+const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียวเมืองทอง (AI)',level:'3',tc:7,minWidth:900};
 {let frames=[],chip=null,started=false;
  const q=new URLSearchParams(location.search),force=q.get('autobot')==='1';
  const enabled=()=>{try{return localStorage.getItem('makruk-autobot')!=='0'}catch(e){return true}};
@@ -16895,7 +16895,7 @@ const OL_AUTOBOT={on:true,rooms:[1,3],name:'🤖 เรียวเมือง�
  window.abStop=function(){for(const f of frames){try{f.contentWindow.olLeave()}catch(e){}setTimeout(()=>{try{f.remove()}catch(e){}},400)}frames=[]};
  window.abStart=function(){if(frames.length||!eligible()||!enabled())return;
   OL_AUTOBOT.rooms.forEach((r,i)=>{const f=document.createElement('iframe');f.setAttribute('aria-hidden','true');f.tabIndex=-1;f.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px';
-   f.src=location.pathname+'?bot=1&embed=1&stay=1&rooms='+r+'&level='+OL_AUTOBOT.level+'&tc='+OL_AUTOBOT.tc+'&name='+encodeURIComponent(OL_AUTOBOT.name);
+   f.src=location.pathname+'?bot=1&embed=1&stay=1&rooms='+r+'&level='+OL_AUTOBOT.level+'&tc='+OL_AUTOBOT.tc+((OL_AUTOBOT.sides||{})[r]==='b'?'&side=b':'')+'&name='+encodeURIComponent(OL_AUTOBOT.name);
    setTimeout(()=>document.body.appendChild(f),i*1500);frames.push(f)});chipDraw()};
  {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!started&&eligible()){started=true;setTimeout(()=>{if(enabled())abStart();else chipDraw()},2500)}}catch(e){}return r}}
  setInterval(()=>{if(chip&&frames.length)chip.firstChild.textContent=chipTxt()},3000);
@@ -16907,6 +16907,27 @@ const OL_AUTOBOT={on:true,rooms:[1,3],name:'🤖 เรียวเมือง�
  'html body #olBox #olRooms .olRoom button[data-a].pri{background:#2b86ff;border-color:#bcdcff}'+
  'html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]):hover,html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]):focus-visible{background:#4a9bff;outline:2px solid #fff}';
  document.head.appendChild(st)}
+
+/* ===== v9031: ข้อความ "คุณคือแขกคนที่ … กดเข้าเล่นที่ห้องข้างล่างได้เลย" อยู่บรรทัดสถานะบนสุดของล็อบบี้ (แทนการ์ดซ้ำเดิม) · แสดงเมื่อบรรทัดนั้นว่างอยู่ ===== */
+{const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{const me=OL.me,e=$('olSt');
+  if(me&&me.guest&&!OL.room&&e&&!e.textContent.trim())olSt('👤 คุณคือแขกคนที่ '+String(me.name).replace(/^แขก-/,'')+' · กดเล่นที่ห้องข้างล่างได้เลย ไม่คิดคะแนน ไม่ต้องลงชื่อ')}catch(x){}return r}}
+
+/* ===== v9032: ไม่มีปุ่ม "เข้าสู่ระบบ / สมัครใหม่" และข้อความอธิบาย — ใส่ชื่อแล้วกรอกรหัสครบ 4 หลัก เข้าให้อัตโนมัติ (กด Enter ก็ได้) ===== */
+function olAutoLog(){const f=$('olLog'),pin=$('olPin'),nm=$('olName');
+ if(!(f&&pin&&nm)||f.dataset.auto)return;f.dataset.auto='1';let busy=0;
+ const go=()=>{if(busy||!nm.value.trim()||!/^[0-9]{4}$/.test(pin.value))return;busy=1;try{f.requestSubmit()}catch(e){try{f.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}))}catch(x){}}setTimeout(()=>{busy=0},2500)};
+ pin.addEventListener('input',go);
+ for(const e of[nm,pin])e.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();go()}})}
+{const old=olBox;olBox=function(){const r=old.apply(this,arguments);try{olAutoLog()}catch(e){}return r}}
+try{olAutoLog()}catch(e){}
+
+/* ===== v9034: ชื่อห้องในรายการ (ห้องที่ N …) ตัวเอียง สีน้ำเงิน — เลือกเฉดตามธีม (พื้นมืด = น้ำเงินสว่าง · พื้นสว่าง = น้ำเงินเข้ม) ===== */
+{const st=document.createElement('style');st.id='olRnStyle';
+ st.textContent='html body #olBox #olRooms .olRoom>b{font-style:italic;color:var(--olRn,#0b57c4)}';document.head.appendChild(st);
+ const paint=()=>{try{const box=$('olBox'),rm=$('olRooms');if(!box||!rm)return;let m=null;
+   for(let e=rm;e;e=e.parentElement){const c=getComputedStyle(e).backgroundColor,q=c.match(/[\d.]+/g);if(q&&!(q.length>3&&+q[3]<.5)){m=q;break}}
+   const L=m?(0.299*m[0]+0.587*m[1]+0.114*m[2]):255;box.style.setProperty('--olRn',L<140?'#6db3ff':'#0b57c4')}catch(e){}};
+ const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);paint();return r}}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
