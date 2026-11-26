@@ -15706,7 +15706,7 @@ olLobbyRender=function(){
   $('olLog').hidden=!!me&&!(guest&&OL.showLogin);
   const tcSel='<label class="olTcL">⏱ เวลาของห้องที่จะเปิด <select id="olTc" aria-label="นาทีต่อเกม">'+OL_TC.map(m=>'<option value="'+m+'">'+(m?m+' นาที':'ไม่จับเวลา')+'</option>').join('')+'</select>'+
     ' <select id="olTi" aria-label="บวกเวลาต่อตา">'+OL_TI.map(s=>'<option value="'+s+'">'+(s?'+'+s+' วิ/ตา':'ไม่บวกเวลา')+'</option>').join('')+'</select></label>';
-  $('olMe').innerHTML=(me?(guest?'<div class="olCard"><b><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px;margin-right:3px"><circle cx="12" cy="8" r="4.5" fill="#1e6fd9"/><path d="M3 21c0-5 4-8 9-8s9 3 9 8z" fill="#1e6fd9"/></svg>คุณคือแขกคนที่ '+esc(String(me.name).replace(/^แขก-/,''))+'</b> · กดเข้าเล่นที่ห้องได้เลย ไม่นับคะแนน ไม่ต้องใส่ชื่อเล่น '+(OL.showLogin?'':'<button type="button" id="olShowLog">🔑 ลงชื่อ / สมัคร เพื่อเก็บ Elo</button>')+'</div>':
+  $('olMe').innerHTML=(me?(guest?'<div class="olCard"><b><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px;margin-right:3px"><circle cx="12" cy="8" r="4.5" fill="#1e6fd9"/><path d="M3 21c0-5 4-8 9-8s9 3 9 8z" fill="#1e6fd9"/></svg>คุณคือแขกคนที่ '+esc(String(me.name).replace(/^แขก-/,''))+'</b> · กดเข้าเล่นที่ห้องข้างล่างได้เลย ไม่คิดคะแนน ไม่ต้องลงชื่อเล่น '+(OL.showLogin?'':'<button type="button" id="olShowLog">🔑 ลงชื่อ / สมัคร เพื่อเก็บ Elo</button>')+'</div>':
     '<div class="olCard"><b>'+olRankIcon(me.elo)+' '+esc(me.name)+'</b> · Elo <b>'+me.elo+'</b> · '+olRank(me.elo)+' · ชนะ '+me.w+' เสมอ '+me.d+' แพ้ '+me.l+' <button type="button" id="olOut">🚪 ออกจากระบบ (Logout)</button></div>'):'')+tcSel;
   if(me&&!guest)$('olOut').onclick=olLogout;
   if(guest&&$('olShowLog'))$('olShowLog').onclick=()=>{OL.showLogin=true;olLobbyRender();try{$('olName').focus()}catch(e){}};
@@ -16459,14 +16459,14 @@ function olNavUi(){try{
 {const st=document.createElement('style');st.textContent='#anCard.anDock{position:static;margin:8px 0 0;font-size:15px;box-shadow:0 3px 12px rgba(0,0,0,.35);border:2px solid rgba(255,209,0,.7);max-height:none}#anCard.anDock .anH:before{content:"🎓";font-size:17px}#anCard.anDock .anSc{flex-basis:100%}';document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent='#olChatLog .olMsg.sys{opacity:.75;font-style:italic;font-size:.92em}';document.head.appendChild(st)}
 /* V9.0.18: กล่อง "คนในห้องรวม" ข้างฟอร์ม/การ์ดผู้เล่นในหน้าต่างล็อบบี้ · ทะเบียนอยู่ที่ games/lobby_chat/who/<key> (ใช้สิทธิ์ games เดิม) · ลบชื่อเมื่อปิดหน้าต่างล็อบบี้ / เข้าห้องเล่น / ออกจากระบบ / หลุดเน็ต (onDisconnect) */
-const olLobWho={ref:null,key:null,on:false};
+const olLobWho={ref:null,key:null,on:false,off:0};
 function olWhoRender(v){const box=$('olWhoList'),hd=$('olWhoH');if(!box||!hd)return;
-  const a=Object.keys(v||{}).map(k=>Object.assign({k},v[k])).filter(x=>x&&x.n).sort((p,q)=>(p.at||0)-(q.at||0));
+  const now=Date.now()+(olLobWho.off||0),a=Object.keys(v||{}).map(k=>Object.assign({k},v[k])).filter(x=>x&&x.n&&(!x.at||now-x.at<300000)).sort((p,q)=>(p.at||0)-(q.at||0));
   hd.textContent='👥 อยู่ในห้องรวม ('+a.length+')';box.textContent='';
   if(!a.length){const e=document.createElement('div');e.className='olWhoE';e.textContent='ยังไม่มีใครในห้องรวม';box.appendChild(e);return}
   for(const x of a){const d=document.createElement('div');d.className='olWhoI'+(OL.me&&x.k===OL.me.key?' me':'');
-    d.textContent=x.n+(x.e?' · '+x.e:'');box.appendChild(d)}}
-function olWhoLeave(){try{if(olLobWho.ref){olLobWho.ref.onDisconnect().cancel();olLobWho.ref.remove().catch(()=>{})}}catch(e){}olLobWho.ref=null;olLobWho.key=null}
+    d.textContent=x.n+' ('+olEloTxt(x)+')';box.appendChild(d)}}   /* คะแนน (Elo) ต่อท้ายชื่อ · แขกขึ้น (แขก) เหมือนรายการห้อง */
+function olWhoLeave(){try{if(olLobWho.ref)olLobWho.ref.remove().catch(()=>{})}catch(e){}olLobWho.ref=null;olLobWho.key=null}   /* ไม่ cancel onDisconnect: ถ้าปิดหน้าแล้ว remove ส่งไม่ทัน เซิร์ฟเวอร์ยังลบให้เองเมื่อหลุด */
 function olWhoSync(force){try{
   const box=$('olBox'),open=!!(box&&!box.hidden),want=open&&OL.db&&OL.me&&!OL.room;
   if(open&&OL.db&&!olLobWho.on){olLobWho.on=true;OL.db.ref('games/lobby_chat/who').on('value',s=>olWhoRender(s.val()))}
@@ -16483,10 +16483,13 @@ function olWhoSync(force){try{
     const first=$('olMe')||$('olLog');first.parentNode.insertBefore(h,first);
     for(const id of['olMe','olLog']){const e=$(id);if(e)L.appendChild(e)}h.append(L,w);
     new MutationObserver(()=>olWhoSync()).observe(box,{attributes:true,attributeFilter:['hidden']});
-    if(OL.db)OL.db.ref('.info/connected').on('value',s=>{if(s.val()===true)olWhoSync(true)})}
+    if(OL.db){OL.db.ref('.info/connected').on('value',s=>{if(s.val()===true)olWhoSync(true)});try{OL.db.ref('.info/serverTimeOffset').on('value',s=>{const o=s.val();if(typeof o==='number')olLobWho.off=o})}catch(e){}}}
   olWhoSync()}catch(e){}return r}}
 {const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{olWhoSync()}catch(e){}return r}}
 {const old=olEnter;olEnter=function(){const r=old.apply(this,arguments);try{olWhoSync()}catch(e){}return r}}
+/* หัวใจเต้น: ทุก 60 วิ ต่ออายุเวลาของตัวเอง · รายชื่อที่เงียบเกิน 5 นาทีถือว่าค้าง ไม่แสดง (กันชื่อผีจากมือถือที่ถูกปิดแอป/เน็ตหลุดไม่ทัน) */
+try{setInterval(()=>{try{if(olLobWho.ref)olLobWho.ref.child('at').set(olTS()).catch(()=>{})}catch(e){}},60000);
+  document.addEventListener('visibilitychange',()=>{try{if(!document.hidden){olWhoSync(true)}}catch(e){}})}catch(e){}
 try{addEventListener('pagehide',()=>olWhoLeave())}catch(e){}
 {const st=document.createElement('style');st.textContent='#olHead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-start}#olHeadL{flex:1 1 300px;min-width:0}#olLog[hidden]{display:none}'+
  '#olWho{flex:1 1 170px;max-width:100%;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box}#olWho .olSh{font-weight:800;margin-bottom:4px}'+
@@ -16531,6 +16534,30 @@ function olDing(){try{const A=window.AudioContext||window.webkitAudioContext;if(
 {const old=olEnter;olEnter=function(){const r=old.apply(this,arguments);try{
   if(OL.room&&OL.fsRoom!==OL.room){OL.fsRoom=OL.room;if(!document.body.classList.contains('fs')){setFull(true);OL.fsAuto=true}}}catch(e){}return r}}
 {const old=olLeaveLocal;olLeaveLocal=function(){const r=old.apply(this,arguments);try{OL.fsRoom=null;if(OL.fsAuto){OL.fsAuto=false;if(document.body.classList.contains('fs'))setFull(false)}}catch(e){}return r}}
+/* V9.0.18: โหมดขยายกระดานบนจอคอม (≥900px): ย้ายแถวปุ่ม/แถบปุ่มใต้กระดานไปแผงขวา (#fsTools) ให้กระดานสูงเกือบเต็มจอแบบ Playok · ออกจากโหมด/จอแคบลง = ย้ายกลับที่เดิม */
+function fsTools(on){try{
+  const bw=$('bw'),rc=$('rc'),sc=$('sc');if(!bw||!rc)return;let t=$('fsTools');const want=!!on&&innerWidth>=900;
+  if(want){
+    if(!t){t=document.createElement('div');t.id='fsTools';t.setAttribute('role','group');t.setAttribute('aria-label','ปุ่มและแถบเครื่องมือของกระดาน');(sc&&sc.parentNode===rc?sc.insertAdjacentElement('afterend',t):rc.appendChild(t))}
+    const keep=new Set([$('who2'),$('bx'),$('tntBubble')]);
+    for(const c of [...bw.children])if(!keep.has(c))t.appendChild(c);
+    document.body.classList.add('fsTl')}
+  else{
+    if(t){const tb=$('tntBubble');for(const c of [...t.children])bw.insertBefore(c,tb&&tb.parentNode===bw?tb:null);t.remove()}
+    document.body.classList.remove('fsTl')}
+  try{layFit()}catch(e){}try{render()}catch(e){}}catch(e){}}
+{const old=setFull;setFull=function(on){const r=old.apply(this,arguments);try{fsTools(on)}catch(e){}return r}}
+try{addEventListener('resize',()=>{try{if(document.body.classList.contains('fs')||$('fsTools'))fsTools(document.body.classList.contains('fs'))}catch(e){}})}catch(e){}
+{const st=document.createElement('style');st.textContent='body.fsTl #fsTools{flex:0 0 260px;width:260px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding-top:34px;max-height:calc(100vh - 12px);overflow-y:auto;position:sticky;top:6px;align-self:flex-start}'+
+ 'body.fsTl #fsTools>*{margin-top:0!important;width:100%;max-width:100%;box-sizing:border-box}'+
+ 'html body.fs.fsTl{--bsz:max(300px,min(calc(100vh - 90px),calc(100vw - 330px)))}'+
+ '@media(min-width:1080px) and (min-aspect-ratio:8/5){html body.fs.fsTl{--bsz:max(300px,min(calc(100vh - 90px),calc(100vw - 600px)))}}';document.head.appendChild(st)}
+/* V9.0.18: เต็มจอแบบ F11 (Fullscreen API ของเบราว์เซอร์ ซ่อนแถบที่อยู่/แท็บ) — เบราว์เซอร์ให้ทำได้เฉพาะตอนผู้ใช้คลิก: (1) คลิกในหน้าต่างล็อบบี้ครั้งแรก (2) กดนั่ง/เปิดห้อง/ท้าดวล/รับชม/สุ่มเล่น · ถ้าผู้ใช้กด Esc/F11 ออกเอง ล็อบบี้จะไม่บังคับซ้ำ (แต่กดเข้าห้องใหม่จะเข้าเต็มจออีกครั้ง) */
+function olGoFull(){try{const d=document.documentElement;if(document.fullscreenElement||!d.requestFullscreen)return;const p=d.requestFullscreen({navigationUI:'hide'});if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+try{document.addEventListener('fullscreenchange',()=>{try{if(!document.fullscreenElement)OL.fsDeclined=true;else OL.fsDeclined=false}catch(e){}});
+  document.addEventListener('pointerdown',e=>{try{if(!OL.fsDeclined&&e.target&&e.target.closest&&e.target.closest('#olBox'))olGoFull()}catch(x){}},true)}catch(e){}
+{const old=olRoomAct;olRoomAct=function(i,a){if(a!=='x'){try{olGoFull()}catch(e){}}return old.apply(this,arguments)}}
+{const old=olRandJoin;olRandJoin=function(){try{olGoFull()}catch(e){}return old.apply(this,arguments)}}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
