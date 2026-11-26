@@ -442,7 +442,7 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 </div>
 </aside>
 <section id="pn">
-<h1 id="ttl">เรียวหมากรุก v8.6</h1>
+<h1 id="ttl">เรียวหมากรุก</h1>
 <div id="ck" style="display:none;gap:8px;font-weight:700;font-variant-numeric:tabular-nums;margin:0 0 6px"><span id="ck1" style="flex:1;text-align:center;padding:4px;border-radius:6px"></span><span id="ck2" style="flex:1;text-align:center;padding:4px;border-radius:6px"></span></div>
 <div id="tlN" hidden role="status" style="margin:0 0 6px;padding:5px 8px;border-radius:6px;background:rgba(214,69,65,.18);border:1px solid rgba(214,69,65,.55);font-size:13px;font-weight:600"></div>
 <div id="mtSet" style="margin:0 0 8px"><label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="mtOn" style="width:auto"> ⏱ กำหนดเวลาต่อตาเดิน (หมดเวลาไม่มีผลแพ้ชนะ)</label><div style="display:flex;gap:8px;align-items:center;margin-top:4px"><input id="mtVal" type="number" inputmode="numeric" min="1" max="3600" step="1" value="10" style="width:92px" aria-label="เวลาต่อตา"><select id="mtUnit" style="width:auto" aria-label="หน่วยเวลา"><option value="s" selected>วินาที</option><option value="m">นาที</option></select></div><p style="font-size:12px;opacity:.85;margin:4px 0 0">เอนจินจะคิดตามเวลานี้ทุกตา (ระดับ &quot;ง่าย&quot; ยังเดินเร็วแบบเดิม) · ตาของคนจะมีตัวเลขนับถอยหลังที่หัวกระดาน หมดเวลาแล้วเดินต่อได้ตามปกติ ไม่แพ้ ไม่เสีย</p></div>
@@ -480,7 +480,7 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 <button id="ap">หยุดชั่วคราว</button>
 <button id="as">เดินทีละตา</button>
 </div>
-<button id="aiBench84" type="button" style="margin-top:8px" onclick="window.open('เรียวหมากรุก_v8.6_ห้องทดสอบAI.html','_blank')">🧪 ห้องทดสอบ AI v8.6 เทียบ v8.5 (100 เกม)</button><div id="toolbar">
+<div id="toolbar">
 <button class="pri" id="nw">เริ่มเกมใหม่</button>
 <button id="pauseAll">⏸ หยุดชั่วคราว</button>
 <button id="un">ย้อนกลับ 1 ตา</button>
@@ -642,7 +642,7 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 <input type="text" id="setName" placeholder="ตั้งชื่อชุด" aria-label="ชื่อชุดตัวหมาก" style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:6px;border:1px solid rgba(128,128,128,.5);background:var(--bg);color:inherit;margin-top:8px">
 <button id="setSave">บันทึกเป็นชุด</button><button id="setDel">ลบชุดนี้</button>
 <button id="setExp" type="button">ส่งออกชุดตัวหมาก (ไฟล์)</button><button id="setImp" type="button">นำเข้าชุดตัวหมาก (ไฟล์)</button><input type="file" id="setImpF" accept=".json,application/json" hidden>
-<p id="setNote" style="font-size:12px;opacity:.85;margin:6px 0 0">ชุดที่บันทึกเก็บอยู่ในเบราว์เซอร์นี้ ผูกกับที่อยู่หน้านี้ (เปิดจากไฟล์ D:/… กับเปิดผ่าน http://127.0.0.1:8000 เป็นคนละที่เก็บ) ไม่ได้ฝังอยู่ในไฟล์ game.html · ใช้ส่งออก/นำเข้าเพื่อสำรองหรือย้ายไปเครื่อง/ที่อยู่อื่น · ชุดที่มี ★ ฝังมากับไฟล์ game.html แล้ว ใช้ได้ทุกที่อยู่/ทุกเครื่องโดยไม่ต้องโหลดเอง · ค่าเริ่มต้นของเกมคือชุดไม้เงา (ชุดโลหะเงา เงิน-ทอง ชุดไม้แก้ว-ไม้มะเกลือ และชุดอื่นอยู่ในรายการให้เลือก)</p>
+<p id="setNote" style="font-size:12px;opacity:.85;margin:6px 0 0">ชุดที่บันทึกเก็บอยู่ในเบราว์เซอร์นี้ ผูกกับที่อยู่หน้านี้ (เปิดจากไฟล์ D:/… กับเปิดผ่าน http://127.0.0.1:8000 เป็นคนละที่เก็บ) ไม่ได้ฝังอยู่ในไฟล์ index.html · ใช้ส่งออก/นำเข้าเพื่อสำรองหรือย้ายไปเครื่อง/ที่อยู่อื่น · ชุดที่มี ★ ฝังมากับไฟล์ index.html แล้ว ใช้ได้ทุกที่อยู่/ทุกเครื่องโดยไม่ต้องโหลดเอง · ค่าเริ่มต้นของเกมคือชุดไม้เงา (ชุดโลหะเงา เงิน-ทอง ชุดไม้แก้ว-ไม้มะเกลือ และชุดอื่นอยู่ในรายการให้เลือก)</p>
 <div id="pm" aria-live="polite" style="font-size:13px;margin-top:8px"></div>
 </details>
 <details id="sqoBox"><summary>🎲 กระดานจริง Square Off (Pro / Neo / Kingdom Set / Grand Kingdom · บลูทูธ)</summary>
@@ -683,7 +683,7 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 <button id="nnPick" type="button">📂 เลือกไฟล์ NNUE (makruk.nnue หรือ nn.bin)</button>
 <button id="nnClear" type="button">🗑 ลบไฟล์ NNUE ที่เก็บไว้ในเครื่อง</button>
 <input type="file" id="nnFile" hidden>
-<p style="font-size:12px;opacity:.85;margin:6px 0">makruk.nnue (ประมาณ 48 MB) คือโครงข่ายประเมินตำแหน่งหมากรุกไทยของ Fairy-Stockfish เกมอ่านไฟล์นี้แล้วให้เรียวเมืองทองใช้ประเมินตำแหน่งเอง (ไม่ต้องใช้ Fairy-Stockfish จึงใช้บนมือถือได้) เลือกครั้งเดียว เกมเก็บสำเนาไว้ในเบราว์เซอร์ (ไม่ได้ฝังใน game.html) ตอนที่ฝ่ายหนึ่งเหลือแต่ขุนยังใช้วิธีเดิม</p>
+<p style="font-size:12px;opacity:.85;margin:6px 0">makruk.nnue (ประมาณ 48 MB) คือโครงข่ายประเมินตำแหน่งหมากรุกไทยของ Fairy-Stockfish เกมอ่านไฟล์นี้แล้วให้เรียวเมืองทองใช้ประเมินตำแหน่งเอง (ไม่ต้องใช้ Fairy-Stockfish จึงใช้บนมือถือได้) เลือกครั้งเดียว เกมเก็บสำเนาไว้ในเบราว์เซอร์ (ไม่ได้ฝังใน index.html) ตอนที่ฝ่ายหนึ่งเหลือแต่ขุนยังใช้วิธีเดิม</p>
 </details>
 <details open><summary>เอนจินหมากรุกไทยภายนอก (UCI)</summary>
 <label for="en">เอนจิน AI</label><select id="en"><option value="in">เรียวเมืองทอง</option></select>
@@ -2004,14 +2004,6 @@ if(typeof module!=='undefined')module.exports={makeTB,makeTB3,makeTBX};
     const fallback = core.fallbacks[index];
     return fallback === 'board' ? core.boardImage : core.defaultPieces[fallback] || '';
   };
-  if (!full) {
-    const note = document.createElement('div');
-    note.id = 'makruk-assets-notice';
-    note.textContent = 'ใช้กระดานและตัวหมากชุดหลัก · วาง assets.js ไว้ข้าง game.html เพื่อใช้ภาพครบทุกชุด';
-    note.setAttribute('role','status');
-    note.style.cssText = 'margin:8px;padding:8px 12px;border:1px solid #9c834b;border-radius:8px;font:14px sans-serif;color:inherit';
-    document.body.insertBefore(note,document.body.firstChild);
-  }
 })();
 
 </script>
@@ -4259,7 +4251,7 @@ $('en').addEventListener('change',()=>{noAuto=$('en').value==='in'});
 
 /* ===== Fairy-Stockfish WASM (รันในเบราว์เซอร์ ต้องเปิดผ่าน serve.py) ===== */
 let wasmFailed=false,wasmBusy=null,wasmEngine=null;
-const loadScript=src=>new Promise((res,rej)=>{const t=document.createElement('script');t.src=src;t.onload=res;t.onerror=()=>rej(new Error('โหลด '+src+' ไม่ได้ (ต้องวางไฟล์ไว้โฟลเดอร์เดียวกับ game.html)'));document.head.appendChild(t)});
+const loadScript=src=>new Promise((res,rej)=>{const t=document.createElement('script');t.src=src;t.onload=res;t.onerror=()=>rej(new Error('โหลด '+src+' ไม่ได้ (ต้องวางไฟล์ไว้โฟลเดอร์เดียวกับ index.html)'));document.head.appendChild(t)});
 const fileExists=async u=>{try{const r=await fetch(u,{method:'HEAD'});return r.ok}catch(e){return false}};
 async function loadWasm(st){
   if(!self.crossOriginIsolated||typeof SharedArrayBuffer==='undefined')throw new Error('หน้านี้ยังไม่ได้เปิดผ่าน serve.py (ใช้ start_all.bat) จึงใช้ WASM ไม่ได้');
@@ -5447,7 +5439,7 @@ function nnUi(){
   let t;
   if(nnBusy)t='กำลังเตรียมไฟล์ NNUE …';
   else if(nnBuf)t='โหลดแล้ว: '+nnName+' ('+(nnBuf.byteLength/1048576).toFixed(1)+' MB) · '+(nnWanted?'เรียวเมืองทองใช้ NNUE อยู่':'ปิดอยู่')+(nnSaved?' · เก็บสำเนาไว้ในเครื่องแล้ว':' · เก็บสำเนาไว้ไม่ได้ (เบราว์เซอร์นี้ไม่ให้เก็บ) ต้องเลือกไฟล์ใหม่ทุกครั้งที่เปิดเกม');
-  else t=nnWanted?'ยังไม่มีไฟล์ NNUE: กด "เลือกไฟล์ makruk.nnue" (หรือวางไฟล์ไว้ในโฟลเดอร์เดียวกับ game.html แล้วเปิดผ่าน serve.py เกมจะโหลดเอง)':'ปิดอยู่ (ติ๊ก "ใช้ NNUE" เพื่อเปิด)';
+  else t=nnWanted?'ยังไม่มีไฟล์ NNUE: กด "เลือกไฟล์ makruk.nnue" (หรือวางไฟล์ไว้ในโฟลเดอร์เดียวกับ index.html แล้วเปิดผ่าน serve.py เกมจะโหลดเอง)':'ปิดอยู่ (ติ๊ก "ใช้ NNUE" เพื่อเปิด)';
   el.textContent=(nnMsg?nnMsg+' · ':'')+t;
   $('nnClear').disabled=!nnBuf&&!nnSaved;
 }
@@ -15911,7 +15903,7 @@ const olStale=r=>!!(r&&r.status==='waiting'&&Date.now()-(r.at||0)>900000);
   r.show=true;r.w=i.w?i.w.n:'รอคู่แข่ง…';r.b=i.b?i.b.n:'รอคู่แข่ง…';r.elo={w:e(i.w),b:e(i.b)};r.ev='';r.site='';r.date='';r.round='';r.res=''}}catch(x){}return r}}
 {const old=pnApplyOff;pnApplyOff=function(){const r=old.apply(this,arguments);try{if(OL.room)$('bd').classList.remove('pnoff')}catch(e){}return r}}
 {const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);try{pnUpdate()}catch(e){}return r}}
-{const st=document.createElement('style');st.textContent=':root:has(#olBar:not([hidden])) #qb>button:not(#qBcol):not(#qPcs):not(#qFull):not(#qFx):not(#qSnd),:root:has(#olBar:not([hidden])) #qb>.qsep{display:none!important}:root:has(#olBar:not([hidden])):has(#qb [aria-expanded=true]) #pnFoot{visibility:hidden}:root:has(#olBar:not([hidden])) #qb{margin-top:44px!important;position:relative;z-index:0}:root:has(#olBar:not([hidden])) #qBcol,:root:has(#olBar:not([hidden])) #qPcs,:root:has(#olBar:not([hidden])) #qFull,:root:has(#olBar:not([hidden])) #qFx,:root:has(#olBar:not([hidden])) #qSnd{width:auto!important;min-width:0;padding:0 12px 0 8px!important;display:inline-flex!important;align-items:center;gap:6px;font:700 14px/1 inherit}:root:has(#olBar:not([hidden])) #qBcol::after{content:"เปลี่ยนสีกระดาน"}:root:has(#olBar:not([hidden])) #qPcs::after{content:"เปลี่ยนตัวหมาก"}:root:has(#olBar:not([hidden])) #qFull::after{content:"ขยายกระดานเต็มจอ"}:root:has(#olBar:not([hidden])) #qFx::after{content:"แอนิเมชัน"}:root:has(#olBar:not([hidden])) #qSnd::after{content:"ตั้งค่าเสียง"}:root:has(#olBar:not([hidden])) #pnX{display:none!important}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=':root:not(.olOver):has(#olBar:not([hidden])) #qb>button:not(#qBcol):not(#qPcs):not(#qFull):not(#qFx):not(#qSnd),:root:not(.olOver):has(#olBar:not([hidden])) #qb>.qsep{display:none!important}:root:has(#olBar:not([hidden])):has(#qb [aria-expanded=true]) #pnFoot{visibility:hidden}:root:has(#olBar:not([hidden])) #qb{margin-top:44px!important;position:relative;z-index:0}:root:has(#olBar:not([hidden])) #qBcol,:root:has(#olBar:not([hidden])) #qPcs,:root:has(#olBar:not([hidden])) #qFull,:root:has(#olBar:not([hidden])) #qFx,:root:has(#olBar:not([hidden])) #qSnd{width:auto!important;min-width:0;padding:0 12px 0 8px!important;display:inline-flex!important;align-items:center;gap:6px;font:700 14px/1 inherit}:root:has(#olBar:not([hidden])) #qBcol::after{content:"เปลี่ยนสีกระดาน"}:root:has(#olBar:not([hidden])) #qPcs::after{content:"เปลี่ยนตัวหมาก"}:root:has(#olBar:not([hidden])) #qFull::after{content:"ขยายกระดานเต็มจอ"}:root:has(#olBar:not([hidden])) #qFx::after{content:"แอนิเมชัน"}:root:has(#olBar:not([hidden])) #qSnd::after{content:"ตั้งค่าเสียง"}:root:has(#olBar:not([hidden])) #pnX{display:none!important}';document.head.appendChild(st)}
 
 /* ===== V8.9.78: ปุ่ม "เล่นกับ AI" (ไม่มีคนมานั่งด้วย) + เลือกระดับ AI · ออกจากห้องนี้แล้วเริ่มเกมกับ AI ===== */
 async function olPlayAi(){
@@ -16300,6 +16292,108 @@ muBuildUi();
   {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(MU.on&&!MU.cur&&navigator.userActivation&&navigator.userActivation.hasBeenActive)muStart();muUi()}catch(e){}return r}}   // เข้าห้องรวมแล้วเพลงต้องเล่น (ถ้าผู้ใช้เคยแตะหน้าจอแล้ว)
   document.addEventListener('visibilitychange',()=>{try{if(!MU.ctx)return;if(document.hidden)MU.ctx.suspend();else if(MU.on&&MU.started)MU.ctx.resume()}catch(e){}});
 })();
+/* ===== V9.0.15: ข้อเสนอเสมอ: ปุ่มเด้งไปอยู่ "หลังชื่อผู้เล่นด้านใต้กระดาน" (แถวเดียวกับชื่อ) =====
+   คู่แข่งขอเสมอ → ข้างชื่อใต้กระดานขึ้น "🤝 คู่แข่งขอเสมอ [✅ ยอมรับ] [❌ ไม่ยอมรับ]" · ผู้ขอเห็น "⏳ รอคู่แข่งตอบ [ยกเลิก]" ·
+   ถ้าป้ายชื่อใต้กระดานถูกปิดอยู่ (ปุ่ม x/i) หรือไม่มีที่ว่าง จะใช้ปุ่มในแถวใต้กระดานแทน เพื่อไม่ให้พลาดข้อเสนอ ·
+   ผู้ขอได้ข้อความเมื่อถูกปฏิเสธ (กดไม่ยอมรับ หรือเดินต่อ) แล้วขอใหม่ได้ */
+function olDrawNo(){
+  if(!OL.gid||OL.spect||OL.reported||!OL.draw||OL.draw===OL.color)return;
+  OL.db.ref('games/'+OL.gid+'/draw').remove().then(()=>olMsg('❌ ปฏิเสธข้อเสนอเสมอแล้ว เล่นต่อได้เลย')).catch(e=>olMsg('⚠ '+e.message))}
+function olDrawCancel(){
+  if(!OL.gid||OL.spect||OL.reported||OL.draw!==OL.color)return;
+  OL.db.ref('games/'+OL.gid+'/draw').remove().then(()=>olMsg('ยกเลิกข้อเสนอเสมอแล้ว')).catch(e=>olMsg('⚠ '+e.message))}
+function olDrawUi(){
+  const u=$('olUnder'),play=!!OL.gid&&!OL.spect&&!OL.reported&&!over,inc=!!(play&&OL.draw&&OL.draw!==OL.color),mine=!!(play&&OL.draw&&OL.draw===OL.color);
+  let y=$('olDrawYes'),n=$('olDrawNo'),fl=$('olDrawFloat');
+  if(!OL.room||OL.spect||!u){[y,n,fl].forEach(x=>x&&x.remove());return}
+  if(!y){y=document.createElement('button');y.type='button';y.id='olDrawYes';y.textContent='✅ ยอมรับเสมอ';y.title='ตกลงเสมอ จบเกมทันที';y.onclick=olDraw;
+    n=document.createElement('button');n.type='button';n.id='olDrawNo';n.textContent='❌ ไม่ยอมรับ';n.title='ปฏิเสธข้อเสนอเสมอ เล่นต่อ';n.onclick=olDrawNo;
+    u.insertBefore(y,$('olDrawB')||null);u.insertBefore(n,$('olDrawB')||null)}
+  const foot=$('pnFoot'),footOk=!!foot&&!foot.hidden&&getComputedStyle(foot).display!=='none'&&foot.getBoundingClientRect().width>200;
+  if(footOk&&!fl){fl=document.createElement('span');fl.id='olDrawFloat';fl.hidden=true;fl.innerHTML='<span class="odT"></span><button type="button" class="odY">✅ ยอมรับ</button><button type="button" class="odN">❌ ไม่ยอมรับ</button><button type="button" class="odC">ยกเลิก</button>';
+    fl.querySelector('.odY').onclick=olDraw;fl.querySelector('.odN').onclick=olDrawNo;fl.querySelector('.odC').onclick=olDrawCancel;foot.appendChild(fl)}
+  if(fl&&!footOk){fl.remove();fl=null}
+  if(fl&&fl.parentNode!==foot)foot.appendChild(fl);
+  const useFl=!!fl&&(inc||mine);
+  if(fl){fl.hidden=!useFl;
+    fl.querySelector('.odT').textContent=inc?'🤝 คู่แข่งขอเสมอ':'⏳ รอคู่แข่งตอบ';
+    fl.querySelector('.odY').hidden=fl.querySelector('.odN').hidden=!inc;fl.querySelector('.odC').hidden=!mine;fl.classList.toggle('odInc',inc)}
+  y.hidden=n.hidden=!(inc&&!useFl);
+  const db=$('olDrawB');if(db){if(inc||(mine&&useFl))db.hidden=true;else if(play){db.hidden=false;db.disabled=mine;db.textContent=mine?'⏳ รอคู่แข่งตอบ':'🤝 ขอเสมอ'}}
+}
+{const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);
+  try{olDrawUi();
+    const play=!!OL.gid&&!OL.spect&&!OL.reported&&!over,inc=!!(play&&OL.draw&&OL.draw!==OL.color);
+    // แจ้งผู้ขอเมื่อถูกปฏิเสธ · แจ้งผู้รับเมื่อมีข้อเสนอใหม่
+    if(OL._dpg!==OL.gid){OL._dpg=OL.gid;OL._dp=null}
+    const prev=OL._dp;OL._dp=OL.draw||null;
+    if(prev&&prev===OL.color&&!OL.draw&&play)olMsg('❌ คู่แข่งไม่ยอมรับข้อเสนอเสมอ เล่นต่อได้เลย');
+    if(inc&&!(prev&&prev!==OL.color)){try{spkAnnounce([{t:'คู่แข่งขอเสมอ',who:'g',rate:1}],{keep:true})}catch(e){}}
+  }catch(e){}return r}}
+{const old=pnUpdate;pnUpdate=function(){const r=old.apply(this,arguments);try{if(OL.room&&(OL.draw||$('olDrawFloat')))olDrawUi()}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='#olUnder #olDrawYes,#olUnder #olDrawNo{flex:1 1 auto;font-weight:800}#olUnder #olDrawYes{background:#1e8449;color:#fff;border-color:#145a32}#olUnder #olDrawNo{background:#c0392b;color:#fff;border-color:#922b21}#olUnder #olDrawYes:not([hidden]),#olUnder #olDrawNo:not([hidden]){animation:olDrawPulse 1.2s ease-in-out infinite}@keyframes olDrawPulse{50%{box-shadow:0 0 0 4px rgba(241,196,15,.7)}}#olBtnRow #olDrawYes{order:1}#olBtnRow #olDrawNo{order:1}'+
+ '#olDrawFloat{flex:none;display:flex;align-items:center;gap:4px;margin-left:4px;pointer-events:auto;font-size:clamp(11px,calc(var(--b)/36),16px);white-space:nowrap}#olDrawFloat[hidden]{display:none}'+
+ '#olDrawFloat .odT{padding:.12em .6em;border-radius:.6em;background:rgba(241,196,15,.95);color:#1b1b1b;font-weight:800;border:1px solid rgba(0,0,0,.35)}'+
+ '#olDrawFloat button{width:auto;min-width:0;min-height:0;margin:0;padding:.15em .6em;border-radius:.6em;font:inherit;font-weight:800;line-height:1.3;cursor:pointer;border:1px solid rgba(0,0,0,.4)}#olDrawFloat button[hidden]{display:none}'+
+ '#olDrawFloat .odY{background:#1e8449;color:#fff}#olDrawFloat .odN{background:#c0392b;color:#fff}#olDrawFloat .odC{background:rgba(255,255,255,.9);color:#222}'+
+ '#olDrawFloat.odInc{animation:olDrawPulse 1.2s ease-in-out infinite;border-radius:.7em}@media(prefers-reduced-motion:reduce){#olUnder #olDrawYes,#olUnder #olDrawNo,#olDrawFloat.odInc{animation:none!important}}';document.head.appendChild(st)}
+/* V9.0.15: "วิเคราะห์ตาเดินทั้งหมด": ถ้าเลือกเอนจินภายนอกไว้แต่ยังไม่ได้เชื่อมต่อ (เว็บบน GitHub เชื่อม Fairy-Stockfish ไม่ได้) เดิมขึ้นข้อความเล็กๆ แล้วหยุดเฉยๆ ดูเหมือนไม่ทำงาน → ตอนนี้สลับไปใช้ "เรียวเมืองทอง (AI ภายใน)" ให้เองแล้ววิเคราะห์เลย */
+{const old=$('analyzeGame').onclick;$('analyzeGame').onclick=async function(){
+  try{const s=$('analysisEngine');if(!anBusy&&s&&s.value==='fairy'&&!extEng()){s.value='internal';try{olMsg('🔍 ไม่มีเอนจินภายนอกเชื่อมต่ออยู่ จึงใช้เรียวเมืองทอง (AI ภายใน) วิเคราะห์ทั้งเกมให้')}catch(e){}}}catch(e){}
+  return old.apply(this,arguments)}}
+/* ===== V9.0.17: แสดงชื่อคนที่เข้าห้องในช่องแชต (ผู้เล่น/ผู้ชม) =====
+   · ข้อความระบบ {n:'🔔',m:'…เข้าห้อง',s:1,at} เก็บในแชตห้องเดียวกัน → ทุกคนในห้องเห็นตรงกัน · ไม่มีเสียง/ไม่อ่านออกเสียง · ข้อความไม่ใช่ประวัติแชตปกติ แต่อยู่ในรายการเดียวกัน */
+{const old=olChatAdd;olChatAdd=function(v){
+  if(v&&v.s){const L=$('olChatLog');if(!L)return;const k=v.m+'|'+v.at;if([...L.children].some(x=>x.dataset.k===k))return;const d=document.createElement('div');d.dataset.k=k;d.className='olMsg sys';d.textContent=String(v.m||'').slice(0,120);L.appendChild(d);
+    while(L.children.length>40)L.firstChild.remove();L.scrollTop=L.scrollHeight;return}
+  return old.apply(this,arguments)}}
+function olJoinNote(path,txt){try{if(OL.db&&path)OL.db.ref(path).push({n:'🔔',m:String(txt).slice(0,120),s:1,at:olTS()}).catch(()=>{})}catch(e){}}
+const olSideIcon=c=>c==='w'?'⚪':'⚫';
+{const old=olEnter;olEnter=function(i,color,spect){const r=old.apply(this,arguments);try{
+  if(!spect&&OL.me&&OL.room&&!OL.gid)olJoinNote('games/wait_r'+OL.room+'/chat','🔔 '+olSideIcon(color)+' '+OL.me.name+' เข้าห้องแล้ว (รอคู่แข่ง)')}catch(e){}return r}}
+{const old=olStartGame;let tm=0;olStartGame=function(r){const out=old.apply(this,arguments);try{
+  if(OL.me&&r&&r.gid){clearTimeout(tm);const gid=r.gid,spect=!!OL.spect,color=OL.color,me=OL.me;           // รอให้การเข้าห้องนิ่งก่อน (กันเรียกซ้ำ/ล้างแชตหลังส่ง) แล้วส่งครั้งเดียว
+    tm=setTimeout(()=>{try{if(OL.gid!==gid)return;const kk=gid+'|'+me.key+'|'+(spect?'s':'p');if(OL.joinNoted===kk)return;OL.joinNoted=kk;
+      olJoinNote('games/'+gid+'/chat',spect?'👁️ '+me.name+' เข้ามารับชม':'🔔 '+olSideIcon(color)+' '+me.name+' เข้าห้องแล้ว')}catch(e){}},700)}}catch(e){}return out}}
+/* ===== V9.0.17b: หลังเกมออนไลน์จบ → ปุ่มลูกศรใต้กระดานกลับมา · กดวิเคราะห์เสร็จ → กระดานไปที่ต้นเกม · ข้อความข้างกระดานอ่านออกเสียง (ตาใหม่ตัดเสียงเก่า) ===== */
+{const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);try{document.documentElement.classList.toggle('olOver',!!(OL.room&&OL.reported))}catch(e){}return r}}
+{const old=olLeaveLocal;olLeaveLocal=function(){const r=old.apply(this,arguments);try{document.documentElement.classList.remove('olOver')}catch(e){}return r}}
+{const old=$('analyzeGame').onclick;$('analyzeGame').onclick=async function(){const was=anBusy;if(!was)anHold=true;let r;try{r=await old.apply(this,arguments)}finally{if(!was)anHold=false}
+  try{if(!was&&analysisReport&&analysisReport.status==='complete'&&anReady()&&mlog.length){anSaid='';viewPly(0)}}catch(e){}return r}}
+let anSaid='',anHold=false;
+function anSpeakText(cc){
+  const t=[...cc.querySelectorAll('.anH,.anS:not(.dim),b')].filter((x,i,a)=>!a.some(y=>y!==x&&y.contains(x)));
+  let txt=(t.length?t.map(x=>x.textContent).join('. '):cc.textContent);
+  return txt.replace(/[\u{1F300}-\u{1FAFF}⚪⚫✔⚠✖ℹ☀-➿]/gu,' ').replace(/→/g,' ไป ').replace(/\s*·\s*/g,', ').replace(/\s+/g,' ').trim()}
+{const old=anCardUpdate;anCardUpdate=function(){const r=old.apply(this,arguments);try{
+  const c=$('anCard');
+  if(c&&!c.hidden&&!anHold&&analysisReport&&analysisReport.status!=='running'&&anReady()){
+    const key=analysisReport.runId+'|'+anPly();
+    if(key!==anSaid){anSaid=key;const txt=anSpeakText(c);if(txt&&typeof say==='function')say(txt,false,'g',1)}}   // queue=false → ตัดเสียงเก่าก่อนพูดอันใหม่
+}catch(e){}return r}}
+/* ===== V9.0.17c: จบเกมออนไลน์ → มีกล่องกลางกระดาน "🔍 วิเคราะห์เกม" / "✕ ไม่ต้อง" (ขึ้นครั้งเดียวต่อเกม) ===== */
+function olAnPopHide(){const e=$('olAnPop');if(e)e.hidden=true}
+function olAnPopShow(){try{
+  const bd=$('bd');if(!bd||!olAnDone())return;
+  let e=$('olAnPop');
+  if(!e){e=document.createElement('div');e.id='olAnPop';e.setAttribute('role','dialog');e.setAttribute('aria-label','วิเคราะห์เกมที่เพิ่งจบ');
+    e.innerHTML='<div class="olApT">🏁 จบเกมแล้ว<br><small>ดูว่าตาไหนดี ตาไหนพลาด?</small></div><div class="olApB"><button type="button" id="olApYes">🔍 วิเคราะห์เกม</button><button type="button" id="olApNo">✕ ไม่ต้อง</button></div>';
+    bd.appendChild(e);
+    $('olApNo').onclick=olAnPopHide;
+    $('olApYes').onclick=()=>{olAnPopHide();const b=$('olAnB');if(b&&!b.disabled)b.click();else{const ag=$('analyzeGame');if(ag&&!anBusy)ag.click()}};
+    e.addEventListener('keydown',ev=>{if(ev.key==='Escape')olAnPopHide()})}
+  e.hidden=false;try{$('olApYes').focus({preventScroll:true})}catch(x){}
+}catch(x){}}
+{const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);try{
+  if(!OL.room||!olAnDone()){olAnPopHide()}
+  else if(OL.gid&&OL.anPopFor!==OL.gid){OL.anPopFor=OL.gid;setTimeout(()=>{if(olAnDone()&&!anBusy)olAnPopShow()},900)}}catch(e){}return r}}
+{const old=olLeaveLocal;olLeaveLocal=function(){olAnPopHide();return old.apply(this,arguments)}}
+{const old=olStartGame;olStartGame=function(){olAnPopHide();return old.apply(this,arguments)}}
+{const st=document.createElement('style');st.textContent='#olAnPop[hidden]{display:none}#olAnPop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;min-width:min(78%,260px);padding:14px 16px;border-radius:14px;background:rgba(20,28,40,.93);color:#fff;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.55);border:1px solid rgba(255,209,0,.55)}'+
+ '#olAnPop .olApT{font-size:17px;font-weight:800;line-height:1.35}#olAnPop small{font-weight:500;opacity:.85;font-size:13px}#olAnPop .olApB{display:flex;gap:8px;margin-top:10px;justify-content:center;flex-wrap:wrap}'+
+ '#olAnPop button{width:auto;min-width:0;height:40px;padding:0 14px;margin:0;font-size:15px;font-weight:700;border-radius:10px;cursor:pointer}#olAnPop #olApYes{background:#2ecc71;color:#102;border:0}#olAnPop #olApNo{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent='#olChatLog .olMsg.sys{opacity:.75;font-style:italic;font-size:.92em}';document.head.appendChild(st)}
+try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
 </html>
