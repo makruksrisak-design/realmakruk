@@ -16036,9 +16036,10 @@ function olGreetTxt(){const me=OL.me;if(!me)return '';
   const nm=String(me.name||'').replace(/[^฀-๿a-zA-Z0-9 ._-]/g,'').trim();
   return 'ยินดีต้อนรับคุณ '+nm+' เข้าสู่หมากรุกออนไลน์ เลือกห้องแล้วนั่งเล่นได้เลย ขอให้สนุกครับ'}
 function olGreet(){try{const box=$('olBox');if(!box||box.hidden||OL.room)return;const t=olGreetTxt();if(!t)return;
-  if(Date.now()-olGreetT<2500)return;
-  const go=()=>{olGreetT=Date.now();olGreetWait=false;try{if(!$('olBox').hidden&&!OL.room)say(olGreetTxt())}catch(e){}};
-  if(navigator.userActivation&&navigator.userActivation.hasBeenActive)go();
+  if(Date.now()-olGreetT<700)return;
+  /* V9.0.09: ไม่เรียก cancel() ก่อนพูด (Chrome มือถือบางรุ่นกลืนเสียงที่พูดต่อจาก cancel ทันที) · เบราว์เซอร์ที่ไม่มี userActivation (เช่นเบราว์เซอร์ในแอป Messenger) ลองพูดทันที ไม่รอแตะครั้งถัดไป */
+  const go=()=>{olGreetT=Date.now();olGreetWait=false;try{if(!$('olBox').hidden&&!OL.room&&voiceOn&&hasSpeech())spkAnnounce([{t:olGreetTxt(),who:'g',rate:1}],{keep:true})}catch(e){}};
+  if(!navigator.userActivation||navigator.userActivation.hasBeenActive)go();
   else if(!olGreetWait){olGreetWait=true;const h=()=>{removeEventListener('pointerdown',h,true);removeEventListener('keydown',h,true);go()};addEventListener('pointerdown',h,true);addEventListener('keydown',h,true)}}catch(e){}}
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);
   try{for(let k=0;k<25&&!(OL.me&&OL.me.key);k++)await new Promise(x=>setTimeout(x,150));olGreet()}catch(e){}return r}}
@@ -16150,6 +16151,151 @@ function olCfgSnapshot(){
         try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download='defaults.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){}
         try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(e){}
         $('olCfgM').textContent=' ✓ ดาวน์โหลด defaults.json แล้ว (รหัส '+s.cfg.ver+') · อัปโหลดทับไฟล์เดิมบน GitHub'+(s.warn?' · ⚠ '+s.warn:'')}}}catch(e){}return r}}
+/* ===== V9.0.10: ปุ่ม "🔍 วิเคราะห์เกม" ใต้กระดานในห้องออนไลน์ · ใช้ได้หลังจบเกม (ระหว่างแข่งยังล็อกไว้ตามกติกายุติธรรม) =====
+   กดแล้วเปิดแผง "วิเคราะห์หลังจบเกม" เริ่มวิเคราะห์เกมที่เพิ่งเล่น (ด้วยเอนจินเดิมของเกม) และเลื่อนหน้าไปที่ผลวิเคราะห์ · กดอีกครั้งระหว่างวิเคราะห์ = เลื่อนไปดูผล (หยุดได้ที่ปุ่มในแผงเดิม) */
+function olAnDone(){return !!(OL.room&&!OL.spect&&(OL.reported||over)&&mlog.length)}
+{const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);
+  try{const u=$('olUnder');let b=$('olAnB');
+    if(!OL.room||OL.spect){if(b)b.remove()}
+    else if(u){
+      if(!b){b=document.createElement('button');b.type='button';b.id='olAnB';b.textContent='🔍 วิเคราะห์เกม';
+        b.onclick=()=>{try{
+          if(!olAnDone()){olMsg('🔒 วิเคราะห์เกมได้หลังจบเกมเท่านั้น (ระหว่างแข่งปิดตัวช่วยไว้เพื่อความยุติธรรม)');return}
+          const ag=$('analyzeGame'),det=ag&&ag.closest('details');
+          for(let d=det;d;d=d.parentElement&&d.parentElement.closest('details'))d.open=true;
+          if(!anBusy)ag.click();
+          setTimeout(()=>{try{($('analysisOut')||ag).scrollIntoView({behavior:'smooth',block:'center'})}catch(e){}},350);
+        }catch(x){olMsg('⚠ เริ่มวิเคราะห์ไม่ได้: '+x.message)}};
+        u.insertBefore(b,$('olLeaveB')||null)}
+      b.disabled=!olAnDone();b.title=b.disabled?'วิเคราะห์เกมนี้ได้หลังจบเกม':'วิเคราะห์เกมที่เพิ่งเล่นด้วยเอนจิน (ดูตาที่พลาดและตาเดินที่ดีกว่า)'}
+  }catch(e){}return r}}
+{const old=olResult;olResult=function(){const r=old.apply(this,arguments);try{olBarSync()}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='#olUnder #olAnB{flex:1 1 100%}#olBtnRow #olAnB{order:4;flex:0 0 auto}#olUnder button:disabled{opacity:.5}';document.head.appendChild(st)}
+/* ===== V9.0.11: ดนตรีบรรเลงประกอบการเล่น (สร้างเสียงสดในเว็บ ไม่มีไฟล์เพลง ไม่มีลิขสิทธิ์) =====
+   6 เพลง: ไทยเดิม 3 (ระนาด/ฆ้อง ระบบเสียง 7 ส่วนเท่ากัน บันไดเสียงห้าเสียง) + ร่วมสมัยช้าๆ 3 (เปียโนไฟฟ้า/แพด ทำนองเรียบ) · เปิดเป็นค่าเริ่มต้น (เริ่มพอแตะหน้าจอครั้งแรกเพราะเบราว์เซอร์ห้ามเล่นเสียงเอง) ·
+   ปุ่ม 🎵 มุมขวาล่าง: เปิด/ปิด เลือกเพลง (หรือสลับทุกเพลง) ปรับเสียง · ลดเสียงเพลงลงเองตอนมีเสียงพูดประกาศ · พักเสียงตอนสลับแท็บ */
+const MU_TRACKS=[
+ {n:'ลมเย็นริมน้ำ',k:'ไทยเดิม',type:'thai',bpm:66,root:220,sc:[0,1,2,4,5],dens:.62},
+ {n:'ระนาดยามเช้า',k:'ไทยเดิม',type:'thai',bpm:84,root:247,sc:[0,1,3,4,5],dens:.85},
+ {n:'ฆ้องวงสงบ',k:'ไทยเดิม',type:'thai',bpm:56,root:196,sc:[0,2,3,4,6],dens:.42},
+ {n:'ยามค่ำคืน',k:'ร่วมสมัย',type:'mod',bpm:60,root:220,sc:[0,3,5,7,10],ch:[[0,3,7],[-4,0,3],[3,7,10],[-2,2,5]],arp:2,dens:.5},
+ {n:'แสงแรกของวัน',k:'ร่วมสมัย',type:'mod',bpm:68,root:261.63,sc:[0,2,4,7,9],ch:[[0,4,7],[-5,-1,2],[-3,0,4],[-7,-3,0]],arp:2,dens:.55},
+ {n:'ทะเลสงบ',k:'ร่วมสมัย',type:'mod',bpm:52,root:293.66,sc:[0,2,4,7,9],ch:[[0,4,7,14],[-3,0,4,7],[-7,-3,0,4],[-5,-1,2,7]],arp:1,dens:.4}
+];
+const MU={ctx:null,chain:null,cur:null,on:true,track:0,vol:50,timer:null,started:false,cfgLoaded:false};
+try{const o=JSON.parse(localStorage.getItem('makruk-mu')||'null');if(o&&typeof o==='object'){MU.on=o.on!==false;if(Number.isInteger(o.track)&&o.track>=-1&&o.track<MU_TRACKS.length)MU.track=o.track;if(Number.isFinite(o.vol)&&o.vol>=0&&o.vol<=100)MU.vol=Math.round(o.vol)}}catch(e){}
+function muSave(){try{localStorage.setItem('makruk-mu',JSON.stringify({on:MU.on,track:MU.track,vol:MU.vol}))}catch(e){}}
+function muChain(ctx){                                           // ห่วงโซ่เสียง: ทางตรง + เสียงก้อง → คอมเพรสเซอร์ → ลำโพง
+  const inp=ctx.createGain(),dry=ctx.createGain(),wet=ctx.createGain(),conv=ctx.createConvolver(),master=ctx.createGain(),comp=ctx.createDynamicsCompressor();
+  const len=Math.floor(ctx.sampleRate*2.4),buf=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.6)}
+  conv.buffer=buf;dry.gain.value=.8;wet.gain.value=.38;master.gain.value=.5;
+  comp.threshold.value=-18;comp.ratio.value=3;comp.attack.value=.01;comp.release.value=.3;
+  inp.connect(dry);inp.connect(conv);conv.connect(wet);dry.connect(master);wet.connect(master);master.connect(comp);comp.connect(ctx.destination);
+  return{inp,master};
+}
+const muF=(tr,step)=>tr.root*Math.pow(2,step/(tr.type==='thai'?7:12));
+function muEnv(ctx,out,t,peak,att,dec){const g=ctx.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(peak,t+att);g.gain.exponentialRampToValueAtTime(0.0001,t+att+dec);g.connect(out);return g}
+function muOsc(ctx,type,f,g,t,dur){const o=ctx.createOscillator();o.type=type;o.frequency.setValueAtTime(f,t);o.connect(g);o.start(t);o.stop(t+dur+.05);return o}
+function muRanat(ctx,out,t,f,a){                                   // ระนาด: แท่งไม้ตี เสียงแหลมสั้น
+  const g1=muEnv(ctx,out,t,a,.004,.55),g2=muEnv(ctx,out,t,a*.35,.003,.16),g3=muEnv(ctx,out,t,a*.12,.002,.07);
+  muOsc(ctx,'sine',f,g1,t,.6);muOsc(ctx,'sine',f*2.76,g2,t,.2);muOsc(ctx,'sine',f*5.4,g3,t,.1)}
+function muEp(ctx,out,t,f,a,dec){                                  // เปียโนไฟฟ้านุ่ม
+  const g1=muEnv(ctx,out,t,a,.01,dec),g2=muEnv(ctx,out,t,a*.28,.01,dec*.6),g3=muEnv(ctx,out,t,a*.5,.01,dec);
+  muOsc(ctx,'sine',f,g1,t,dec+.1);muOsc(ctx,'sine',f*2,g2,t,dec*.6+.1);const o=muOsc(ctx,'sine',f*1.004,g3,t,dec+.1);o.detune.value=3}
+function muGong(ctx,out,t,f,a){
+  const g1=muEnv(ctx,out,t,a,.02,4.5),g2=muEnv(ctx,out,t,a*.4,.02,3),g3=muEnv(ctx,out,t,a*.2,.02,1.6);
+  const o=muOsc(ctx,'sine',f,g1,t,4.6);o.frequency.exponentialRampToValueAtTime(f*.985,t+4.5);muOsc(ctx,'sine',f*1.51,g2,t,3.1);muOsc(ctx,'sine',f*2.43,g3,t,1.7)}
+function muPad(ctx,out,t,fs,a,dur){                                // แพดนุ่ม: สามเหลี่ยมหลายตัวผ่านโลว์พาส เข้า-ออกช้า
+  const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=900;lp.Q.value=.3;
+  const g=ctx.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(a,t+Math.min(2.2,dur*.4));g.gain.setValueAtTime(a,t+dur*.65);g.gain.linearRampToValueAtTime(0.0001,t+dur);
+  lp.connect(g);g.connect(out);
+  fs.forEach((f,i)=>{[-4,4].forEach(d=>{const o=muOsc(ctx,'triangle',f,lp,t,dur);o.detune.value=d+i})})}
+function muMake(ctx,out,tr){                                       // ตัวสร้างเพลง: เรียกทีละจังหวะ
+  const S={tr,b:0,pos:Math.floor(tr.sc.length/2),mel:[...tr.sc,...tr.sc.map(x=>x+(tr.type==='thai'?7:12))]};
+  S.beat=60/tr.bpm;
+  S.sched=function(t){
+    const b=S.b++,bar=Math.floor(b/4),bi=b%4,h=S.beat/2,tr=S.tr,thai=tr.type==='thai';
+    const pick=()=>{const L=S.mel.length,d=[-2,-1,-1,0,1,1,2][Math.floor(Math.random()*7)];S.pos=Math.max(0,Math.min(L-1,S.pos+d+(S.pos>L-3?-1:0)+(S.pos<2?1:0)));return S.mel[S.pos]};
+    if(thai){
+      const ph=b%16;
+      if(ph===0){muGong(ctx,out,t,muF(tr,0)/2,.16);muPad(ctx,out,t,[muF(tr,0)/2,muF(tr,4)/2],.05,S.beat*16)}
+      if(ph===8)muGong(ctx,out,t,muF(tr,tr.sc[3])/2,.09);
+      if(bi===0||bi===2)muRanat(ctx,out,t,muF(tr,0)/2,.1);
+      const cad=ph===15;
+      if(cad){S.pos=Math.random()<.5?0:tr.sc.length;muRanat(ctx,out,t,muF(tr,S.mel[S.pos]),.13);return}
+      const r=Math.random();
+      if(r<tr.dens){
+        if(Math.random()<.5){muRanat(ctx,out,t,muF(tr,pick()),.12);muRanat(ctx,out,t+h,muF(tr,pick()),.1)}
+        else muRanat(ctx,out,t,muF(tr,pick()),.13)}
+    }else{
+      const ch=tr.ch[bar%tr.ch.length];
+      if(bi===0){muPad(ctx,out,t,ch.slice(0,3).map(s=>muF(tr,s)),.045,S.beat*4.2);muEp(ctx,out,t,muF(tr,ch[0]-12),.12,S.beat*3.6)}
+      const n=tr.arp;
+      for(let k=0;k<n;k++){const tone=ch[(b*n+k)%ch.length];muEp(ctx,out,t+k*S.beat/n,muF(tr,tone),.07,S.beat*1.8)}
+      if(bi%2===0&&Math.random()<tr.dens)muEp(ctx,out,t+(Math.random()<.5?0:h),muF(tr,pick()+12*0),.09,S.beat*2.4)}
+  };
+  return S;
+}
+function muStartTrack(i){
+  const ctx=MU.ctx;if(!ctx)return;
+  muStopTrack(true);
+  const tg=ctx.createGain();tg.gain.value=1;tg.connect(MU.chain.inp);
+  const S=muMake(ctx,tg,MU_TRACKS[i]);S.tg=tg;S.i=i;S.next=ctx.currentTime+.15;S.t0=ctx.currentTime;MU.cur=S;
+  clearInterval(MU.timer);
+  MU.timer=setInterval(()=>{try{const S=MU.cur;if(!S||ctx.state!=='running')return;
+    while(S.next<ctx.currentTime+.7){S.sched(S.next);S.next+=S.beat}
+    if(MU.track===-1&&ctx.currentTime-S.t0>200)muStartTrack((S.i+1)%MU_TRACKS.length)}catch(e){}},120);
+  muUi();
+}
+function muStopTrack(fade){
+  const S=MU.cur;MU.cur=null;clearInterval(MU.timer);MU.timer=null;
+  if(S&&S.tg&&MU.ctx){const c=MU.ctx,t=c.currentTime;try{S.tg.gain.cancelScheduledValues(t);S.tg.gain.setValueAtTime(S.tg.gain.value,t);S.tg.gain.linearRampToValueAtTime(0,t+(fade?.7:.3))}catch(e){}setTimeout(()=>{try{S.tg.disconnect()}catch(e){}},1200)}
+}
+function muGain(){if(!MU.chain)return;const sp=(()=>{try{return speechSynthesis.speaking}catch(e){return false}})();
+  const g=(MU.vol/100)*1.1*(sp?.3:1);try{MU.chain.master.gain.setTargetAtTime(g,MU.ctx.currentTime,.2)}catch(e){}}
+function muStart(){
+  if(!MU.on)return;
+  try{
+    if(!MU.ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;MU.ctx=new AC();MU.chain=muChain(MU.ctx);setInterval(muGain,300)}
+    if(MU.ctx.state==='suspended')MU.ctx.resume();
+    muGain();
+    if(!MU.cur)muStartTrack(MU.track<0?0:MU.track);
+    MU.started=true;
+  }catch(e){}
+}
+function muStop(){muStopTrack(false);try{if(MU.ctx&&MU.ctx.state==='running')setTimeout(()=>{if(!MU.cur)MU.ctx.suspend()},600)}catch(e){}}
+function muUi(){
+  const b=$('muBtn'),p=$('muPanel');if(!b)return;
+  b.textContent=MU.on?'🎵':'🔇';b.setAttribute('aria-pressed',String(MU.on));b.title=MU.on?'ดนตรีบรรเลงเปิดอยู่ (กดเพื่อตั้งค่า)':'ดนตรีบรรเลงปิดอยู่ (กดเพื่อตั้งค่า)';
+  if(p){$('muOnB').textContent=MU.on?'⏸ ปิดเพลง':'▶ เปิดเพลง';$('muSel').value=String(MU.track);$('muVol').value=String(MU.vol);
+    const c=MU.cur;$('muNow').textContent=MU.on?(c?'กำลังเล่น: '+c.tr.n+' ('+c.tr.k+')':'จะเริ่มเล่นเมื่อแตะหน้าจอ'):'ปิดอยู่'}
+}
+function muBuildUi(){
+  if($('muBtn'))return;
+  const b=document.createElement('button');b.type='button';b.id='muBtn';b.setAttribute('aria-haspopup','true');document.body.appendChild(b);
+  const p=document.createElement('div');p.id='muPanel';p.hidden=true;
+  p.innerHTML='<b>🎵 ดนตรีบรรเลง</b><div id="muNow" role="status"></div><button type="button" id="muOnB"></button>'+
+   '<label for="muSel">เลือกเพลง</label><select id="muSel">'+MU_TRACKS.map((t,i)=>'<option value="'+i+'">'+(i+1)+'. '+t.n+' · '+t.k+'</option>').join('')+'<option value="-1">🔀 สลับทุกเพลงอัตโนมัติ</option></select>'+
+   '<label for="muVol">ความดัง <span id="muVolV"></span></label><input type="range" id="muVol" min="0" max="100" step="5"><small>ลดเสียงเพลงลงเองตอนมีเสียงพูดประกาศ</small>';
+  document.body.appendChild(p);
+  b.onclick=()=>{p.hidden=!p.hidden;muUi()};
+  $('muOnB').onclick=()=>{MU.on=!MU.on;muSave();if(MU.on)muStart();else muStop();muUi()};
+  $('muSel').onchange=()=>{MU.track=+$('muSel').value;muSave();if(MU.on){MU.ctx?muStartTrack(MU.track<0?0:MU.track):muStart()}muUi()};
+  $('muVol').oninput=()=>{MU.vol=+$('muVol').value;$('muVolV').textContent=MU.vol+'%';muSave();muGain()};
+  $('muVolV').textContent=MU.vol+'%';
+  document.addEventListener('pointerdown',e=>{if(!p.hidden&&!p.contains(e.target)&&e.target!==b)p.hidden=true},true);
+  muUi();
+}
+{const st=document.createElement('style');st.textContent='#muBtn{position:fixed;right:10px;bottom:10px;z-index:99990;width:42px;height:42px;border-radius:50%;padding:0;font-size:20px;line-height:1;opacity:.88;box-shadow:0 2px 8px rgba(0,0,0,.3)}#muBtn:hover{opacity:1}'+
+ '#muPanel{position:fixed;right:10px;bottom:60px;z-index:99991;width:min(280px,calc(100vw - 20px));box-sizing:border-box;padding:10px 12px;border-radius:12px;background:var(--pn,#e0d7c0);color:var(--fg,#1c2540);border:1px solid rgba(0,0,0,.25);box-shadow:0 6px 24px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;font-size:14px}#muPanel[hidden]{display:none}#muPanel button,#muPanel select{width:100%;margin:0}#muPanel label{margin:0}#muPanel input[type=range]{width:100%}#muPanel small{opacity:.75}#muNow{font-size:13px;opacity:.9}';document.head.appendChild(st)}
+muBuildUi();
+(function(){
+  const arm=()=>{const h=ev=>{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#muBtn,#muPanel'))return;['pointerdown','keydown','touchend'].forEach(t=>removeEventListener(t,h,true));if(MU.on)muStart();muUi()};
+    ['pointerdown','keydown','touchend'].forEach(t=>addEventListener(t,h,true))};
+  if(MU.on)arm();
+  document.addEventListener('visibilitychange',()=>{try{if(!MU.ctx)return;if(document.hidden)MU.ctx.suspend();else if(MU.on&&MU.started)MU.ctx.resume()}catch(e){}});
+})();
 </script>
 </body>
 </html>
