@@ -16558,6 +16558,48 @@ try{document.addEventListener('fullscreenchange',()=>{try{if(!document.fullscree
   document.addEventListener('pointerdown',e=>{try{if(!OL.fsDeclined&&e.target&&e.target.closest&&e.target.closest('#olBox'))olGoFull()}catch(x){}},true)}catch(e){}
 {const old=olRoomAct;olRoomAct=function(i,a){if(a!=='x'){try{olGoFull()}catch(e){}}return old.apply(this,arguments)}}
 {const old=olRandJoin;olRandJoin=function(){try{olGoFull()}catch(e){}return old.apply(this,arguments)}}
+/* V9.0.18: กล่อง "📜 ตาเดิน" + ปุ่มคัดลอก (ข้อความไทย / PGN) — บนมือถือบันทึกไฟล์ไม่ได้ ใช้คัดลอกแทน · โหมดขยายกระดาน: อยู่ท้ายคอลัมน์เมนูขวา (กางไว้) · ที่อื่น: พับอยู่ใต้กระดาน */
+function mvRows(){const rows=[];let k=0;const st=(typeof hist!=='undefined'&&hist.length)?hist[0].turn:(typeof turn!=='undefined'?turn:'w');
+  let n=1,cur=null;
+  for(const e of mlog){const c=e.c||(((k+(st==='b'?1:0))%2)?'b':'w');
+    if(c==='w'||!cur){cur={n,w:'',b:''};rows.push(cur);if(c==='w'&&k>0&&rows.length>1)cur.n=n}
+    if(c==='w')cur.w=e.s||e.uci;else cur.b=e.s||e.uci;
+    if(c==='b'){n++;cur=null}else n=n;k++;
+    if(c==='w')n=rows[rows.length-1].n}
+  rows.forEach((r,i)=>r.n=i+1);return rows}
+function mvHead(){let h='';try{const t=buildPgn();const i=t.indexOf('\n\n');h=i>0?t.slice(0,i):''}catch(e){}
+  if(!h){const z=n=>String(n).padStart(2,'0'),d=new Date(),i=(typeof OL!=='undefined'&&OL.info)||null;
+    h=['[Event "Makruk game"]','[Date "'+d.getFullYear()+'.'+z(d.getMonth()+1)+'.'+z(d.getDate())+'"]'].concat(i?['[White "'+((i.w&&i.w.n)||'ขาว')+'"]','[Black "'+((i.b&&i.b.n)||'ดำ')+'"]']:[]).join('\n')}
+  return h}
+/* ข้อความคัดลอก: ส่วนหัวแบบ PGN (รายการแข่ง วันที่ ชื่อผู้เล่น Elo ผล เวลา) + ตาเดินภาษาไทย */
+function mvText(){const rows=mvRows();if(!rows.length)return '';return mvHead()+'\n\n'+rows.map(r=>r.n+'. '+(r.w||'…')+(r.b?'   '+r.b:'')).join('\n')+'\n'}
+async function mvCopy(txt,btn){const old=btn.textContent;let ok=false;
+  try{await navigator.clipboard.writeText(txt);ok=true}catch(e){try{const t=document.createElement('textarea');t.value=txt;t.style.cssText='position:fixed;left:-999px;top:0';document.body.appendChild(t);t.select();ok=document.execCommand('copy');t.remove()}catch(x){}}
+  btn.textContent=ok?'✓ คัดลอกแล้ว':'⚠ คัดลอกไม่ได้';setTimeout(()=>{btn.textContent=old},1500)}
+function mvEnsure(){let d=$('mvBox');if(d)return d;
+  d=document.createElement('details');d.id='mvBox';
+  d.innerHTML='<summary id="mvSum">📜 ตาเดิน (0)</summary><div id="mvList" role="log" aria-live="off"></div><div id="mvBtns"><button type="button" id="mvCopyT">📋 คัดลอกตาเดิน (ไทย)</button><button type="button" id="mvCopyP">📋 คัดลอก PGN</button></div>';
+  d.querySelector('#mvCopyT').onclick=ev=>{const t=mvText();if(!t){ev.target.textContent='ยังไม่มีตาเดิน';setTimeout(()=>{ev.target.textContent='📋 คัดลอกตาเดิน (ไทย)'},1200);return}mvCopy(t,ev.target)};
+  d.querySelector('#mvCopyP').onclick=ev=>{let t='';try{t=mlog.length?buildPgn():''}catch(e){t=''}if(!t){ev.target.textContent='ยังไม่มีตาเดิน/สร้าง PGN ไม่ได้';setTimeout(()=>{ev.target.textContent='📋 คัดลอก PGN'},1500);return}mvCopy(t,ev.target)};
+  return d}
+let mvKey='';
+function mvUpdate(force){try{
+  const d=mvEnsure(),inTools=!!$('fsTools'),tg=$('fsTools')||$('bw');
+  if(tg&&d.parentNode!==tg)tg.appendChild(d);
+  {const w=inTools?'t':'b';if(d.dataset.w!==w){d.dataset.w=w;d.open=inTools}}   // เปลี่ยนที่อยู่ (คอลัมน์เมนู ↔ ใต้กระดาน) = ตั้งค่ากาง/พับใหม่ (fsTools อาจย้ายกล่องมาเองตอนย้ายลูกของ #bw)
+  const key=mlog.length+'|'+(mlog.length?mlog[mlog.length-1].uci:'');if(!force&&key===mvKey)return;mvKey=key;
+  $('mvSum').textContent='📜 ตาเดิน ('+mlog.length+')';
+  const L=$('mvList'),rows=mvRows();L.textContent='';
+  if(!rows.length){const e=document.createElement('div');e.className='mvE';e.textContent='ยังไม่มีตาเดิน';L.appendChild(e)}
+  for(const r of rows){const x=document.createElement('div');x.className='mvR';
+    for(const [cl,tx] of [['mvN',r.n+'.'],['mvW',r.w||'…'],['mvB',r.b||'']]){const s=document.createElement('span');s.className=cl;s.textContent=tx;x.appendChild(s)}L.appendChild(x)}
+  if(d.open)L.scrollTop=L.scrollHeight}catch(e){}}
+{const old=render;render=function(){const r=old.apply(this,arguments);try{mvUpdate()}catch(e){}return r}}
+{const old=fsTools;fsTools=function(){const r=old.apply(this,arguments);try{mvUpdate(true)}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='#mvBox{margin:8px 0;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box;width:100%}#mvSum{font-weight:800;cursor:pointer}'+
+ '#mvList{max-height:260px;overflow:auto;font-size:13px;line-height:1.5;margin-top:4px}.mvR{display:grid;grid-template-columns:2.2em 1fr 1fr;gap:4px}.mvN{opacity:.65}.mvE{opacity:.6}'+
+ '#mvBtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}#mvBtns button{width:auto;margin:0;padding:3px 9px;font-weight:700}'+
+ 'body.fsTl #fsTools{height:calc(100vh - 12px)}body.fsTl #fsTools>#mvBox{flex:1 1 150px;min-height:110px;display:flex;flex-direction:column;margin:0}body.fsTl #mvBox #mvList{flex:1 1 auto;max-height:none;min-height:0}body.fsTl #fsTools>#mvBox:not([open]){flex:0 0 auto;min-height:0}';document.head.appendChild(st)}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
