@@ -9884,7 +9884,7 @@ introPhLoad();
    เส้นตารางคือเส้นขอบของแต่ละช่อง · ค่าเริ่มต้น = หนา 1 (ช่องละ 1 พิกเซล รวมเป็นเส้นราว 2 พิกเซลระหว่างช่อง) · ความเข้ม 68% (เข้มกว่าเดิมเท่าตัว: เดิม 34%) · สีอัตโนมัติตามสีขอบกระดาน
    ปรับได้ที่เมนู "🎨 สีกระดานและการแสดงผล" (ครบทุกอย่าง) และที่ป๊อปอัพของไอคอนสีกระดานใต้กระดาน (หนา เข้ม สี) · ค่าจำไว้ในเครื่อง · ปุ่ม "คืนค่าเริ่มต้นเส้นตาราง"
    ความหนาเป็นระดับ 0–5 (0 = ไม่มีเส้น) เพราะเบราว์เซอร์ปัดความกว้างขอบเป็นพิกเซลเต็มของจอ ครึ่งพิกเซลจะดูเท่ากับ 1 */
-const GRID_DEF={w:1,o:68,a:false,c:'#243f5a'};
+const GRID_DEF={w:1,o:100,a:false,c:'#b6c84e'};   // V9.0.07: เส้นเหลืองเขียวทอง (ตามภาพที่เจ้าของเว็บเลือก) หนา 1 เข้ม 100%
 let gridCfg=Object.assign({},GRID_DEF);
 try{const o=JSON.parse(localStorage.getItem('makruk-grid')||'null');
   if(o&&typeof o==='object'){
@@ -13527,7 +13527,7 @@ aggStatSync();
 let olFairSave=null;
 const OL_FAIR_IDS='#qHint,#qLineBtn,#fb,#hb,#autoMode,#fd,#pvDelay,#tm,#qWarn,#avCoach,#analyzeGame,#newPuzzle,#qOpn,#qPrac,#pv4';
 const OL_FAIR_DIS=['hb','fb','autoMode','fd','pvDelay','tm','analyzeGame'];
-function olFairActive(){return !!(OL.gid&&!OL.reported)}
+function olFairActive(){return !!(OL.room&&!OL.reported)}   // V9.0.06: ตั้งแต่นั่งห้อง (รอคู่แข่งอยู่ก็ปิด) จนจบเกม
 function olFairOn(){
   if(olFairSave)return;
   olFairSave={hint:autoHintOn,bk:$('bk').checked,co:(typeof CO!=='undefined'&&CO&&CO.on)};
@@ -16077,7 +16077,7 @@ function olBtnPlace(){const qb=$('qb');if(!qb)return;let row=$('olBtnRow');
  document.head.appendChild(st)}
 /* ค่าเริ่มต้นของเว็บ: ตั้งให้ทุกเบราว์เซอร์ "หนึ่งครั้งต่อรหัสเวอร์ชัน" (OL_DEFVER) · อยากให้ทุกคนได้ค่าใหม่ แค่เปลี่ยนรหัสนี้ · ผู้เล่นกดปุ่ม "คืนค่าเริ่มต้นของเว็บ" ในหน้าห้องรวมได้เองทุกเมื่อ
    ค่าที่ตั้ง: ธีมหน้าเกม = ฟ้าเรียบ · กระดาน = ฟ้าครามลายไม้ เส้นทอง (nb10) ไม่ใส่ลายไม้ทับ · ตัวหมาก = ไม้เงา · เส้นตารางระดับ 1 สีเส้นไม่ตามขอบ (เสียง เสียงพูด ฯลฯ ไม่ถูกแตะ) */
-const OL_DEFVER='ol-2026-11-26b';
+const OL_DEFVER='ol-2026-11-26c';
 function olApplyDefaults(){
   try{const t=$('theme');if(t){t.value='blue';document.documentElement.dataset.palette='blue';localStorage.setItem('makruk-theme','blue')}}catch(e){}
   try{gridCfg=Object.assign({},GRID_DEF);gridApply(true)}catch(e){}
@@ -16091,6 +16091,8 @@ function olApplyDefaults(){
     box.appendChild(d);$('olDefB').onclick=()=>{olApplyDefaults();$('olDefM').textContent=' ✓ คืนค่าเริ่มต้นแล้ว'}}}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent='#olDefRow{margin:10px 0 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}#olDefRow button{width:auto;margin:0}';document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent='#olBox .olRoom>b{flex:1 1 100%}#olBox .olRoom>span{flex:1 1 auto}#olBox .olRoom>button{flex:0 0 auto;white-space:nowrap}';document.head.appendChild(st)}
+/* V9.0.06: ปิดตัวช่วยตั้งแต่เข้านั่งห้อง ไม่ต้องรอเริ่มเกม (ตอนรอคู่แข่งเอนจินคิดต่อเนื่อง/แถบประเมิน/ลูกศรยังขึ้นอยู่) */
+{const old=olEnter;olEnter=function(){const r=old.apply(this,arguments);try{olFairOn()}catch(e){}return r}}
 </script>
 </body>
 </html>
