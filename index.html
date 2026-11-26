@@ -5412,6 +5412,7 @@ $('setImpF').onchange=async()=>{
 };
 /* ===== NNUE ของเรียวเมืองทอง: เลือกไฟล์ makruk.nnue → เก็บสำเนาใน IndexedDB → ส่งให้เอนจิน ===== */
 try{nnWanted=localStorage.getItem('makruk-nn')!=='0'}catch(e){}
+if(/[?&]embed=1/.test(location.search))nnWanted=false;   // v9028: เฟรมบอทที่ฝังอยู่ ไม่โหลดไฟล์ NNUE
 const NN_BYTES=47721376;
 function nnActive(){return !!(nnWanted&&nnBuf)}
 function bName(){return 'เรียวเมืองทอง'+(nnActive()?' NNUE':'')}
@@ -16707,11 +16708,13 @@ setInterval(()=>{try{
 const OL_BOT=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('bot')!=='1')return null;
   const n=(k,d)=>{const v=parseFloat(q.get(k));return isFinite(v)&&v>0?v:d};
   let rooms=(q.get('rooms')||'1,4').split(',').map(x=>+x).filter(x=>x>=1&&x<=OL_ROOMS);if(!rooms.length)rooms=[1,4];
-  return{rooms,level:String(q.get('level')||'3'),games:Math.round(n('games',2)),tc:Math.round(n('tc',7)),
-    t:{think:[1,4],overWait:[25,45],lastWait:[10,20],rest:[90,240],retry:20,waitMax:600}}}catch(e){return null}})();
+  const embed=q.get('embed')==='1',stay=q.get('stay')==='1',nm=(q.get('name')||'').trim().slice(0,30);   // v9027: stay=1 → เล่นจบทีละเกมแล้วกลับมานั่งรอห้องเดิมทันที · name=ชื่อบอท
+  return{rooms,stay,embed,name:nm,level:String(q.get('level')||'3'),games:stay?1:Math.round(n('games',2)),tc:Math.round(n('tc',7)),
+    t:{think:[1,4],overWait:[25,45],lastWait:stay?[4,8]:[10,20],rest:stay?[2,5]:[90,240],retry:stay?5:20,waitMax:600}}}catch(e){return null}})();
 if(OL_BOT){
  OL_AIOFFER.on=false;
- {const old=olGuest;olGuest=function(){const r=old.apply(this,arguments);try{if(OL.me&&!/^🤖/.test(OL.me.name))OL.me.name='🤖 '+OL.me.name}catch(e){}return r}}
+ {const old=olGuest;olGuest=function(){const r=old.apply(this,arguments);try{if(OL.me){if(OL_BOT.embed){if(!OL_BOT.kid)OL_BOT.kid=Math.random().toString(36).slice(2,8);OL.me.key='guest_bot'+OL_BOT.kid}   /* เฟรมฝัง: ใช้รหัสของตัวเอง ไม่ชนกับผู้เล่นเจ้าของหน้า (sessionStorage ใช้ร่วมกัน) */
+    if(OL_BOT.name)OL.me.name=OL_BOT.name;else if(!/^🤖/.test(OL.me.name))OL.me.name='🤖 '+OL.me.name}}catch(e){}return r}}
  const S={st:'boot',next:0,games:0,lastRoom:0,gid:null,sitAt:0,overAt:0,moveKey:'',calledKey:'',calledAt:0,moveAt:0,busy:false};
  const rnd=a=>(a[0]+Math.random()*(a[1]-a[0]))*1000;
  const bar=document.createElement('div');bar.id='olBotBar';bar.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;background:rgba(20,28,40,.92);color:#fff;padding:6px 10px;border-radius:10px;font-size:13px;max-width:70vw';document.body.appendChild(bar);
@@ -16722,6 +16725,7 @@ if(OL_BOT){
    if(!OL.db||!OL.me)return;
    if(S.st==='idle'){
      if(OL.room&&!OL.spect){S.st=OL.gid?'play':'wait';S.sitAt=now;return}
+     if(OL_BOT.embed&&document.hidden){say('แท็บถูกซ่อน · พักก่อน');return}
      say('พักอยู่ที่ห้องรวม'+(S.next>now?' (อีก '+Math.ceil((S.next-now)/1000)+' วินาทีจะไปนั่งห้องใหม่)':''));
      if(now<S.next)return;
      const L=OL.lobby||{},free=OL_BOT.rooms.filter(i=>{const r=L['r'+i]||{};return !r.status||r.status==='empty'||olStale(r)});
@@ -16736,6 +16740,7 @@ if(OL_BOT){
    if(S.st==='wait'){
      if(OL.gid){S.st='play';S.gid=null;return}
      say('นั่งรออยู่ห้องที่ '+OL.room+' · เวลา '+OL_BOT.tc+' นาที/เกม');
+     if(OL_BOT.embed&&document.hidden&&now-S.sitAt>60000){S.busy=true;try{await olLeave()}catch(e){}S.busy=false;S.st='idle';S.next=Date.now()+5000;return}   // เจ้าของหน้าสลับแท็บไป: ลุกจากห้อง ไม่ให้ที่นั่งค้าง
      if(now-S.sitAt>OL_BOT.t.waitMax*1000){S.busy=true;try{await olLeave()}catch(e){}S.busy=false;S.st='idle';S.next=Date.now()+rnd([20,60])}
      return}
    if(S.st==='play'){
@@ -16748,7 +16753,11 @@ if(OL_BOT){
        if(S.calledKey===key){if(now-S.calledAt>15000)S.calledKey='';return}
        if(S.moveKey!==key){S.moveKey=key;const low=(typeof clk!=='undefined'&&clk[OL.color]<20000);S.moveAt=now+(low?200:rnd(OL_BOT.t.think));return}
        if(now<S.moveAt)return;
-       S.calledKey=key;S.calledAt=now;try{const lv0=+OL_BOT.level;(async()=>{let bm=null;if(lv0>=2)bm=await olBookMove(OL.color,lv0);if(key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(bm&&turn===OL.color&&legal(B,turn).some(x=>x[0]===bm[0]&&x[1]===bm[1]))play(bm[0],bm[1]);else aiIn(lv0)})()}catch(e){}
+       S.calledKey=key;S.calledAt=now;try{const lv0=+OL_BOT.level;(async()=>{let bm=null;if(lv0>=2)bm=await olBookMove(OL.color,lv0);if(key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(bm&&turn===OL.color&&legal(B,turn).some(x=>x[0]===bm[0]&&x[1]===bm[1])){play(bm[0],bm[1]);return}
+         if(OL_BOT.embed&&lv0>=2){   // เฟรมฝังในหน้าของผู้เล่นคนอื่น: คิดในเธรดเบื้องหลัง ไม่ให้หน้าของเขากระตุก
+           let mv=null;try{const ms=Math.max(300,Math.min(engMs(builtinEng,lv0),Math.round((clk[OL.color]||60000)/25)));const r=await builtinEng.playMove(lv0,fen(),ms);const f=sqi(r.slice(0,2)),t=sqi(r.slice(2,4));mv=legal(B,turn).find(x=>x[0]===f&&x[1]===t)||null}catch(e){}
+           if(key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(mv&&turn===OL.color){play(mv[0],mv[1]);return}}
+         aiIn(lv0)})()}catch(e){}
        return}
      // จบเกมแล้ว
      const last=S.games>=OL_BOT.games,opc=OL.color==='w'?'b':'w',rm=OL.rm||{};
@@ -16869,6 +16878,28 @@ setInterval(pnSafety,1200);
 
 /* v9026: ตัวช่วย — ขอตาเดินจากตำราเปิดหมากของโปรแกรม (opnTry) สำหรับ AI ในห้องออนไลน์ · opnTry ปฏิเสธเมื่อ pvp จึงปิด pvp ไว้ชั่วขณะตอนเรียก (มันอ่านค่าก่อน await ตัวแรก) */
 async function olBookMove(side,lv){try{if(typeof opnTry!=='function')return null;const pv=pvp;let pr;const om=opnMode[side];pvp=false;if(!om||om==='off')opnMode[side]='random';try{pr=opnTry(side,lv,builtinEng,gid)}finally{pvp=pv;opnMode[side]=om}return (await pr)||null}catch(e){return null}}
+
+/* ===== v9028: บอท 🤖 เรียวเมืองทอง ประจำห้อง — เมื่อมีคนเปิดหน้านี้ในเครื่องคอมพิวเตอร์และเข้าส่วนออนไลน์ หน้านั้นจะเปิดเฟรมซ่อน (โหมดบอท) ไปนั่งรอในห้องที่ตั้งไว้
+   · ห้องไหนมีบอท/คนนั่งอยู่แล้วก็ข้าม (ห้องหนึ่งมีบอทตัวเดียว) · ปิดหน้า = บอทหายและห้องว่างเอง · เจ้าของหน้ากดปิดบอทได้จากป้ายมุมซ้ายล่าง · ไม่ทำงานบนมือถือ/จอแคบ ===== */
+const OL_AUTOBOT={on:true,rooms:[1,3],name:'🤖 เรียวเมืองทอง (AI)',level:'3',tc:7,minWidth:900};
+{let frames=[],chip=null,started=false;
+ const q=new URLSearchParams(location.search),force=q.get('autobot')==='1';
+ const enabled=()=>{try{return localStorage.getItem('makruk-autobot')!=='0'}catch(e){return true}};
+ const eligible=()=>OL_AUTOBOT.on&&!OL_BOT&&q.get('embed')!=='1'&&(force||(!navigator.webdriver&&innerWidth>=OL_AUTOBOT.minWidth&&!/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)));
+ function chipTxt(){let st='';try{st=frames.map(f=>{const S=f.contentWindow.OL_BOT.S;return S.st==='play'?'กำลังเล่น':S.st==='wait'?'นั่งรอ':'พัก'}).join('/')}catch(e){}
+  return '🤖 เรียวเมืองทองประจำห้อง '+OL_AUTOBOT.rooms.join(', ')+(st?' · '+st:'')}
+ function chipDraw(){if(!chip){chip=document.createElement('div');chip.id='abChip';chip.style.cssText='position:fixed;left:8px;bottom:8px;z-index:50;background:rgba(20,28,40,.9);color:#fff;padding:4px 8px;border-radius:9px;font:12px/1.3 system-ui,sans-serif;display:flex;gap:8px;align-items:center;opacity:.85';document.body.appendChild(chip)}
+  chip.innerHTML='<span></span><button type="button" style="font:inherit;padding:1px 7px;border-radius:6px;border:1px solid #fff6;background:#0006;color:#fff;cursor:pointer"></button>';
+  chip.firstChild.textContent=frames.length?chipTxt():'🤖 บอทเรียวเมืองทองประจำห้อง: ปิดอยู่';
+  const b=chip.lastChild;b.textContent=frames.length?'ปิดบอท':'เปิดบอท';b.onclick=()=>{try{localStorage.setItem('makruk-autobot',frames.length?'0':'1')}catch(e){}frames.length?abStop():abStart();chipDraw()}}
+ window.abStop=function(){for(const f of frames){try{f.contentWindow.olLeave()}catch(e){}setTimeout(()=>{try{f.remove()}catch(e){}},400)}frames=[]};
+ window.abStart=function(){if(frames.length||!eligible()||!enabled())return;
+  OL_AUTOBOT.rooms.forEach((r,i)=>{const f=document.createElement('iframe');f.setAttribute('aria-hidden','true');f.tabIndex=-1;f.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px';
+   f.src=location.pathname+'?bot=1&embed=1&stay=1&rooms='+r+'&level='+OL_AUTOBOT.level+'&tc='+OL_AUTOBOT.tc+'&name='+encodeURIComponent(OL_AUTOBOT.name);
+   setTimeout(()=>document.body.appendChild(f),i*1500);frames.push(f)});chipDraw()};
+ {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!started&&eligible()){started=true;setTimeout(()=>{if(enabled())abStart();else chipDraw()},2500)}}catch(e){}return r}}
+ setInterval(()=>{if(chip&&frames.length)chip.firstChild.textContent=chipTxt()},3000);
+}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
