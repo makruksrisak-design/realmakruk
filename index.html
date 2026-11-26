@@ -16689,11 +16689,17 @@ setInterval(()=>{try{
   if(now<OL_HB.moveAt)return;
   OL_HB.calledKey=key;
   const lv=+OL_AIOFFER.level||3,L=legal(B,bc);if(!L.length)return;let m=L[0];
-  if(lv===1){let bs=-1e9;for(const x of L.slice().sort(()=>Math.random()-.5)){const sc2=ev(apply(B,x))*(bc==='w'?1:-1)+Math.random()*80;if(sc2>bs){bs=sc2;m=x}}}
-  else m=search(B,bc,aiInMs(lv),mtUse(lv)?64:[0,0,6,10,14][lv]);
-  if(!m||over||OL.reported||turn!==bc||key!==OL.gid+':'+mlog.length)return;
-  const add=(+$('ct').value>0)?(+$('ci').value||0)*1000:0,nc={w:clk.w,b:clk.b};nc[bc]+=add;
-  OL.db.ref('games/'+OL.gid+'/moves/'+mlog.length).set({u:sqn(m[0])+sqn(m[1]),c:bc,wt:Math.max(0,Math.round(nc.w)),bt:Math.max(0,Math.round(nc.b))}).catch(()=>{})
+  const send=mv=>{try{if(!mv||over||OL.reported||turn!==bc||key!==OL.gid+':'+mlog.length)return;
+    const add=(+$('ct').value>0)?(+$('ci').value||0)*1000:0,nc={w:clk.w,b:clk.b};nc[bc]+=add;
+    OL.db.ref('games/'+OL.gid+'/moves/'+mlog.length).set({u:sqn(mv[0])+sqn(mv[1]),c:bc,wt:Math.max(0,Math.round(nc.w)),bt:Math.max(0,Math.round(nc.b))}).catch(()=>{})}catch(e){}};
+  // v9026: เปิดหมากตามตำราเปิดหมากในโปรแกรม (สุ่มระบบเปิดเหมือนเกมปกติ) แล้วค่อยใช้การค้นหาเมื่อออกจากตำรา
+  (async()=>{let mv=null;
+    if(lv>=2){const bm=await olBookMove(bc,lv);if(bm)mv=L.find(x=>x[0]===bm[0]&&x[1]===bm[1])||null}
+    if(key!==OL.gid+':'+mlog.length)return;
+    if(!mv){
+      if(lv===1){let bs=-1e9;for(const x of L.slice().sort(()=>Math.random()-.5)){const sc2=ev(apply(B,x))*(bc==='w'?1:-1)+Math.random()*80;if(sc2>bs){bs=sc2;mv=x}}}
+      else mv=search(B,bc,aiInMs(lv),mtUse(lv)?64:[0,0,6,10,14][lv])}
+    send(mv)})()
 }catch(e){}},700);
 /* ===== v9020: โหมดบอท 🤖 — เปิดหน้าเว็บด้วย ?bot=1 แล้วเรียวเมืองทอง (AI) จะไปนั่งรอในห้อง · มีคนมาก็เล่นด้วย ไม่เกิน N เกม แล้วออกห้องรวมพักสักครู่ แล้วสุ่มห้องใหม่นั่งรอต่อ
    ตัวอย่าง: index.html?bot=1  หรือ  ?bot=1&rooms=1,4&level=2&games=2&tc=7
@@ -16742,7 +16748,7 @@ if(OL_BOT){
        if(S.calledKey===key){if(now-S.calledAt>15000)S.calledKey='';return}
        if(S.moveKey!==key){S.moveKey=key;const low=(typeof clk!=='undefined'&&clk[OL.color]<20000);S.moveAt=now+(low?200:rnd(OL_BOT.t.think));return}
        if(now<S.moveAt)return;
-       S.calledKey=key;S.calledAt=now;try{aiIn(+OL_BOT.level)}catch(e){}
+       S.calledKey=key;S.calledAt=now;try{const lv0=+OL_BOT.level;(async()=>{let bm=null;if(lv0>=2)bm=await olBookMove(OL.color,lv0);if(key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(bm&&turn===OL.color&&legal(B,turn).some(x=>x[0]===bm[0]&&x[1]===bm[1]))play(bm[0],bm[1]);else aiIn(lv0)})()}catch(e){}
        return}
      // จบเกมแล้ว
      const last=S.games>=OL_BOT.games,opc=OL.color==='w'?'b':'w',rm=OL.rm||{};
@@ -16860,6 +16866,9 @@ function pnSafety(){try{
 {const old=render;render=function(){const r=old.apply(this,arguments);try{setTimeout(pnSafety,60)}catch(e){}return r}}
 addEventListener('resize',()=>{setTimeout(pnSafety,200)});addEventListener('scroll',()=>{pnSafety()},{passive:true});
 setInterval(pnSafety,1200);
+
+/* v9026: ตัวช่วย — ขอตาเดินจากตำราเปิดหมากของโปรแกรม (opnTry) สำหรับ AI ในห้องออนไลน์ · opnTry ปฏิเสธเมื่อ pvp จึงปิด pvp ไว้ชั่วขณะตอนเรียก (มันอ่านค่าก่อน await ตัวแรก) */
+async function olBookMove(side,lv){try{if(typeof opnTry!=='function')return null;const pv=pvp;let pr;const om=opnMode[side];pvp=false;if(!om||om==='off')opnMode[side]='random';try{pr=opnTry(side,lv,builtinEng,gid)}finally{pvp=pv;opnMode[side]=om}return (await pr)||null}catch(e){return null}}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
