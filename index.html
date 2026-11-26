@@ -16502,13 +16502,14 @@ async function olRandJoin(){if(olRandBusy)return;olRandBusy=true;try{
   olSt('ยังไม่มีผู้เล่นนั่งรออยู่ในตอนนี้ — กด "เปิดห้องเล่น" แล้วรอคู่แข่ง หรือลองสุ่มใหม่อีกครั้ง')
 }finally{olRandBusy=false}}
 function olRandSync(){const b=$('olRand');if(!b)return;const n=olWaitRooms().length,inRoom=!!(OL.room&&!OL.spect);
-  b.disabled=inRoom;b.textContent='🎲 สุ่มเล่น'+(inRoom?' (คุณอยู่ในห้องแล้ว)':n?' · มีคนรออยู่ '+n+' ห้อง':' · ยังไม่มีคนรอ')}
+  b.disabled=inRoom;b.textContent='';const m=document.createElement('span');m.className='olRandM';m.textContent='🎲 สุ่มเล่น';b.appendChild(m);
+  const t=document.createElement('span');t.className='olRandS';t.textContent=inRoom?'คุณอยู่ในห้องแล้ว':n?'มีคนรออยู่ '+n+' ห้อง':'ยังไม่มีคนรอ';b.appendChild(t)}
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{
   const box=$('olBox');if(box&&!$('olRand')){const b=document.createElement('button');b.type='button';b.id='olRand';b.className='pri';
     const top=box.querySelector('.olTop');top.insertAdjacentElement('afterend',b);b.onclick=()=>olRandJoin()}
   olRandSync()}catch(e){}return r}}
 {const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{olRandSync()}catch(e){}return r}}
-{const st=document.createElement('style');st.textContent='#olRand{display:block;width:100%;height:60px;margin:8px 0;font-size:24px;font-weight:800;border-radius:14px;cursor:pointer}#olRand:disabled{opacity:.55;cursor:default}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent='#olRand{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;height:auto;min-height:64px;box-sizing:border-box;margin:8px 0;padding:8px 12px;border-radius:14px;cursor:pointer;line-height:1.25;white-space:normal;overflow:hidden}#olRand .olRandM{font-size:clamp(22px,6vw,28px);font-weight:800}#olRand .olRandS{font-size:clamp(13px,3.6vw,15px);font-weight:600;opacity:.9}#olRand:disabled{opacity:.55;cursor:default}';document.head.appendChild(st)}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
