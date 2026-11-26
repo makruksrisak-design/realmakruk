@@ -16458,6 +16458,57 @@ function olNavUi(){try{
     const b=c.getBoundingClientRect();if(b.bottom>innerHeight-4||b.top<0)c.scrollIntoView({block:'nearest',behavior:'smooth'})}}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent='#anCard.anDock{position:static;margin:8px 0 0;font-size:15px;box-shadow:0 3px 12px rgba(0,0,0,.35);border:2px solid rgba(255,209,0,.7);max-height:none}#anCard.anDock .anH:before{content:"🎓";font-size:17px}#anCard.anDock .anSc{flex-basis:100%}';document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent='#olChatLog .olMsg.sys{opacity:.75;font-style:italic;font-size:.92em}';document.head.appendChild(st)}
+/* V9.0.18: กล่อง "คนในห้องรวม" ข้างฟอร์ม/การ์ดผู้เล่นในหน้าต่างล็อบบี้ · ทะเบียนอยู่ที่ games/lobby_chat/who/<key> (ใช้สิทธิ์ games เดิม) · ลบชื่อเมื่อปิดหน้าต่างล็อบบี้ / เข้าห้องเล่น / ออกจากระบบ / หลุดเน็ต (onDisconnect) */
+const olLobWho={ref:null,key:null,on:false};
+function olWhoRender(v){const box=$('olWhoList'),hd=$('olWhoH');if(!box||!hd)return;
+  const a=Object.keys(v||{}).map(k=>Object.assign({k},v[k])).filter(x=>x&&x.n).sort((p,q)=>(p.at||0)-(q.at||0));
+  hd.textContent='👥 อยู่ในห้องรวม ('+a.length+')';box.textContent='';
+  if(!a.length){const e=document.createElement('div');e.className='olWhoE';e.textContent='ยังไม่มีใครในห้องรวม';box.appendChild(e);return}
+  for(const x of a){const d=document.createElement('div');d.className='olWhoI'+(OL.me&&x.k===OL.me.key?' me':'');
+    d.textContent=x.n+(x.e?' · '+x.e:'');box.appendChild(d)}}
+function olWhoLeave(){try{if(olLobWho.ref){olLobWho.ref.onDisconnect().cancel();olLobWho.ref.remove().catch(()=>{})}}catch(e){}olLobWho.ref=null;olLobWho.key=null}
+function olWhoSync(force){try{
+  const box=$('olBox'),open=!!(box&&!box.hidden),want=open&&OL.db&&OL.me&&!OL.room;
+  if(open&&OL.db&&!olLobWho.on){olLobWho.on=true;OL.db.ref('games/lobby_chat/who').on('value',s=>olWhoRender(s.val()))}
+  if(!open&&olLobWho.on){olLobWho.on=false;try{OL.db.ref('games/lobby_chat/who').off()}catch(e){}}
+  if(!want){if(olLobWho.ref)olWhoLeave();return}
+  if(olLobWho.ref&&olLobWho.key!==OL.me.key)olWhoLeave();
+  if(!olLobWho.ref||force){const r=OL.db.ref('games/lobby_chat/who/'+OL.me.key);olLobWho.ref=r;olLobWho.key=OL.me.key;
+    r.onDisconnect().remove();r.set({n:OL.me.name,e:OL.me.elo||null,at:olTS()}).catch(()=>{})}
+}catch(e){}}
+{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{
+  const box=$('olBox');if(box&&!$('olHead')){
+    const h=document.createElement('div');h.id='olHead';const L=document.createElement('div');L.id='olHeadL';
+    const w=document.createElement('div');w.id='olWho';w.innerHTML='<div class="olSh" id="olWhoH">👥 อยู่ในห้องรวม (0)</div><div id="olWhoList" role="list" aria-live="polite"></div>';
+    const first=$('olMe')||$('olLog');first.parentNode.insertBefore(h,first);
+    for(const id of['olMe','olLog']){const e=$(id);if(e)L.appendChild(e)}h.append(L,w);
+    new MutationObserver(()=>olWhoSync()).observe(box,{attributes:true,attributeFilter:['hidden']});
+    if(OL.db)OL.db.ref('.info/connected').on('value',s=>{if(s.val()===true)olWhoSync(true)})}
+  olWhoSync()}catch(e){}return r}}
+{const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{olWhoSync()}catch(e){}return r}}
+{const old=olEnter;olEnter=function(){const r=old.apply(this,arguments);try{olWhoSync()}catch(e){}return r}}
+try{addEventListener('pagehide',()=>olWhoLeave())}catch(e){}
+{const st=document.createElement('style');st.textContent='#olHead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-start}#olHeadL{flex:1 1 300px;min-width:0}#olLog[hidden]{display:none}'+
+ '#olWho{flex:1 1 170px;max-width:100%;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box}#olWho .olSh{font-weight:800;margin-bottom:4px}'+
+ '#olWhoList{max-height:150px;overflow:auto;font-size:13px;line-height:1.5}.olWhoI{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.olWhoI.me{font-weight:800;color:#c0392b}.olWhoE{opacity:.6}';document.head.appendChild(st)}
+/* V9.0.18: ปุ่ม "🎲 สุ่มเล่น" บนสุดของล็อบบี้ — สุ่มเลือกห้องที่มีคนนั่งรออยู่แล้วท้าดวลทันที (ใช้ olRoomAct 'b' เดิม) */
+const olWaitRooms=()=>{const L=OL.lobby||{},a=[];for(let i=1;i<=OL_ROOMS;i++){const r=L['r'+i];if(r&&r.status==='waiting'&&r.w&&!olStale(r)&&!(OL.me&&r.w.k===OL.me.key))a.push(i)}return a};
+let olRandBusy=false;
+async function olRandJoin(){if(olRandBusy)return;olRandBusy=true;try{
+  if(OL.room&&!OL.spect){olSt('⚠ คุณอยู่ในห้องที่ '+OL.room+' แล้ว');return}
+  if(!OL.me){try{await olInit();olGuest()}catch(e){olSt('⚠ เชื่อมต่อไม่ได้');return}}
+  const c=olWaitRooms();for(let k=c.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[c[k],c[j]]=[c[j],c[k]]}
+  for(const i of c){await olRoomAct(i,'b');if(OL.room===i&&!OL.spect)return}   // ห้องถูกจองตัดหน้า → ลองห้องถัดไป
+  olSt('ยังไม่มีผู้เล่นนั่งรออยู่ในตอนนี้ — กด "เปิดห้องเล่น" แล้วรอคู่แข่ง หรือลองสุ่มใหม่อีกครั้ง')
+}finally{olRandBusy=false}}
+function olRandSync(){const b=$('olRand');if(!b)return;const n=olWaitRooms().length,inRoom=!!(OL.room&&!OL.spect);
+  b.disabled=inRoom;b.textContent='🎲 สุ่มเล่น'+(inRoom?' (คุณอยู่ในห้องแล้ว)':n?' · มีคนรออยู่ '+n+' ห้อง':' · ยังไม่มีคนรอ')}
+{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{
+  const box=$('olBox');if(box&&!$('olRand')){const b=document.createElement('button');b.type='button';b.id='olRand';b.className='pri';
+    const top=box.querySelector('.olTop');top.insertAdjacentElement('afterend',b);b.onclick=()=>olRandJoin()}
+  olRandSync()}catch(e){}return r}}
+{const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{olRandSync()}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='#olRand{display:block;width:100%;height:60px;margin:8px 0;font-size:24px;font-weight:800;border-radius:14px;cursor:pointer}#olRand:disabled{opacity:.55;cursor:default}';document.head.appendChild(st)}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
