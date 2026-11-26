@@ -16332,7 +16332,7 @@ function olDrawUi(){
   }catch(e){}return r}}
 {const old=pnUpdate;pnUpdate=function(){const r=old.apply(this,arguments);try{if(OL.room&&(OL.draw||$('olDrawFloat')))olDrawUi()}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent='#olUnder #olDrawYes,#olUnder #olDrawNo{flex:1 1 auto;font-weight:800}#olUnder #olDrawYes{background:#1e8449;color:#fff;border-color:#145a32}#olUnder #olDrawNo{background:#c0392b;color:#fff;border-color:#922b21}#olUnder #olDrawYes:not([hidden]),#olUnder #olDrawNo:not([hidden]){animation:olDrawPulse 1.2s ease-in-out infinite}@keyframes olDrawPulse{50%{box-shadow:0 0 0 4px rgba(241,196,15,.7)}}#olBtnRow #olDrawYes{order:1}#olBtnRow #olDrawNo{order:1}'+
- '#olDrawFloat{flex:none;display:flex;align-items:center;gap:4px;margin-left:4px;pointer-events:auto;font-size:clamp(11px,calc(var(--b)/36),16px);white-space:nowrap}#olDrawFloat[hidden]{display:none}'+
+ '#olDrawFloat{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:8;display:flex;align-items:center;gap:4px;padding:.18em .35em;border-radius:.8em;background:rgba(20,28,40,.96);box-shadow:0 3px 12px rgba(0,0,0,.5);pointer-events:auto;font-size:clamp(11px,calc(var(--b)/36),16px);white-space:nowrap}#olDrawFloat[hidden]{display:none}'+
  '#olDrawFloat .odT{padding:.12em .6em;border-radius:.6em;background:rgba(241,196,15,.95);color:#1b1b1b;font-weight:800;border:1px solid rgba(0,0,0,.35)}'+
  '#olDrawFloat button{width:auto;min-width:0;min-height:0;margin:0;padding:.15em .6em;border-radius:.6em;font:inherit;font-weight:800;line-height:1.3;cursor:pointer;border:1px solid rgba(0,0,0,.4)}#olDrawFloat button[hidden]{display:none}'+
  '#olDrawFloat .odY{background:#1e8449;color:#fff}#olDrawFloat .odN{background:#c0392b;color:#fff}#olDrawFloat .odC{background:rgba(255,255,255,.9);color:#222}'+
@@ -16362,14 +16362,33 @@ const olSideIcon=c=>c==='w'?'⚪':'⚫';
   try{if(!was&&analysisReport&&analysisReport.status==='complete'&&anReady()&&mlog.length){anSaid='';viewPly(0)}}catch(e){}return r}}
 let anSaid='',anHold=false;
 function anSpeakText(cc){
-  const t=[...cc.querySelectorAll('.anH,.anS:not(.dim),b')].filter((x,i,a)=>!a.some(y=>y!==x&&y.contains(x)));
-  let txt=(t.length?t.map(x=>x.textContent).join('. '):cc.textContent);
+  const cl=cc.cloneNode(true);cl.querySelectorAll('.anVB').forEach(x=>x.remove());
+  const t=cl.querySelector('.anH')?[...cl.querySelectorAll('.anH,.anS')]:[];                  // หัวการ์ด + ทุกบรรทัดคำอธิบาย (รวมบรรทัดจาง)
+  let txt=(t.length?t.map(x=>x.textContent).join('. '):cl.textContent);
   return txt.replace(/[\u{1F300}-\u{1FAFF}⚪⚫✔⚠✖ℹ☀-➿]/gu,' ').replace(/→/g,' ไป ').replace(/\s*·\s*/g,', ').replace(/\s+/g,' ').trim()}
+/* เสียงอ่านผลวิเคราะห์: ใช้ speechSynthesis โดยตรง · สวิตช์ของตัวเอง (🔊/🔇 บนการ์ดและบนปุ่มลอย) เปิดไว้เป็นค่าเริ่มต้น ไม่ผูกกับ "เปิดเสียงพูด" ของเกม */
+let anVoiceOn=(()=>{try{return localStorage.getItem('makruk-anvoice')!=='0'}catch(e){return true}})(),anVT=0,anWarn=0;
+function anVoiceStop(){clearTimeout(anVT);anVT=0;try{spkReset()}catch(e){}try{if(hasSpeech())speechSynthesis.cancel()}catch(e){}}
+function anVoiceSay(txt){
+  if(!anVoiceOn||!hasSpeech())return;
+  anVoiceStop();
+  anVT=setTimeout(()=>{anVT=0;try{
+    const u=new SpeechSynthesisUtterance(txt);u.lang='th-TH';let c=null;try{c=cfgFor('g')}catch(e){}
+    try{if(c&&c.voice)u.voice=c.voice;else{const v=(speechSynthesis.getVoices()||[]).find(x=>/^th/i.test(x.lang));if(v)u.voice=v}}catch(e){}
+    u.rate=Math.max(.6,Math.min(1.4,(c&&c.rate)||1));u.pitch=(c&&c.pitch)||1;u.volume=1;
+    u.onerror=ev=>{if(ev&&ev.error==='not-allowed'&&!(anWarn&1)){anWarn|=1;try{olMsg('🔇 เบราว์เซอร์ยังไม่อนุญาตเสียงพูด: แตะหน้าจอหนึ่งครั้งแล้วเลื่อนตาใหม่')}catch(e){}}};
+    window.__anSay=txt;speechSynthesis.speak(u);
+    try{const vs=speechSynthesis.getVoices()||[];if(vs.length&&!vs.some(v=>/^th/i.test(v.lang))&&!(anWarn&2)){anWarn|=2;olMsg('ℹ เครื่องนี้ไม่มีเสียงภาษาไทย การอ่านออกเสียงอาจไม่มีเสียงหรือไม่ชัด')}}catch(e){}
+  }catch(e){}},160)}
+function anVoiceBtn(){const t=anVoiceOn?'🔊':'🔇',tt=anVoiceOn?'ปิดเสียงอ่านผลวิเคราะห์':'เปิดเสียงอ่านผลวิเคราะห์';
+  for(const b of document.querySelectorAll('.anVB')){b.textContent=t;b.title=tt;b.setAttribute('aria-label',tt);b.setAttribute('aria-pressed',String(anVoiceOn))}}
+function anVoiceToggle(){anVoiceOn=!anVoiceOn;try{localStorage.setItem('makruk-anvoice',anVoiceOn?'1':'0')}catch(e){}if(!anVoiceOn)anVoiceStop();else{const c=$('anCard');if(c&&!c.hidden){const x=anSpeakText(c);if(x)anVoiceSay(x)}}anVoiceBtn()}
 {const old=anCardUpdate;anCardUpdate=function(){const r=old.apply(this,arguments);try{
   const c=$('anCard');
   if(c&&!c.hidden&&!anHold&&analysisReport&&analysisReport.status!=='running'&&anReady()){
     const key=analysisReport.runId+'|'+anPly();
-    if(key!==anSaid){anSaid=key;const txt=anSpeakText(c);if(txt&&typeof say==='function')say(txt,false,'g',1)}}   // queue=false → ตัดเสียงเก่าก่อนพูดอันใหม่
+    if(key!==anSaid){anSaid=key;const txt=anSpeakText(c);if(txt)anVoiceSay(txt)}}   // ตัดเสียงเก่าก่อนพูดอันใหม่ทุกครั้ง
+  if(c&&!c.hidden&&!c.querySelector('.anVB')){const b=document.createElement('button');b.type='button';b.className='anVB';b.onclick=anVoiceToggle;c.appendChild(b);anVoiceBtn()}
 }catch(e){}return r}}
 /* ===== V9.0.17c: จบเกมออนไลน์ → มีกล่องกลางกระดาน "🔍 วิเคราะห์เกม" / "✕ ไม่ต้อง" (ขึ้นครั้งเดียวต่อเกม) ===== */
 function olAnPopHide(){const e=$('olAnPop');if(e)e.hidden=true}
@@ -16392,6 +16411,43 @@ function olAnPopShow(){try{
 {const st=document.createElement('style');st.textContent='#olAnPop[hidden]{display:none}#olAnPop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;min-width:min(78%,260px);padding:14px 16px;border-radius:14px;background:rgba(20,28,40,.93);color:#fff;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.55);border:1px solid rgba(255,209,0,.55)}'+
  '#olAnPop .olApT{font-size:17px;font-weight:800;line-height:1.35}#olAnPop small{font-weight:500;opacity:.85;font-size:13px}#olAnPop .olApB{display:flex;gap:8px;margin-top:10px;justify-content:center;flex-wrap:wrap}'+
  '#olAnPop button{width:auto;min-width:0;height:40px;padding:0 14px;margin:0;font-size:15px;font-weight:700;border-radius:10px;cursor:pointer}#olAnPop #olApYes{background:#2ecc71;color:#102;border:0}#olAnPop #olApNo{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}';document.head.appendChild(st)}
+/* ===== V9.0.17d: หลังจบเกม+วิเคราะห์แล้ว → ปุ่มลอย ◀ ▶ อยู่ที่แถวชื่อผู้เล่นใต้กระดาน (เลื่อนดูทีละตา) ===== */
+let olNavOn=false;
+function olNavUi(){try{
+  let fl=$('olNavFloat');
+  const foot=$('pnFoot'),footOk=!!foot&&!foot.hidden&&getComputedStyle(foot).display!=='none'&&foot.getBoundingClientRect().width>200;
+  const want=!!(OL.room&&!OL.spect&&olAnDone()&&!anBusy&&typeof anReady==='function'&&anReady()&&footOk);
+  if(want!==olNavOn){olNavOn=want;try{anCardEnsure()}catch(e){}}                                   // ปุ่มลอยขึ้น/หายไป → การ์ดอธิบายย้ายมาอยู่ใต้กระดาน/กลับไปด้านข้าง
+  if(!want){if(fl)fl.hidden=true;return}
+  try{olAnPopHide()}catch(e){}                                                              // เริ่มดูผลวิเคราะห์แล้ว → ปิดกล่องถามกลางกระดาน
+  if(!fl){fl=document.createElement('span');fl.id='olNavFloat';fl.setAttribute('role','group');fl.setAttribute('aria-label','เลื่อนดูตาเดินที่วิเคราะห์');
+    fl.innerHTML='<button type="button" class="onB" aria-label="ถอยหลัง 1 ตา" title="ถอยหลัง 1 ตา">◀</button><span class="onT" role="status"></span><button type="button" class="onF" aria-label="เดินหน้า 1 ตา" title="เดินหน้า 1 ตา">▶</button>';
+    fl.querySelector('.onB').onclick=()=>stepView(-1);fl.querySelector('.onF').onclick=()=>stepView(1);
+    const vb=document.createElement('button');vb.type='button';vb.className='anVB';vb.onclick=anVoiceToggle;fl.appendChild(vb);anVoiceBtn()}
+  if(fl.parentNode!==foot)foot.appendChild(fl);
+  fl.hidden=false;const cur=replayView?replayView.ply:mlog.length,N=mlog.length;
+  fl.querySelector('.onT').textContent=cur+' / '+N;fl.querySelector('.onB').disabled=cur<=0;fl.querySelector('.onF').disabled=cur>=N;
+}catch(e){}}
+{const old=pnUpdate;pnUpdate=function(){const r=old.apply(this,arguments);olNavUi();return r}}
+{const old=anCardUpdate;anCardUpdate=function(){const r=old.apply(this,arguments);olNavUi();return r}}
+{const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);olNavUi();return r}}
+{const st=document.createElement('style');st.textContent='#olNavFloat{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:8;display:flex;align-items:center;gap:4px;padding:.18em .35em;border-radius:.8em;background:rgba(20,28,40,.96);box-shadow:0 3px 12px rgba(0,0,0,.5);pointer-events:auto;font-size:clamp(12px,calc(var(--b)/32),18px);white-space:nowrap}#olNavFloat[hidden]{display:none}'+
+ '#olNavFloat button{width:auto;min-width:2.1em;min-height:0;margin:0;padding:.2em .7em;border-radius:.7em;font:inherit;font-weight:800;line-height:1.3;cursor:pointer;background:rgba(20,28,40,.92);color:#fff;border:1px solid rgba(255,209,0,.7);box-shadow:0 2px 8px rgba(0,0,0,.4)}#olNavFloat button:disabled{opacity:.4;cursor:default}'+
+ '.anVB{width:auto;min-width:0;min-height:0;margin:0 0 0 6px;padding:.1em .5em;border-radius:.6em;cursor:pointer;font:inherit;float:right}#anCard .anVB{background:rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.3);color:inherit}'+
+ '#olNavFloat .onT{padding:.15em .55em;border-radius:.6em;background:rgba(255,255,255,.92);color:#222;font-weight:700;border:1px solid rgba(0,0,0,.35)}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent='@keyframes olDrawPop{0%{transform:translateY(-50%) scale(.2);opacity:0}55%{transform:translateY(-50%) scale(1.18);opacity:1}78%{transform:translateY(-50%) scale(.95)}100%{transform:translateY(-50%) scale(1)}}'+
+ '#olDrawFloat:not([hidden]){animation:olDrawPop .5s ease-out}#olDrawFloat.odInc:not([hidden]){animation:olDrawPop .5s ease-out,olDrawPulse 1.2s ease-in-out .5s infinite}'+
+ '@media(prefers-reduced-motion:reduce){#olDrawFloat:not([hidden]),#olDrawFloat.odInc:not([hidden]){animation:none!important}}';document.head.appendChild(st)}
+/* การ์ดอธิบายตา: ขณะมีปุ่มลอย ◀ ▶ ให้อยู่ใต้กระดานติดแถวปุ่ม (เห็นชัด) · ไม่มีปุ่มลอยก็อยู่ด้านข้างเหมือนเดิม */
+{const old=anCardEnsure;anCardEnsure=function(){
+  if(olNavOn){let c=$('anCard');if(!c)c=old.apply(this,arguments);const bx=$('bx');
+    if(bx&&c.previousElementSibling!==bx)bx.insertAdjacentElement('afterend',c);c.classList.add('anDock');return c}
+  const c=old.apply(this,arguments);c.classList.remove('anDock');return c}}
+{const old=anCardUpdate;anCardUpdate=function(){const r=old.apply(this,arguments);try{
+  const c=$('anCard');if(olNavOn&&c&&!c.hidden){
+    if(!c.classList.contains('anDock'))anCardEnsure();
+    const b=c.getBoundingClientRect();if(b.bottom>innerHeight-4||b.top<0)c.scrollIntoView({block:'nearest',behavior:'smooth'})}}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='#anCard.anDock{position:static;margin:8px 0 0;font-size:15px;box-shadow:0 3px 12px rgba(0,0,0,.35);border:2px solid rgba(255,209,0,.7);max-height:none}#anCard.anDock .anH:before{content:"🎓";font-size:17px}#anCard.anDock .anSc{flex-basis:100%}';document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent='#olChatLog .olMsg.sys{opacity:.75;font-style:italic;font-size:.92em}';document.head.appendChild(st)}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
