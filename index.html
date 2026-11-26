@@ -16510,6 +16510,27 @@ function olRandSync(){const b=$('olRand');if(!b)return;const n=olWaitRooms().len
   olRandSync()}catch(e){}return r}}
 {const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{olRandSync()}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent='#olRand{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;height:auto;min-height:64px;box-sizing:border-box;margin:8px 0;padding:8px 12px;border-radius:14px;cursor:pointer;line-height:1.25;white-space:normal;overflow:hidden}#olRand .olRandM{font-size:clamp(22px,6vw,28px);font-weight:800}#olRand .olRandS{font-size:clamp(13px,3.6vw,15px);font-weight:600;opacity:.9}#olRand:disabled{opacity:.55;cursor:default}';document.head.appendChild(st)}
+/* V9.0.18: (1) วินโดว์/จอกว้าง: คอลัมน์กระดาน (#bw) มีแถบเลื่อนของตัวเองอยู่ขวากระดาน เลื่อนดูเมนูใต้กระดานได้โดยไม่ต้องรอเมนูข้างเลื่อนสุด
+   (2) เสียงกริ่ง 1 ที: มีคนเข้าห้องรวม / มีคนเข้าห้องที่เล่นอยู่ (ผู้เล่น/ผู้ชม) */
+{const st=document.createElement('style');st.textContent='@media(min-width:700px){html body:not(.fs) #bw{max-height:calc(100vh - 20px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:auto;box-sizing:border-box;padding-right:2px}html body:not(.fs) #bw>*{flex-shrink:0}'+
+ 'html body:not(.fs) #bw::-webkit-scrollbar{width:14px}html body:not(.fs) #bw::-webkit-scrollbar-track{background:rgba(0,0,0,.12);border-radius:7px}'+
+ 'html body:not(.fs) #bw::-webkit-scrollbar-thumb{background:rgba(90,110,140,.85);border-radius:7px;border:2px solid transparent;background-clip:padding-box}html body:not(.fs) #bw::-webkit-scrollbar-thumb:hover{background:rgba(41,128,185,.95);background-clip:padding-box}}';document.head.appendChild(st)}
+function olDing(){try{const A=window.AudioContext||window.webkitAudioContext;if(!A||(typeof sndOn!=='undefined'&&!sndOn))return;const c=new A(),t=c.currentTime;try{c.resume()}catch(e){}
+  [[1175,1],[2350,.25]].forEach(([f,v])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(c.destination);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.28*v,t+.01);g.gain.exponentialRampToValueAtTime(.001,t+1.1);o.start(t);o.stop(t+1.15)});
+  setTimeout(()=>{try{c.close()}catch(e){}},1500)}catch(e){}}
+/* ห้องรวม: ชื่อใหม่ (ไม่ใช่เรา) โผล่ในรายชื่อหลังภาพแรก = กริ่ง 1 ที ต่อการอัปเดต 1 ครั้ง */
+{const old=olWhoRender;olWhoRender=function(v){try{const ks=Object.keys(v||{}),prev=olWhoRender._k;olWhoRender._k=new Set(ks);
+  if(prev&&OL.me&&ks.some(k=>!prev.has(k)&&k!==OL.me.key&&v[k]&&v[k].n))olDing()}catch(e){}return old.apply(this,arguments)}}
+{const old=olWhoSync;olWhoSync=function(){const was=olLobWho.on;const r=old.apply(this,arguments);try{if(was&&!olLobWho.on)olWhoRender._k=null}catch(e){}return r}}   // ปิดหน้าต่างล็อบบี้แล้วเปิดใหม่ = ภาพแรกใหม่ ไม่กริ่งซ้ำ
+/* ในห้อง: ข้อความระบบ "เข้าห้อง/เข้ามารับชม" ของคนอื่น (หลังเข้าห้องเกิน 1.5 วินาที กันเสียงจากประวัติแชตเก่า) = กริ่ง 1 ที */
+{const old=olEnter;olEnter=function(){try{OL.chT0=Date.now()}catch(e){}return old.apply(this,arguments)}}
+{const old=olChatAdd;olChatAdd=function(v){try{if(v&&v.s&&v.n==='🔔'&&OL.room&&OL.me&&Date.now()-(OL.chT0||0)>1500&&/เข้าห้องแล้ว|เข้ามารับชม/.test(String(v.m||''))&&!String(v.m).includes(OL.me.name)){
+  const L=$('olChatLog'),k=v.m+'|'+v.at;if(!(L&&[...L.children].some(x=>x.dataset.k===k)))olDing()}}catch(e){}return old.apply(this,arguments)}}
+/* V9.0.18: เข้าห้อง (ผู้เล่น/ผู้ชม) = ขยายกระดานเต็มหน้าจออัตโนมัติ 1 ครั้งต่อห้อง · ออกจากห้อง = ย่อกลับ · ผู้เล่นกดย่อเองได้ระหว่างเล่น (ไม่เด้งกลับ) · ใช้โหมดขยายของเกม (ปุ่ม ⛶) ไม่เรียก Fullscreen API ของเบราว์เซอร์ */
+{const old=olEnter;olEnter=function(){const r=old.apply(this,arguments);try{
+  if(OL.room&&OL.fsRoom!==OL.room){OL.fsRoom=OL.room;if(!document.body.classList.contains('fs')){setFull(true);OL.fsAuto=true}}}catch(e){}return r}}
+{const old=olLeaveLocal;olLeaveLocal=function(){const r=old.apply(this,arguments);try{OL.fsRoom=null;if(OL.fsAuto){OL.fsAuto=false;if(document.body.classList.contains('fs'))setFull(false)}}catch(e){}return r}}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
