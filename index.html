@@ -570,7 +570,7 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 <div id="evgInfo" class="muted" aria-live="polite"></div>
 <button id="evgGo" type="button">วิเคราะห์ทั้งเกมเพื่อเติมกราฟ</button>
 </details>
-<details><summary>🔍 วิเคราะห์หลังจบเกม</summary><p class="muted">วิเคราะห์ด้วยเอนจินที่ใช้งานอยู่ (Fairy-Stockfish ถ้าเชื่อมต่อไว้ ไม่เช่นนั้นเรียวเมืองทอง) กดปุ่มอีกครั้งระหว่างวิเคราะห์เพื่อหยุด</p><div id="pgnBatchPicker" hidden><label for="pgnGameSelect">เลือกเกมในไฟล์ PGN</label><select id="pgnGameSelect"></select></div><div id="pgnGameInfo" hidden role="region" aria-label="รายละเอียดเกม PGN" style="font-size:13px;line-height:1.6;margin:8px 0;overflow-wrap:anywhere"></div><label for="analysisEngine" style="display:block;margin:8px 0 4px">เอนจินสำหรับวิเคราะห์ทั้งเกม</label><select id="analysisEngine" style="width:100%;margin-bottom:8px"><option value="fairy">Fairy-Stockfish (เอนจินภายนอกที่เชื่อมต่อ)</option><option value="internal">เรียวเมืองทอง (AI ภายใน)</option></select><button id="analyzeGame">วิเคราะห์ตาเดินทั้งหมด</button><div id="analysisOut" aria-live="polite"></div></details>
+<details><summary>🔍 วิเคราะห์หลังจบเกม</summary><p class="muted">วิเคราะห์ด้วยเอนจินที่ใช้งานอยู่ (Fairy-Stockfish ถ้าเชื่อมต่อไว้ ไม่เช่นนั้นเรียวเมืองทอง) กดปุ่มอีกครั้งระหว่างวิเคราะห์เพื่อหยุด</p><div id="pgnBatchPicker" hidden><label for="pgnGameSelect">เลือกเกมในไฟล์ PGN</label><select id="pgnGameSelect"></select></div><div id="pgnGameInfo" hidden role="region" aria-label="รายละเอียดเกม PGN" style="font-size:13px;line-height:1.6;margin:8px 0;overflow-wrap:anywhere"></div><label for="analysisEngine" style="display:block;margin:8px 0 4px">เอนจินสำหรับวิเคราะห์ทั้งเกม</label><select id="analysisEngine" style="width:100%;margin-bottom:8px"><option value="fairy">Fairy-Stockfish (เอนจินภายนอกที่เชื่อมต่อ)</option><option value="internal">เรียวเมืองทอง (AI ภายใน)</option></select><button id="analyzeGame">วิเคราะห์ตาเดินทั้งเกม</button><div id="analysisOut" aria-live="polite"></div></details>
 <details><summary>🧩 ฝึกหาตาเดินที่ดีที่สุด</summary><p class="muted">สร้างโจทย์จากตำแหน่งปัจจุบันด้วยเอนจินที่ใช้งานอยู่ (Fairy-Stockfish ถ้าเชื่อมต่อไว้ ไม่เช่นนั้นเรียวเมืองทอง)</p><button id="newPuzzle">สร้างโจทย์จากตำแหน่งนี้</button><div id="puzzleOut" aria-live="polite"></div></details>
 <details open><summary>⚙ ตัวเลือกเพิ่มเติม</summary>
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="showTmr" checked style="width:auto"> แสดงตัวนับเวลาที่เอนจินกำลังคิด (ตัวเลข ⏱ เหนือกระดาน)</label>
@@ -5091,26 +5091,26 @@ const AnalysisReview=(()=>{
    historyUsed:l.historyUsed===true};
  }
  function compare(before,after,mover,played){
-  const result={loss:null,severity:0,lostAdvantage:false,bestMatch:!!(before&&before.bestUci&&played&&before.bestUci.slice(0,4)===played.slice(0,4)),label:'คะแนนสองตำแหน่งยังไม่ครบ จึงยังไม่สรุปความผิดพลาด'};
+  const result={loss:null,severity:0,lostAdvantage:false,bestMatch:!!(before&&before.bestUci&&played&&before.bestUci.slice(0,4)===played.slice(0,4)),label:'ยังประเมินไม่ครบ จึงยังสรุปไม่ได้ว่าตานี้ดีหรือพลาด'};
   if(after&&after.terminal==='mate'){
-   result.label='ตานี้รุกจนคู่ต่อสู้ตามกติกา';return result;
+   result.label='ตานี้รุกจนคู่แข่งตามกติกา (จบเกม)';return result;
   }
-  if(after&&after.terminal==='stalemate'){result.label='ตานี้จบด้วยอับ: เสมอตามกติกา';return result;}
+  if(after&&after.terminal==='stalemate'){result.label='ตานี้ทำให้อับ: เสมอตามกติกา (จบเกม)';return result;}
   if(!before||!after||!before.known||!after.known)return result;
-  if(!before.runId||before.runId!==after.runId||before.engineKey!==after.engineKey||before.timeMs!==after.timeMs||before.historyMode!==after.historyMode||before.countingMode!==after.countingMode){result.label='แหล่งหรือเงื่อนไขประเมินต่างกัน จึงไม่เปรียบเทียบคะแนน';return result;}
+  if(!before.runId||before.runId!==after.runId||before.engineKey!==after.engineKey||before.timeMs!==after.timeMs||before.historyMode!==after.historyMode||before.countingMode!==after.countingMode){result.label='ประเมินคนละรอบหรือคนละเอนจิน จึงไม่เทียบคะแนนกัน';return result;}
   const sign=mover==='w'?1:-1,a=sign*before.whiteScore,b=sign*after.whiteScore;
   if(before.scoreKind==='mate'||after.scoreKind==='mate'){
-   if(a>=MATE&&b<MATE){result.severity=3;result.label='ไม่พบแนวบังคับรุกจนที่เคยประเมินได้';}
-   else if(b<=-MATE&&a>-MATE){result.severity=3;result.label='เอนจินประเมินว่าตานี้เปิดโอกาสให้ถูกรุกจน';}
-   else result.label='มีคะแนนรุกจน ไม่แปลงระยะรุกจนเป็นคะแนนเสียหมาก';
+   if(a>=MATE&&b<MATE){result.severity=3;result.label='ตานี้ทำให้แนวรุกจนที่เคยมีหายไป';}
+   else if(b<=-MATE&&a>-MATE){result.severity=3;result.label='ตานี้เปิดโอกาสให้คู่แข่งรุกจน';}
+   else result.label='ตำแหน่งนี้มีแนวรุกจน จึงไม่เทียบเป็นคะแนน';
    return result;
   }
   result.loss=Math.max(0,a-b);result.lostAdvantage=a>=100&&b<=0;
   result.severity=result.loss>=250?3:result.loss>=100?2:result.loss>=30?1:0;
   const amount=(result.loss/100).toFixed(2);
-  result.label=result.loss<30?'คะแนนใกล้เคียงเดิม':'คะแนนลดลงประมาณ '+amount+' เบี้ย';
+  result.label=result.loss<30?'คะแนนแทบไม่เปลี่ยน':'คะแนนของฝ่ายที่เดินลดลงประมาณ '+amount+' เบี้ย (เหมือนเสียเบี้ยไป '+amount+' ตัว เทียบกับก่อนเดิน)';
   if(result.lostAdvantage)result.label+=' · จากได้เปรียบเป็นเท่ากันหรือเป็นรอง';
-  if(result.bestMatch)result.label+=' · ตรงกับตาแนะนำก่อนเดิน; คะแนนที่เปลี่ยนอาจเกิดจากขอบเขตการค้นหา';
+  if(result.bestMatch)result.label+=' · ตรงกับตาที่เอนจินแนะนำ (คะแนนที่ต่างเล็กน้อยเกิดจากการคิดลึกไม่เท่ากัน)';
   return result;
  }
  function scoreText(position){
@@ -5164,15 +5164,15 @@ function analysisRender(){
  const flagged=rows.filter(x=>x.q.severity>=2),lost=rows.filter(x=>x.q.lostAdvantage);
  const esc0=x=>esc(String(x==null?'':x));
  let html='<b>ประเมินโดย '+esc0(r.engine.label)+'</b><div class="muted">'+esc0(r.message||r.status)+' · '+completed+' / '+(moves.length+1)+' ตำแหน่ง · '+r.timeMs+' ms/ตำแหน่ง · '+esc0(r.historyNote)+' · '+esc0(r.countingNote||'บริบทการนับไม่ได้ระบุในรายงานเดิม')+'</div>';
- html+='<div>ตาที่คะแนนลดลงมากหรือมีประเด็นรุกจน '+flagged.length+' ตา · เสียความได้เปรียบ '+lost.length+' ตา</div>';
+ html+='<div>ตาที่พลาด (คะแนนลดลงมากหรือเสียรุกจน) '+flagged.length+' ตา · ตาที่เสียความได้เปรียบ '+lost.length+' ตา</div>';
  if(r.error)html+='<div class="issue">'+esc0(r.error)+'</div>';
- html+='<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th>ตำแหน่ง</th><th>คะแนนมุมขาว</th><th>ลึก</th><th>คำแนะนำ / แหล่งประเมิน</th></tr></thead><tbody>';
+ html+='<div style="overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr><th>ตำแหน่ง</th><th>คะแนน (มองจากฝ่ายขาว)</th><th>ความลึก</th><th>ตาที่เอนจินแนะนำ / แหล่งประเมิน</th></tr></thead><tbody>';
  for(let i=0;i<=moves.length;i++){
   const p=r.positions[i],name=i===0?'เริ่มต้น':'หลังตา '+i+' '+(moves[i-1].c==='w'?'ขาว':'ดำ')+' '+moves[i-1].s;
   html+='<tr><td><button type="button" class="s" data-analysis-ply="'+i+'">'+esc0(name)+'</button></td><td>'+esc0(p?AnalysisReview.scoreText(p):'ยังไม่ได้ประเมิน')+'</td><td>'+esc0(p&&p.depth!=null?p.depth:'—')+'</td><td>'+esc0(p?(p.bestText||p.note||'—')+' · '+p.source:'—')+'</td></tr>';
  }
  html+='</tbody></table></div>';
- html+='<details><summary>ตาที่คะแนนลดลงและคำแนะนำ</summary>'+rows.filter(x=>x.q.severity>0||x.q.lostAdvantage).map(x=>'<div class="issue"><button type="button" class="s" data-analysis-ply="'+(x.i+1)+'">ตา '+(x.i+1)+' '+(x.c==='w'?'ขาว':'ดำ')+'</button> '+esc0(x.s)+'<br>'+esc0(x.q.label)+(x.q.loss==null?'':' · ลดลง '+(x.q.loss/100).toFixed(2))+'<br>ก่อน: '+esc0(AnalysisReview.scoreText(r.positions[x.i]))+' → หลัง: '+esc0(AnalysisReview.scoreText(r.positions[x.i+1]))+'</div>').join('')+'</details>';
+ html+='<details><summary>รายการตาที่พลาด และตาที่เอนจินแนะนำ</summary>'+rows.filter(x=>x.q.severity>0||x.q.lostAdvantage).map(x=>'<div class="issue"><button type="button" class="s" data-analysis-ply="'+(x.i+1)+'">ตา '+(x.i+1)+' '+(x.c==='w'?'ขาว':'ดำ')+'</button> '+esc0(x.s)+'<br>'+esc0(x.q.label)+(x.q.loss==null?'':' · ลดลง '+(x.q.loss/100).toFixed(2))+'<br>ก่อน: '+esc0(AnalysisReview.scoreText(r.positions[x.i]))+' → หลัง: '+esc0(AnalysisReview.scoreText(r.positions[x.i+1]))+'</div>').join('')+'</details>';
  html+='<button id="analysisExportReport" type="button" class="s">บันทึกรายงานวิเคราะห์ JSON</button>';
  out.innerHTML=html;
  out.querySelectorAll('button[data-analysis-ply]').forEach(b=>b.onclick=()=>{if(analysisCurrentKey()!==r.gameKey){smsg('รายงานนี้เป็นของเกมก่อนหน้า กรุณาวิเคราะห์เกมที่แสดงอยู่ใหม่');return}viewPly(+b.dataset.analysisPly)});
@@ -5254,7 +5254,7 @@ $('analyzeGame').onclick=async()=>{
  }finally{
   report.finishedAt=new Date().toISOString();
   if(analysisReport===report)analysisRender();
-  anBusy=false;anStop=false;if(analysisSession===session)analysisSession=null;btn.textContent='วิเคราะห์ตาเดินทั้งหมด';locks.forEach(([el,disabled])=>{if(el.id!=='en'||g===gid)el.disabled=disabled});
+  anBusy=false;anStop=false;if(analysisSession===session)analysisSession=null;btn.textContent='วิเคราะห์ตาเดินทั้งเกม';locks.forEach(([el,disabled])=>{if(el.id!=='en'||g===gid)el.disabled=disabled});
   // Keep a game paused after a review. The user resumes explicitly with the existing play button.
   evSig='';renderGraph();
  }
@@ -12462,27 +12462,27 @@ function anExplain(k){
   const u4=mv.uci.slice(0,4),f=sidx(u4.slice(0,2)),t=sidx(u4.slice(2,4));
   if(before&&after){
     const pc=before[f],cap=before[t];
-    if(cap)L.push('กิน'+(AN_TH[cap[1]]||'หมาก')+'ของ'+nm(other)+' ที่ '+u4.slice(2,4));
+    if(cap)L.push('กิน'+(AN_TH[cap[1]]||'หมาก')+'ของ'+nm(other)+' ที่ '+sqoTh(u4.slice(2,4)));
     if(inCheck(after,other))L.push('รุกขุน'+nm(other));
     const d=(anMat(after,'w')-anMat(after,'b'))-(anMat(before,'w')-anMat(before,'b'));
     const bal=anMat(after,'w')-anMat(after,'b');
-    L.push('วัตถุหลังตานี้: '+(bal>0?'ขาวมากกว่า '+bal.toFixed(1):bal<0?'ดำมากกว่า '+(-bal).toFixed(1):'เท่ากัน')+(d!==0&&!cap?'':''));
+    L.push('แต้มหมากรวมหลังตานี้: '+(bal>0?'ขาวมากกว่า '+bal.toFixed(1)+' แต้ม':bal<0?'ดำมากกว่า '+(-bal).toFixed(1)+' แต้ม':'เท่ากัน')+(d!==0&&!cap?'':''));
     try{ // the piece that moved: can it be taken for nothing?
       const oppMoves=legal(after,other).filter(m=>m[1]===t);
       if(oppMoves.length){const pv=AN_VAL[(pc||'  ')[1]]||0;
         const free=oppMoves.some(m=>{const b3=apply(after,m);return !legal(b3,side).some(x=>x[1]===t)});
-        if(free&&pv>0)L.push('⚠ '+(AN_TH[pc[1]]||'หมาก')+'ที่เดินไป '+u4.slice(2,4)+' อาจถูกกินโดยไม่มีหมากช่วยกินกลับ');
+        if(free&&pv>0)L.push('⚠ '+(AN_TH[pc[1]]||'หมาก')+'ที่เดินไป '+sqoTh(u4.slice(2,4))+' อาจถูกกินโดยไม่มีหมากช่วยกินกลับ');
         else if(oppMoves.some(m=>(AN_VAL[(after[m[0]]||'  ')[1]]||0)<pv))L.push('⚠ '+(AN_TH[pc[1]]||'หมาก')+'ที่เดินไปถูกโจมตีด้วยหมากที่มีค่าน้อยกว่า')}
     }catch(e){}}
-  if(q.severity>=1&&a&&a.bestUci&&a.bestUci.slice(0,4)!==u4)L.push('ตาที่เอนจินเห็นว่าดีกว่า: '+(a.bestText||a.bestUci.slice(0,2)+'→'+a.bestUci.slice(2,4)));
+  if(q.severity>=1&&a&&a.bestUci&&a.bestUci.slice(0,4)!==u4)L.push('ตาที่เอนจินเห็นว่าดีกว่า: '+(a.bestText||((x)=>(x?(AN_TH[x[1]]||'หมาก')+' ':'')+sqoTh(a.bestUci.slice(0,2))+' ไป '+sqoTh(a.bestUci.slice(2,4)))(before&&before[sidx(a.bestUci.slice(0,2))])));
   if(q.lostAdvantage)L.push('เสียความได้เปรียบ: จากได้เปรียบกลายเป็นเท่ากันหรือเป็นรอง');
   if(b&&b.known&&b.scoreKind!=='mate'){const v=b.whiteScore/100;
     if(Math.abs(v)>=3)L.push((v>0?'ขาว':'ดำ')+'ได้เปรียบมาก (ประมาณ '+Math.abs(v).toFixed(1)+' เบี้ย)');
     else if(Math.abs(v)>=1)L.push((v>0?'ขาว':'ดำ')+'ได้เปรียบชัดเจน');
     else if(Math.abs(v)>=0.3)L.push((v>0?'ขาว':'ดำ')+'ได้เปรียบเล็กน้อย');
     else L.push('ตำแหน่งสูสี');}
-  const tag=q.severity>=3?'✖ พลาดหนัก':q.severity===2?'⚠ พลาด':q.severity===1?'⚠ พลาดเล็กน้อย':(q.loss==null?'ℹ':'✔ ตาที่ดี');
-  return{mv,q,tag,score:AnalysisReview.scoreText(b),depth:b&&b.depth,L,label:q.label}}
+  const tag=q.severity>=3?'✖ พลาดหนัก':q.severity===2?'⚠ พลาด':q.severity===1?'⚠ พลาดเล็กน้อย':(q.loss==null?'ℹ ยังเทียบคะแนนไม่ได้':'✔ ตาที่ดี');
+  return{mv,q,tag,score:AnalysisReview.scoreText(b),depth:b&&b.depth,L,label:q.lostAdvantage?q.label.replace(' · จากได้เปรียบเป็นเท่ากันหรือเป็นรอง',''):q.label}}
 function anCardUpdate(){try{
   const c=$('anCard');
   if(!anReady()||setup||pnGameOnly()){if(c&&!c.hidden){c.hidden=true;document.documentElement.style.setProperty('--anh','0px')}return}
@@ -12490,7 +12490,7 @@ function anCardUpdate(){try{
   let html;
   if(k<=0){const p0=analysisReport.positions[0];html='<b>ผลวิเคราะห์</b> · ตำแหน่งเริ่มต้น · '+esc(AnalysisReview.scoreText(p0))+'<div class="anS">เลื่อนไปทีละตา (◀ ▶) เพื่อดูคะแนนและเหตุผลของแต่ละตา</div>'}
   else{const e=anExplain(k);
-    html='<div class="anH"><b>ตาที่ '+k+' · '+(e.mv.c==='w'?'⚪ ขาว':'⚫ ดำ')+' '+esc(e.mv.s||e.mv.uci)+'</b> <span class="anT sv'+e.q.severity+'">'+e.tag+'</span> <span class="anSc">คะแนน '+esc(e.score)+(e.depth!=null?' · ลึก '+e.depth:'')+'</span></div>'+
+    html='<div class="anH"><b>ตาที่ '+k+' · '+(e.mv.c==='w'?'⚪ ขาว':'⚫ ดำ')+' '+esc(e.mv.s||e.mv.uci)+'</b> <span class="anT sv'+e.q.severity+'">'+e.tag+'</span> <span class="anSc">คะแนน '+esc(e.score)+(e.depth!=null?' · ความลึก '+e.depth:'')+'</span></div>'+
       '<div class="anS">'+e.L.map(esc).join(' · ')+'</div><div class="anS dim">'+esc(e.label)+'</div>'}
   if(cc.dataset.k!==String(k)+html.length){cc.innerHTML=html;cc.dataset.k=String(k)+html.length}
   if(cc.hidden){cc.hidden=false}
@@ -13778,10 +13778,10 @@ function coMsgPost(pre,best,pl){
     const st=coVerdict(F,B0,c0,pm),evP=coLine(B0,c0,pl.pv,4),evB=coLine(B0,c0,best.pv,4);
     let kind,title,head;
     if(same){kind='ok';title=['เยี่ยมเลย!','ถูกต้อง!','ตาดีมาก!','ตรงกับที่เอนจินเลือก!'][CO.seq%4];head=title+' '+pn+' คือตาที่ดีที่สุด'}
-    else if(loss<40){kind='ok';title='ใช้ได้';head='ใช้ได้ ตาของคุณใกล้เคียงตาที่ดีที่สุด (เอนจินชอบ '+bn+' เล็กน้อย)'}
+    else if(loss<40){kind='ok';title='ใช้ได้';head='ใช้ได้ ตาของคุณใกล้เคียงตาที่ดีที่สุด (เอนจินมองว่า '+bn+' ดีกว่าเล็กน้อย)'}
     else if(loss<bkTh){kind='warn';title='พอใช้';head='พอใช้ แต่มีตาที่ดีกว่า: '+bn}
     else if(pl.s<-90000){kind='bad';title='พลาดหนัก!';head='ตานี้ทำให้ถูกรุกจน ควรเดิน '+bn+' แทน'}
-    else{kind='bad';title=loss>=300?'พลาดหนัก!':'พลาด!';head='ตานี้เสียเปรียบประมาณ '+(loss/100).toFixed(1)+' เบี้ย ควรเดิน '+bn+' แทน'}
+    else{kind='bad';title=loss>=300?'พลาดหนัก!':'พลาด!';head='ตานี้ทำให้คะแนนของคุณลดลงประมาณ '+(loss/100).toFixed(1)+' เบี้ย (เหมือนเสียเบี้ยไป '+(loss/100).toFixed(1)+' ตัว) ควรเดิน '+bn+' แทน'}
     L.push((kind==='ok'?'✓ ':kind==='warn'?'△ ':'✗ ')+head);
     if(kind!=='ok'||same){
       if(kind!=='ok'){
@@ -13789,7 +13789,7 @@ function coMsgPost(pre,best,pl){
         let w='';
         if(st.cls==='bad'||st.newHang)w=st.txt;
         else if(evP.length>1){const e1=evP[1];w='AI จะตอบ: '+coPly(F,e1)+(e1.cp&&e1.c!==me?' ทำให้คุณเสีย'+T[e1.cp[1]]:'')}
-        if(w){L.push('• ตาที่เดิน '+pn+': '+w);why.push(w)}
+        if(w){L.push('• ตาที่คุณเดิน '+pn+': '+w);why.push(w)}
         const bw=coWhy(F,B0,c0,best.m);if(bw.length)L.push('• ตาที่ควรเดิน '+bn+': '+bw.join(' · '));
       }else{
         const bw=coWhy(F,B0,c0,pm);if(bw.length)L.push('• '+bw.join(' · '));
@@ -13798,8 +13798,8 @@ function coMsgPost(pre,best,pl){
     const fc=a=>a.slice(1).map(e=>coPly(F,e)).join(' → ');
     if(kind==='ok'&&evP.length>1)L.push('มองไปข้างหน้า '+(evP.length-1)+' ตา: '+fc(evP));
     if(kind!=='ok'){
-      if(evP.length>1){const t=coTally(evP);L.push('ถ้าเดินตามที่เดินไป (ล่วงหน้า '+(evP.length-1)+' ตา): '+fc(evP)+(t.text?' → '+t.text:''))}
-      if(evB.length>1){const t=coTally(evB);L.push('ถ้าเดินตามที่แนะนำ (ล่วงหน้า '+(evB.length-1)+' ตา): '+fc(evB)+(t.text?' → '+t.text:''))}
+      if(evP.length>1){const t=coTally(evP);L.push('ถ้าเดินตามตาที่คุณเดิน (คาดต่อไปอีก '+(evP.length-1)+' ตา): '+fc(evP)+(t.text?' → '+t.text:''))}
+      if(evB.length>1){const t=coTally(evB);L.push('ถ้าเดินตามตาที่แนะนำ (คาดต่อไปอีก '+(evB.length-1)+' ตา): '+fc(evB)+(t.text?' → '+t.text:''))}
     }
     return{L:L,why:why,kind:kind,title:title,head:head,evP:evP,evB:evB,bn:bn,rs:(kind==='ok'&&same)?coWhy(F,B0,c0,pm):[]};
   };
@@ -13814,8 +13814,8 @@ function coMsgPost(pre,best,pl){
     }
     o.push(x.head);if(x.kind==='bad'&&x.why[0])o.push('เพราะ '+x.why[0]);
     if(det){
-      const e1=x.evP[1];if(x.kind==='bad'&&e1&&coNotable([e1]))o.push('ถ้าเดินตามที่เดินไป '+coStepSay(FS,e1,0,true));
-      if(x.evB.length){o.push('ถ้าเดินตามที่แนะนำ จะเป็นอย่างนี้');o.push(...coSteps(FS,x.evB,3))}
+      const e1=x.evP[1];if(x.kind==='bad'&&e1&&coNotable([e1]))o.push('ถ้าเดินตามตาที่คุณเดิน '+coStepSay(FS,e1,0,true));
+      if(x.evB.length){o.push('ถ้าเดินตามตาที่แนะนำ จะเป็นอย่างนี้');o.push(...coSteps(FS,x.evB,3))}
     }
     return o;
   };
@@ -13896,7 +13896,7 @@ async function coAdvise(said,aiTxt,threat){
     const mk=F=>{
       const L=[],ev=coLine(b,c,best.pv,4),w=coWhy(F,b,c,best.m),lead=best.s<-90000?(threat==='mate'?'ตอนนี้เสียเปรียบมาก':'ระวัง อีกฝ่ายมีทางรุกจนคุณ'):best.s>90000?'คุณมีทางรุกจนอีกฝ่าย':'ตอนนี้'+coScoreTxt(best.s);
       L.push((behind?'⚠ ':'💡 ')+(lead?lead+' ':'')+'ควรเดิน '+bn(F)+(w.length?' — '+w.join(' · '):''));
-      if(ev.length>1){const t=coTally(ev);L.push('ล่วงหน้า '+(ev.length-1)+' ตา ถ้าเดินตามนี้: '+ev.slice(1).map(e=>coPly(F,e)).join(' → ')+(t.text?' → '+t.text:''))}
+      if(ev.length>1){const t=coTally(ev);L.push('คาดต่อไป '+(ev.length-1)+' ตา ถ้าเดินตามนี้: '+ev.slice(1).map(e=>coPly(F,e)).join(' → ')+(t.text?' → '+t.text:''))}
       return{L:L,lead:lead,ev:ev,w:w};
     };
     const D=mk(FD),S=mk(FS);
@@ -13970,7 +13970,7 @@ async function coBest(){
     if(!r||!r.length||!r[0].pv||!r[0].pv.length){coSay('ตอนนี้ไม่มีตาเดินให้วิเคราะห์');return}
     const mvs=r[0].pv.map(coMv),ev=coLine(b,c,mvs,4),m=mvs[0],s=r[0].s;
     const mk=F=>{const w=coWhy(F,b,c,m),L=[];L.push('💡 ตาที่แนะนำ: '+(F===FD?nn(b,m):T[b[m[0]][1]]+' '+F.sq(m[0])+' ไป '+F.sq(m[1]))+(w.length?' — '+w.join(' · '):''));
-      if(ev.length>1){const t=coTally(ev);L.push('ล่วงหน้า '+(ev.length-1)+' ตา: '+ev.slice(1).map(e=>coPly(F,e)).join(' → ')+(t.text?' → '+t.text:''))}
+      if(ev.length>1){const t=coTally(ev);L.push('คาดต่อไป '+(ev.length-1)+' ตา: '+ev.slice(1).map(e=>coPly(F,e)).join(' → ')+(t.text?' → '+t.text:''))}
       L.push('ประเมิน: '+coScoreTxt(c===me?s:-s)+' ('+fmtS(c==='w'?s:-s).replace('-','−')+' มองจากขาว)');return L};
     const D=mk(FD),S=mk(FS);
     coShowLine(b,c,mvs.slice(0,4),s);
@@ -13995,7 +13995,7 @@ async function coWhatIf(cands,txt){
       const st=coVerdict(F,b,c,m),evP=coLine(b,c,pl.pv,4),L=[],nmv=F===FD?nn(b,m):T[b[m[0]][1]]+' '+F.sq(m[0])+' ไป '+F.sq(m[1]);
       L.push('🔮 ถ้าเดิน '+nmv+': '+(loss<40?'ใช้ได้ ':loss<bkTh?'พอใช้ ':'ไม่ค่อยดี ')+'('+coScoreTxt(c===me?pl.s:-pl.s)+')');
       if(st.txt)L.push('• '+st.txt);
-      if(evP.length>1){const t=coTally(evP);L.push('ล่วงหน้า '+(evP.length-1)+' ตา: '+evP.slice(1).map(e=>coPly(F,e)).join(' → ')+(t.text?' → '+t.text:''))}
+      if(evP.length>1){const t=coTally(evP);L.push('คาดต่อไป '+(evP.length-1)+' ตา: '+evP.slice(1).map(e=>coPly(F,e)).join(' → ')+(t.text?' → '+t.text:''))}
       if(loss>=40){const bn=F===FD?nn(b,best.m):T[b[best.m[0]][1]]+' '+F.sq(best.m[0])+' ไป '+F.sq(best.m[1]),bw=coWhy(F,b,c,best.m);L.push('💡 ตาที่ดีกว่า: '+bn+(bw.length?' — '+bw.join(' · '):''))}
       else L.push('ตานี้เป็นตาที่ดีหรือใกล้เคียงตาที่ดีที่สุดแล้ว');
       return{L:L,k:loss<40?'ok':loss<bkTh?'warn':'bad'};
@@ -14004,7 +14004,7 @@ async function coWhatIf(cands,txt){
     coShowLine(b,c,pl.pv.slice(0,4),pl.s);if(loss>=40)warnMv=best.m;render();
     {const evX=coLine(b,c,pl.pv,4),evBx=coLine(b,c,best.pv,4),nar=[S.L[0].replace(/^🔮\s*/,''),S.L[1]&&S.L[1].startsWith('•')?S.L[1].slice(2):''];
       if(evX.length){nar.push('ถ้าเดินแบบนี้ จะเป็นอย่างนี้');nar.push(...coSteps(FS,evX,3))}
-      if(loss>=40){nar.push(S.L[S.L.length-1].replace(/^💡\s*/,''));if(evBx.length){nar.push('ถ้าเดินตามที่แนะนำ จะเป็นอย่างนี้');nar.push(...coSteps(FS,evBx,3))}}
+      if(loss>=40){nar.push(S.L[S.L.length-1].replace(/^💡\s*/,''));if(evBx.length){nar.push('ถ้าเดินตามตาที่แนะนำ จะเป็นอย่างนี้');nar.push(...coSteps(FS,evBx,3))}}
       coAdd({kind:D.k,title:'ผู้ฝึกสอน',lines:D.L,say:nar.map(t=>t.replace(/\s+/g,' ').trim()).filter(Boolean),full:S.L,gest:D.k==='ok'?'yes':D.k==='bad'?'no':'point'})}
   }catch(x){if(!(x&&x.stopped))coSay('วิเคราะห์ไม่สำเร็จ ลองอีกครั้ง',{kind:'warn'})}
   finally{setCoSt('');setTimeout(autoHintTick,60)}
@@ -14015,7 +14015,7 @@ async function coEval(){
   try{
     const r=await coEngine(fenFor(b,c),Math.max(1200,bkSec*800),{});if(g!==gid||h!==hist.length)return;
     const s=c==='w'?r[0].s:-r[0].s,mine=me==='w'?s:-s,mm=coMat(b,me),ma=coMat(b,opp(me));
-    const L=['📊 ตอนนี้ '+coScoreTxt(mine)+(Math.abs(s)>90000?'':' ('+(s>=0?'+':'')+(s/100).toFixed(1)+' เบี้ย มองจากขาว)'),'หมากบนกระดาน: คุณ '+(mm/100).toFixed(1)+' เทียบ AI '+(ma/100).toFixed(1)+' เบี้ย'+(mm>ma+50?' (คุณมีหมากมากกว่า)':mm<ma-50?' (AI มีหมากมากกว่า)':' (เท่ากัน)')];
+    const L=['📊 ตอนนี้ '+coScoreTxt(mine)+(Math.abs(s)>90000?'':' ('+(s>=0?'+':'')+(s/100).toFixed(1)+' เบี้ย มองจากขาว)'),'แต้มหมากรวมบนกระดาน (นับเรือ ม้า โคน เม็ด เบี้ย ตามค่าหมาก): คุณ '+(mm/100).toFixed(1)+' เทียบ AI '+(ma/100).toFixed(1)+' เบี้ย'+(mm>ma+50?' (คุณมีหมากมากกว่า)':mm<ma-50?' (AI มีหมากมากกว่า)':' (เท่ากัน)')];
     coAdd({kind:'info',title:'ผู้ฝึกสอน',lines:L,say:['ตอนนี้คุณ'+coScoreTxt(mine)],full:L,gest:mine>=100?'yes':mine<=-100?'point':null});
   }catch(x){if(!(x&&x.stopped))coSay('วิเคราะห์ไม่สำเร็จ ลองอีกครั้ง',{kind:'warn'})}
   finally{setCoSt('');setTimeout(autoHintTick,60)}
@@ -16337,7 +16337,7 @@ function olDrawUi(){
  '#olDrawFloat button{width:auto;min-width:0;min-height:0;margin:0;padding:.15em .6em;border-radius:.6em;font:inherit;font-weight:800;line-height:1.3;cursor:pointer;border:1px solid rgba(0,0,0,.4)}#olDrawFloat button[hidden]{display:none}'+
  '#olDrawFloat .odY{background:#1e8449;color:#fff}#olDrawFloat .odN{background:#c0392b;color:#fff}#olDrawFloat .odC{background:rgba(255,255,255,.9);color:#222}'+
  '#olDrawFloat.odInc{animation:olDrawPulse 1.2s ease-in-out infinite;border-radius:.7em}@media(prefers-reduced-motion:reduce){#olUnder #olDrawYes,#olUnder #olDrawNo,#olDrawFloat.odInc{animation:none!important}}';document.head.appendChild(st)}
-/* V9.0.15: "วิเคราะห์ตาเดินทั้งหมด": ถ้าเลือกเอนจินภายนอกไว้แต่ยังไม่ได้เชื่อมต่อ (เว็บบน GitHub เชื่อม Fairy-Stockfish ไม่ได้) เดิมขึ้นข้อความเล็กๆ แล้วหยุดเฉยๆ ดูเหมือนไม่ทำงาน → ตอนนี้สลับไปใช้ "เรียวเมืองทอง (AI ภายใน)" ให้เองแล้ววิเคราะห์เลย */
+/* V9.0.15: "วิเคราะห์ตาเดินทั้งเกม": ถ้าเลือกเอนจินภายนอกไว้แต่ยังไม่ได้เชื่อมต่อ (เว็บบน GitHub เชื่อม Fairy-Stockfish ไม่ได้) เดิมขึ้นข้อความเล็กๆ แล้วหยุดเฉยๆ ดูเหมือนไม่ทำงาน → ตอนนี้สลับไปใช้ "เรียวเมืองทอง (AI ภายใน)" ให้เองแล้ววิเคราะห์เลย */
 {const old=$('analyzeGame').onclick;$('analyzeGame').onclick=async function(){
   try{const s=$('analysisEngine');if(!anBusy&&s&&s.value==='fairy'&&!extEng()){s.value='internal';try{olMsg('🔍 ไม่มีเอนจินภายนอกเชื่อมต่ออยู่ จึงใช้เรียวเมืองทอง (AI ภายใน) วิเคราะห์ทั้งเกมให้')}catch(e){}}}catch(e){}
   return old.apply(this,arguments)}}
@@ -16392,20 +16392,25 @@ function anVoiceToggle(){anVoiceOn=!anVoiceOn;try{localStorage.setItem('makruk-a
 }catch(e){}return r}}
 /* ===== V9.0.17c: จบเกมออนไลน์ → มีกล่องกลางกระดาน "🔍 วิเคราะห์เกม" / "✕ ไม่ต้อง" (ขึ้นครั้งเดียวต่อเกม) ===== */
 function olAnPopHide(){const e=$('olAnPop');if(e)e.hidden=true}
+function olAnPopDone(){OL.anPopDone=OL.gid;olAnPopHide()}                 // ผู้เล่นกดตอบแล้ว (หรือเริ่มดูผลวิเคราะห์) → ไม่ขึ้นซ้ำในเกมนี้
 function olAnPopShow(){try{
   const bd=$('bd');if(!bd||!olAnDone())return;
   let e=$('olAnPop');
   if(!e){e=document.createElement('div');e.id='olAnPop';e.setAttribute('role','dialog');e.setAttribute('aria-label','วิเคราะห์เกมที่เพิ่งจบ');
     e.innerHTML='<div class="olApT">🏁 จบเกมแล้ว<br><small>ดูว่าตาไหนดี ตาไหนพลาด?</small></div><div class="olApB"><button type="button" id="olApYes">🔍 วิเคราะห์เกม</button><button type="button" id="olApNo">✕ ไม่ต้อง</button></div>';
     bd.appendChild(e);
-    $('olApNo').onclick=olAnPopHide;
-    $('olApYes').onclick=()=>{olAnPopHide();const b=$('olAnB');if(b&&!b.disabled)b.click();else{const ag=$('analyzeGame');if(ag&&!anBusy)ag.click()}};
-    e.addEventListener('keydown',ev=>{if(ev.key==='Escape')olAnPopHide()})}
+    $('olApNo').onclick=olAnPopDone;
+    $('olApYes').onclick=()=>{olAnPopDone();const b=$('olAnB');if(b&&!b.disabled)b.click();else{const ag=$('analyzeGame');if(ag&&!anBusy)ag.click()}};
+    e.addEventListener('keydown',ev=>{if(ev.key==='Escape')olAnPopDone()})}
   e.hidden=false;try{$('olApYes').focus({preventScroll:true})}catch(x){}
 }catch(x){}}
-{const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);try{
-  if(!OL.room||!olAnDone()){olAnPopHide()}
-  else if(OL.gid&&OL.anPopFor!==OL.gid){OL.anPopFor=OL.gid;setTimeout(()=>{if(olAnDone()&&!anBusy)olAnPopShow()},900)}}catch(e){}return r}}
+/* ตัวเฝ้า: ทุก 0.5 วินาที ถ้าเกมจบแล้ว (ผู้เล่นทุกฝ่ายในห้อง ทั้งขาวและดำ) และยังไม่ได้ตอบ → ให้กล่องอยู่บนกระดานเสมอ (สร้างใหม่/เปิดใหม่ถ้าหายไป) แทนการยิงครั้งเดียวแล้วจบ */
+setInterval(()=>{try{
+  if(!OL.room||!OL.gid||!olAnDone()){OL.anPopT0=0;olAnPopHide();return}
+  if(OL.anPopG!==OL.gid){OL.anPopG=OL.gid;OL.anPopT0=0}
+  if(OL.anPopDone===OL.gid||anBusy||(analysisReport&&anReady()))return;
+  if(!OL.anPopT0)OL.anPopT0=Date.now();if(Date.now()-OL.anPopT0<900)return;
+  const e=$('olAnPop'),bd=$('bd');if(!e||e.hidden||!bd||!bd.contains(e))olAnPopShow()}catch(e){}},500);
 {const old=olLeaveLocal;olLeaveLocal=function(){olAnPopHide();return old.apply(this,arguments)}}
 {const old=olStartGame;olStartGame=function(){olAnPopHide();return old.apply(this,arguments)}}
 {const st=document.createElement('style');st.textContent='#olAnPop[hidden]{display:none}#olAnPop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;min-width:min(78%,260px);padding:14px 16px;border-radius:14px;background:rgba(20,28,40,.93);color:#fff;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.55);border:1px solid rgba(255,209,0,.55)}'+
@@ -16416,10 +16421,11 @@ let olNavOn=false;
 function olNavUi(){try{
   let fl=$('olNavFloat');
   const foot=$('pnFoot'),footOk=!!foot&&!foot.hidden&&getComputedStyle(foot).display!=='none'&&foot.getBoundingClientRect().width>200;
-  const want=!!(OL.room&&!OL.spect&&olAnDone()&&!anBusy&&typeof anReady==='function'&&anReady()&&footOk);
-  if(want!==olNavOn){olNavOn=want;try{anCardEnsure()}catch(e){}}                                   // ปุ่มลอยขึ้น/หายไป → การ์ดอธิบายย้ายมาอยู่ใต้กระดาน/กลับไปด้านข้าง
+  const allowed=OL.room?(!OL.spect&&olAnDone()):true;                                     // ออนไลน์: หลังจบเกมเท่านั้น · เล่นเอง/โหลดเกม: ผลวิเคราะห์พร้อมก็ใช้ได้เหมือนกัน
+  const dock=!!(allowed&&!anBusy&&typeof anReady==='function'&&anReady()&&!setup),want=dock&&footOk;
+  if(dock!==olNavOn){olNavOn=dock;try{anCardEnsure()}catch(e){}}                                   // ปุ่มลอยขึ้น/หายไป → การ์ดอธิบายย้ายมาอยู่ใต้กระดาน/กลับไปด้านข้าง
   if(!want){if(fl)fl.hidden=true;return}
-  try{olAnPopHide()}catch(e){}                                                              // เริ่มดูผลวิเคราะห์แล้ว → ปิดกล่องถามกลางกระดาน
+  try{olAnPopDone()}catch(e){}                                                              // เริ่มดูผลวิเคราะห์แล้ว → ปิดกล่องถามกลางกระดาน
   if(!fl){fl=document.createElement('span');fl.id='olNavFloat';fl.setAttribute('role','group');fl.setAttribute('aria-label','เลื่อนดูตาเดินที่วิเคราะห์');
     fl.innerHTML='<button type="button" class="onB" aria-label="ถอยหลัง 1 ตา" title="ถอยหลัง 1 ตา">◀</button><span class="onT" role="status"></span><button type="button" class="onF" aria-label="เดินหน้า 1 ตา" title="เดินหน้า 1 ตา">▶</button>';
     fl.querySelector('.onB').onclick=()=>stepView(-1);fl.querySelector('.onF').onclick=()=>stepView(1);
