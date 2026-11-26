@@ -16448,15 +16448,27 @@ function olNavUi(){try{
  '#olDrawFloat:not([hidden]){animation:olDrawPop .5s ease-out}#olDrawFloat.odInc:not([hidden]){animation:olDrawPop .5s ease-out,olDrawPulse 1.2s ease-in-out .5s infinite}'+
  '@media(prefers-reduced-motion:reduce){#olDrawFloat:not([hidden]),#olDrawFloat.odInc:not([hidden]){animation:none!important}}';document.head.appendChild(st)}
 /* การ์ดอธิบายตา: ขณะมีปุ่มลอย ◀ ▶ ให้อยู่ใต้กระดานติดแถวปุ่ม (เห็นชัด) · ไม่มีปุ่มลอยก็อยู่ด้านข้างเหมือนเดิม */
+/* กล่องอธิบายตา: จอกว้าง (เมนูอยู่ขวากระดาน) → ติดกระดานด้านบนขวา · จอแคบ/ขยายเต็มจอ → ใต้กระดานเหมือนเดิม */
+function anDockPlace(c){const pn=$('pn'),bx=$('bx');let side=false;
+  try{const a=pn.getBoundingClientRect(),w=($('bw')||bx).getBoundingClientRect();side=!document.body.classList.contains('fs')&&a.width>150&&a.left>=w.right-4}catch(e){}
+  c.classList.add('anDock');
+  const ft=$('fsTools');
+  if(document.body.classList.contains('fsTl')&&ft){c.classList.add('anSide','anTools');c.classList.remove('anFloat');c.style.left=c.style.width='';if(ft.firstElementChild!==c)ft.insertBefore(c,ft.firstChild);return}   // ขยายเต็มจอ: ติดบนสุดของคอลัมน์เมนูขวา
+  c.classList.remove('anTools');if(!side){c.classList.remove('anFloat');c.style.left=c.style.width=''}
+  if(side){c.classList.add('anSide','anFloat');if(pn.firstElementChild!==c)pn.insertBefore(c,pn.firstChild);
+    try{const a=pn.getBoundingClientRect();c.style.left=Math.round(a.left)+'px';c.style.width=Math.round(Math.max(200,Math.min(a.width,560,innerWidth-a.left-10)))+'px'}catch(e){}}   // ลอยบนสุดของคอลัมน์ขวา ทับรูปโค้ชได้ เลื่อนหน้าแล้วก็ยังอยู่
+  else{c.classList.remove('anSide','anFloat');c.style.left=c.style.width='';if(bx&&c.previousElementSibling!==bx)bx.insertAdjacentElement('afterend',c)}}
 {const old=anCardEnsure;anCardEnsure=function(){
-  if(olNavOn){let c=$('anCard');if(!c)c=old.apply(this,arguments);const bx=$('bx');
-    if(bx&&c.previousElementSibling!==bx)bx.insertAdjacentElement('afterend',c);c.classList.add('anDock');return c}
-  const c=old.apply(this,arguments);c.classList.remove('anDock');return c}}
+  if(olNavOn){let c=$('anCard');if(!c)c=old.apply(this,arguments);anDockPlace(c);return c}
+  const c=old.apply(this,arguments);c.classList.remove('anDock','anSide','anFloat','anTools');c.style.left=c.style.width='';
+  const bx=$('bx');if(bx&&c.previousElementSibling!==bx)bx.insertAdjacentElement('afterend',c);   // วิเคราะห์เสร็จ/ปิดปุ่มลอย → กลับที่เดิมใต้กระดาน
+  return c}}
 {const old=anCardUpdate;anCardUpdate=function(){const r=old.apply(this,arguments);try{
   const c=$('anCard');if(olNavOn&&c&&!c.hidden){
-    if(!c.classList.contains('anDock'))anCardEnsure();
-    const b=c.getBoundingClientRect();if(b.bottom>innerHeight-4||b.top<0)c.scrollIntoView({block:'nearest',behavior:'smooth'})}}catch(e){}return r}}
-{const st=document.createElement('style');st.textContent='#anCard.anDock{position:static;margin:8px 0 0;font-size:15px;box-shadow:0 3px 12px rgba(0,0,0,.35);border:2px solid rgba(255,209,0,.7);max-height:none}#anCard.anDock .anH:before{content:"🎓";font-size:17px}#anCard.anDock .anSc{flex-basis:100%}';document.head.appendChild(st)}
+    anDockPlace(c);
+    /* ไม่เลื่อนหน้าเอง: กดลูกศรวิเคราะห์แล้วกระดานต้องไม่เด้งขึ้น (เลื่อนเองด้วยแถบข้าง) */}}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='#anCard.anDock{position:static;margin:8px 0 0;font-size:15px;box-shadow:0 3px 12px rgba(0,0,0,.35);border:2px solid rgba(255,209,0,.7);max-height:none}#anCard.anDock .anH:before{content:"🎓";font-size:17px}#anCard.anDock .anSc{flex-basis:100%}#anCard.anSide{margin:0 0 10px;max-height:none}html body #anCard.anFloat{position:fixed;top:8px;margin:0;z-index:60;min-width:0;max-height:46vh;overflow:auto;box-sizing:border-box;background:var(--pn);box-shadow:0 6px 22px rgba(0,0,0,.45)}body.fsTl #fsTools>#anCard.anTools{flex:0 0 auto;max-height:46vh;overflow:auto;margin:0 0 8px;font-size:14px}';
+{let t=0;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(()=>{try{const c=$('anCard');if(olNavOn&&c&&!c.hidden)anDockPlace(c)}catch(e){}},150)})}document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent='#olChatLog .olMsg.sys{opacity:.75;font-style:italic;font-size:.92em}';document.head.appendChild(st)}
 /* V9.0.18: กล่อง "คนในห้องรวม" ข้างฟอร์ม/การ์ดผู้เล่นในหน้าต่างล็อบบี้ · ทะเบียนอยู่ที่ games/lobby_chat/who/<key> (ใช้สิทธิ์ games เดิม) · ลบชื่อเมื่อปิดหน้าต่างล็อบบี้ / เข้าห้องเล่น / ออกจากระบบ / หลุดเน็ต (onDisconnect) */
 const olLobWho={ref:null,key:null,on:false,off:0};
@@ -16597,7 +16609,7 @@ function mvUpdate(force){try{
     for(const [cl,tx] of [['mvN',r.n+'.'],['mvW',r.w||'…'],['mvB',r.b||'']]){const s=document.createElement('span');s.className=cl;s.textContent=tx;x.appendChild(s)}L.appendChild(x)}
   if(d.open)L.scrollTop=L.scrollHeight}catch(e){}}
 {const old=render;render=function(){const r=old.apply(this,arguments);try{mvUpdate()}catch(e){}return r}}
-{const old=fsTools;fsTools=function(){const r=old.apply(this,arguments);try{mvUpdate(true)}catch(e){}return r}}
+{const old=fsTools;fsTools=function(){const r=old.apply(this,arguments);try{mvUpdate(true)}catch(e){}try{const c=$('anCard');if(olNavOn&&c&&!c.hidden)anDockPlace(c)}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent='#mvBox{margin:8px 0;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box;width:100%}#mvSum{font-weight:800;cursor:default}'+
  '#mvList{max-height:260px;overflow:auto;font-size:13px;line-height:1.5;margin-top:4px}.mvR{display:grid;grid-template-columns:2.2em 1fr 1fr;gap:4px}.mvN{opacity:.65}.mvE{opacity:.6}'+
  '#mvBtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}#mvBtns button{width:auto;margin:0;padding:3px 9px;font-weight:700}'+
