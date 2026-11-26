@@ -16581,12 +16581,14 @@ function mvEnsure(){let d=$('mvBox');if(d)return d;
   d.innerHTML='<summary id="mvSum">📜 ตาเดิน (0)</summary><div id="mvList" role="log" aria-live="off"></div><div id="mvBtns"><button type="button" id="mvCopyT">📋 คัดลอกตาเดิน (ไทย)</button><button type="button" id="mvCopyP">📋 คัดลอก PGN</button></div>';
   d.querySelector('#mvCopyT').onclick=ev=>{const t=mvText();if(!t){ev.target.textContent='ยังไม่มีตาเดิน';setTimeout(()=>{ev.target.textContent='📋 คัดลอกตาเดิน (ไทย)'},1200);return}mvCopy(t,ev.target)};
   d.querySelector('#mvCopyP').onclick=ev=>{let t='';try{t=mlog.length?buildPgn():''}catch(e){t=''}if(!t){ev.target.textContent='ยังไม่มีตาเดิน/สร้าง PGN ไม่ได้';setTimeout(()=>{ev.target.textContent='📋 คัดลอก PGN'},1500);return}mvCopy(t,ev.target)};
+  d.querySelector('#mvSum').addEventListener('click',ev=>ev.preventDefault());d.open=true;
   return d}
 let mvKey='';
 function mvUpdate(force){try{
   const d=mvEnsure(),inTools=!!$('fsTools'),tg=$('fsTools')||$('bw');
   if(tg&&d.parentNode!==tg)tg.appendChild(d);
-  {const w=inTools?'t':'b';if(d.dataset.w!==w){d.dataset.w=w;d.open=inTools}}   // เปลี่ยนที่อยู่ (คอลัมน์เมนู ↔ ใต้กระดาน) = ตั้งค่ากาง/พับใหม่ (fsTools อาจย้ายกล่องมาเองตอนย้ายลูกของ #bw)
+  {const w=inTools?'t':'b';if(d.dataset.w!==w){d.dataset.w=w}}
+  d.open=true;   // กางตลอด (▼) ไม่ให้พับ   // เปลี่ยนที่อยู่ (คอลัมน์เมนู ↔ ใต้กระดาน) = ตั้งค่ากาง/พับใหม่ (fsTools อาจย้ายกล่องมาเองตอนย้ายลูกของ #bw)
   const key=mlog.length+'|'+(mlog.length?mlog[mlog.length-1].uci:'');if(!force&&key===mvKey)return;mvKey=key;
   $('mvSum').textContent='📜 ตาเดิน ('+mlog.length+')';
   const L=$('mvList'),rows=mvRows();L.textContent='';
@@ -16596,7 +16598,7 @@ function mvUpdate(force){try{
   if(d.open)L.scrollTop=L.scrollHeight}catch(e){}}
 {const old=render;render=function(){const r=old.apply(this,arguments);try{mvUpdate()}catch(e){}return r}}
 {const old=fsTools;fsTools=function(){const r=old.apply(this,arguments);try{mvUpdate(true)}catch(e){}return r}}
-{const st=document.createElement('style');st.textContent='#mvBox{margin:8px 0;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box;width:100%}#mvSum{font-weight:800;cursor:pointer}'+
+{const st=document.createElement('style');st.textContent='#mvBox{margin:8px 0;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box;width:100%}#mvSum{font-weight:800;cursor:default}'+
  '#mvList{max-height:260px;overflow:auto;font-size:13px;line-height:1.5;margin-top:4px}.mvR{display:grid;grid-template-columns:2.2em 1fr 1fr;gap:4px}.mvN{opacity:.65}.mvE{opacity:.6}'+
  '#mvBtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}#mvBtns button{width:auto;margin:0;padding:3px 9px;font-weight:700}'+
  'body.fsTl #fsTools{height:calc(100vh - 12px)}body.fsTl #fsTools>#mvBox{flex:1 1 150px;min-height:110px;display:flex;flex-direction:column;margin:0}body.fsTl #mvBox #mvList{flex:1 1 auto;max-height:none;min-height:0}body.fsTl #fsTools>#mvBox:not([open]){flex:0 0 auto;min-height:0}';document.head.appendChild(st)}
