@@ -16536,7 +16536,7 @@ function olDing(){try{const A=window.AudioContext||window.webkitAudioContext;if(
 {const old=olLeaveLocal;olLeaveLocal=function(){const r=old.apply(this,arguments);try{OL.fsRoom=null;if(OL.fsAuto){OL.fsAuto=false;if(document.body.classList.contains('fs'))setFull(false)}}catch(e){}return r}}
 /* V9.0.18: โหมดขยายกระดานบนจอคอม (≥900px): ย้ายแถวปุ่ม/แถบปุ่มใต้กระดานไปแผงขวา (#fsTools) ให้กระดานสูงเกือบเต็มจอแบบ Playok · ออกจากโหมด/จอแคบลง = ย้ายกลับที่เดิม */
 function fsTools(on){try{
-  const bw=$('bw'),rc=$('rc'),sc=$('sc');if(!bw||!rc)return;let t=$('fsTools');const want=!!on&&innerWidth>=900;
+  const bw=$('bw'),rc=$('rc'),sc=$('sc');if(!bw||!rc)return;let t=$('fsTools');const want=!!on&&innerWidth>=700;
   if(want){
     if(!t){t=document.createElement('div');t.id='fsTools';t.setAttribute('role','group');t.setAttribute('aria-label','ปุ่มและแถบเครื่องมือของกระดาน');(sc&&sc.parentNode===rc?sc.insertAdjacentElement('afterend',t):rc.appendChild(t))}
     const keep=new Set([$('who2'),$('bx'),$('tntBubble')]);
@@ -16548,10 +16548,10 @@ function fsTools(on){try{
   try{layFit()}catch(e){}try{render()}catch(e){}}catch(e){}}
 {const old=setFull;setFull=function(on){const r=old.apply(this,arguments);try{fsTools(on)}catch(e){}return r}}
 try{addEventListener('resize',()=>{try{if(document.body.classList.contains('fs')||$('fsTools'))fsTools(document.body.classList.contains('fs'))}catch(e){}})}catch(e){}
-{const st=document.createElement('style');st.textContent='body.fsTl #fsTools{flex:0 0 260px;width:260px;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding-top:34px;max-height:calc(100vh - 12px);overflow-y:auto;position:sticky;top:6px;align-self:flex-start}'+
+{const st=document.createElement('style');st.textContent='body.fsTl #fsTools{flex:0 0 clamp(190px,24vw,260px);width:clamp(190px,24vw,260px);display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding-top:34px;max-height:calc(100vh - 12px);overflow-y:auto;position:sticky;top:6px;align-self:flex-start}'+
  'body.fsTl #fsTools>*{margin-top:0!important;width:100%;max-width:100%;box-sizing:border-box}'+
- 'html body.fs.fsTl{--bsz:max(300px,min(calc(100vh - 90px),calc(100vw - 330px)))}'+
- '@media(min-width:1080px) and (min-aspect-ratio:8/5){html body.fs.fsTl{--bsz:max(300px,min(calc(100vh - 90px),calc(100vw - 600px)))}}';document.head.appendChild(st)}
+ 'html body.fsTl #rc{flex-direction:row!important;gap:12px;align-items:flex-start}html body.fsTl #sc{position:sticky;top:var(--stk)}'+
+ 'html body.fs.fsTl{--bsz:max(260px,min(calc(100vh - 90px),calc(100vw - var(--sw) - clamp(190px,24vw,260px) - 130px)))}';document.head.appendChild(st)}
 /* V9.0.18: เต็มจอแบบ F11 (Fullscreen API ของเบราว์เซอร์ ซ่อนแถบที่อยู่/แท็บ) — เบราว์เซอร์ให้ทำได้เฉพาะตอนผู้ใช้คลิก: (1) คลิกในหน้าต่างล็อบบี้ครั้งแรก (2) กดนั่ง/เปิดห้อง/ท้าดวล/รับชม/สุ่มเล่น · ถ้าผู้ใช้กด Esc/F11 ออกเอง ล็อบบี้จะไม่บังคับซ้ำ (แต่กดเข้าห้องใหม่จะเข้าเต็มจออีกครั้ง) */
 function olGoFull(){try{const d=document.documentElement;if(document.fullscreenElement||!d.requestFullscreen)return;const p=d.requestFullscreen({navigationUI:'hide'});if(p&&p.catch)p.catch(()=>{})}catch(e){}}
 try{document.addEventListener('fullscreenchange',()=>{try{if(!document.fullscreenElement)OL.fsDeclined=true;else OL.fsDeclined=false}catch(e){}});
