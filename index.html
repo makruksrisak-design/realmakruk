@@ -13525,7 +13525,8 @@ aggStatSync();
    ระหว่างเกมออนไลน์ (ผู้เล่นและผู้ชม) ปิดตัวช่วยที่ใช้เอนจิน: บอกใบ้อัตโนมัติ · เตือนเดินพลาด · ผู้ฝึกสอน · วิเคราะห์แนวเดิน/ทั้งเกม ·
    แถบความได้เปรียบ · โจทย์/ตำรา/สถิติเกมจริง · จบเกมแล้วเปิดคืนตามที่ตั้งไว้เดิมอัตโนมัติ (วิเคราะห์หลังจบเกมได้ตามปกติ) */
 let olFairSave=null;
-const OL_FAIR_IDS='#qHint,#qLineBtn,#fb,#qWarn,#avCoach,#analyzeGame,#newPuzzle,#qOpn,#qPrac,#pv4';
+const OL_FAIR_IDS='#qHint,#qLineBtn,#fb,#hb,#autoMode,#fd,#pvDelay,#tm,#qWarn,#avCoach,#analyzeGame,#newPuzzle,#qOpn,#qPrac,#pv4';
+const OL_FAIR_DIS=['hb','fb','autoMode','fd','pvDelay','tm','analyzeGame'];
 function olFairActive(){return !!(OL.gid&&!OL.reported)}
 function olFairOn(){
   if(olFairSave)return;
@@ -13533,7 +13534,9 @@ function olFairOn(){
   autoHintOn=false;try{$('qHint').classList.remove('on');$('qHint').setAttribute('aria-pressed','false')}catch(e){}
   if($('bk').checked){$('bk').checked=false;$('bk').dispatchEvent(new Event('change'))}
   try{if(olFairSave.co)coSet(false)}catch(e){}
-  hint=null;fut=null;try{clearWarn()}catch(e){}
+  hint=null;fut=null;hintNote='';hintPosKey='';try{clearWarn()}catch(e){}
+  try{if(chn)chnStop(false)}catch(e){}
+  OL_FAIR_DIS.forEach(i=>{const e=$(i);if(e){e.dataset.olfd=e.disabled?'1':'0';e.disabled=true}});
   document.documentElement.setAttribute('data-olfair','1');try{render()}catch(e){}
 }
 function olFairOff(){
@@ -13541,7 +13544,9 @@ function olFairOff(){
   autoHintOn=s.hint;try{$('qHint').classList.toggle('on',autoHintOn);$('qHint').setAttribute('aria-pressed',String(autoHintOn))}catch(e){}
   if($('bk').checked!==s.bk){$('bk').checked=s.bk;$('bk').dispatchEvent(new Event('change'))}
   try{if(s.co)coSet(true)}catch(e){}
+  OL_FAIR_DIS.forEach(i=>{const e=$(i);if(e){e.disabled=e.dataset.olfd==='1';delete e.dataset.olfd}});
   document.documentElement.removeAttribute('data-olfair');try{render()}catch(e){}
+  try{autoKey='';setTimeout(autoHintTick,200)}catch(e){}
 }
 {const old=olStartGame;olStartGame=function(){const r=old.apply(this,arguments);try{olFairOn()}catch(e){}return r}}
 {const old=olResult;olResult=function(){const r=old.apply(this,arguments);try{olFairOff()}catch(e){}return r}}
@@ -13552,7 +13557,9 @@ document.addEventListener('click',ev=>{
 },true);
 {const old=gbStatText;gbStatText=function(){return olFairActive()?'':old.apply(this,arguments)}}
 {const old=render;render=function(){if(olFairActive()){hint=null;fut=null}return old.apply(this,arguments)}}
-{const st=document.createElement('style');st.textContent=':root[data-olfair] #eb{visibility:hidden}:root[data-olfair] #qHint,:root[data-olfair] #qLineBtn,:root[data-olfair] #qWarn,:root[data-olfair] #avCoach{opacity:.35}';document.head.appendChild(st)}
+{const old=autoHintTick;autoHintTick=function(){if(olFairActive())return;return old.apply(this,arguments)}}
+{const old=showEval;showEval=function(){if(olFairActive())return;return old.apply(this,arguments)}}
+{const st=document.createElement('style');st.textContent=':root[data-olfair] #eb,:root[data-olfair] #enFoot,:root[data-olfair] #hn,:root[data-olfair] details:has(#fd){display:none!important}:root[data-olfair] #hb,:root[data-olfair] #autoMode,:root[data-olfair] #tm{opacity:.35}:root[data-olfair] #qHint,:root[data-olfair] #qLineBtn,:root[data-olfair] #qWarn,:root[data-olfair] #avCoach{opacity:.35}';document.head.appendChild(st)}
 /* ===== V8.9.14: the coach under the picture ("ผู้ฝึกสอน") + the switch of the idioms =====
    "under the picture a button for the idioms (on/off) and a button 'ผู้ฝึกสอน'" · "make the picture the coach: it speaks, teaches, keeps telling" · "if I move wrongly: say what is wrong (this move is eaten for free), which move to play instead,
    and what happens 2, 3, 4 moves ahead; tell me before it happens" · "an AI chatbot inside the picture that answers the player"
@@ -16068,13 +16075,21 @@ function olBtnPlace(){const qb=$('qb');if(!qb)return;let row=$('olBtnRow');
  '#olBtnRow #olDrawB{order:1}#olBtnRow #olResB{order:2}#olBtnRow #olLeaveB{order:3}#olBtnRow #olPgnB{order:4;flex:0 0 auto}#olBtnRow #olRmB{order:5;flex:0 0 auto}'+
  '#olBtnRow #olAiRow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0}#olBtnRow #olAiRow .olAiH{flex:0 0 auto}#olBtnRow #olAiRow select{width:auto}#olBtnRow #olAiRow button{width:auto;flex:0 0 auto}';
  document.head.appendChild(st)}
-/* ค่าเริ่มต้นของไฟล์ออนไลน์ (ครั้งเดียวต่อเบราว์เซอร์): ตัวหมากไม้เงา · กระดานงาช้างลายกระดาษขอบน้ำตาล · ไม่ใส่ลายไม้ · เส้นหนาระดับ 1 สีเส้นไม่ตามขอบ */
-(function(){try{const K2='makruk-oldef2';if(localStorage.getItem(K2)!=='1'){try{const c=$('bcol');if([...c.options].some(o=>o.value==='wood2')){c.value='wood2';$('bgrain').checked=false;c.dispatchEvent(new Event('change'))}}catch(e){}localStorage.setItem(K2,'1');localStorage.setItem('makruk-oldef1','1');try{$('pr').click()}catch(e){}return}}catch(e){}
-  try{const K='makruk-oldef1';if(localStorage.getItem(K)==='1')return;
+/* ค่าเริ่มต้นของเว็บ: ตั้งให้ทุกเบราว์เซอร์ "หนึ่งครั้งต่อรหัสเวอร์ชัน" (OL_DEFVER) · อยากให้ทุกคนได้ค่าใหม่ แค่เปลี่ยนรหัสนี้ · ผู้เล่นกดปุ่ม "คืนค่าเริ่มต้นของเว็บ" ในหน้าห้องรวมได้เองทุกเมื่อ
+   ค่าที่ตั้ง: ธีมหน้าเกม = ฟ้าเรียบ · กระดาน = ฟ้าครามลายไม้ เส้นทอง (nb10) ไม่ใส่ลายไม้ทับ · ตัวหมาก = ไม้เงา · เส้นตารางระดับ 1 สีเส้นไม่ตามขอบ (เสียง เสียงพูด ฯลฯ ไม่ถูกแตะ) */
+const OL_DEFVER='ol-2026-11-26b';
+function olApplyDefaults(){
+  try{const t=$('theme');if(t){t.value='blue';document.documentElement.dataset.palette='blue';localStorage.setItem('makruk-theme','blue')}}catch(e){}
   try{gridCfg=Object.assign({},GRID_DEF);gridApply(true)}catch(e){}
-  try{const c=$('bcol');if([...c.options].some(o=>o.value==='nb2')){c.value='nb2';$('bgrain').checked=false;c.dispatchEvent(new Event('change'))}}catch(e){}
+  try{const c=$('bcol');if(c){const v=[...c.options].some(o=>o.value==='nb10')?'nb10':([...c.options].some(o=>o.value==='wood2')?'wood2':'');if(v){c.value=v;$('bgrain').checked=false;c.dispatchEvent(new Event('change'))}}}catch(e){}
   try{$('pr').click()}catch(e){}
-  localStorage.setItem(K,'1')}catch(e){}})();
+}
+(function(){try{if(localStorage.getItem('makruk-oldefver')===OL_DEFVER)return;olApplyDefaults();localStorage.setItem('makruk-oldefver',OL_DEFVER)}catch(e){}})();
+{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);
+  try{const box=$('olBox');if(box&&!$('olDefRow')){const d=document.createElement('div');d.id='olDefRow';
+    d.innerHTML='<button type="button" id="olDefB" title="ตั้งธีม กระดาน ตัวหมาก และเส้นตาราง กลับเป็นค่าเริ่มต้นของเว็บ (ไม่แตะเสียงและค่าอื่น)">🎨 คืนค่าเริ่มต้นของเว็บ (ธีม กระดาน ตัวหมาก)</button><span id="olDefM" role="status"></span>';
+    box.appendChild(d);$('olDefB').onclick=()=>{olApplyDefaults();$('olDefM').textContent=' ✓ คืนค่าเริ่มต้นแล้ว'}}}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='#olDefRow{margin:10px 0 4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}#olDefRow button{width:auto;margin:0}';document.head.appendChild(st)}
 {const st=document.createElement('style');st.textContent='#olBox .olRoom>b{flex:1 1 100%}#olBox .olRoom>span{flex:1 1 auto}#olBox .olRoom>button{flex:0 0 auto;white-space:nowrap}';document.head.appendChild(st)}
 </script>
 </body>
