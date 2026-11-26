@@ -16900,6 +16900,13 @@ const OL_AUTOBOT={on:true,rooms:[1,3],name:'🤖 เรียวเมือง�
  {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!started&&eligible()){started=true;setTimeout(()=>{if(enabled())abStart();else chipDraw()},2500)}}catch(e){}return r}}
  setInterval(()=>{if(chip&&frames.length)chip.firstChild.textContent=chipTxt()},3000);
 }
+
+/* ===== v9029: ปุ่มในรายการห้องแข่งขัน (ท้าดวล / เปิดห้องเล่น / รับชมสด / กลับเข้าห้อง) เป็นสีน้ำเงิน ตัวหนังสือขาว เห็นชัดในธีมมืด ===== */
+{const st=document.createElement('style');st.id='olBlueBtn';
+ st.textContent='html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]){background:#1f6fe0;color:#fff;border:1px solid #8cc0ff;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.35);box-shadow:0 1px 3px rgba(0,0,0,.35)}'+
+ 'html body #olBox #olRooms .olRoom button[data-a].pri{background:#2b86ff;border-color:#bcdcff}'+
+ 'html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]):hover,html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]):focus-visible{background:#4a9bff;outline:2px solid #fff}';
+ document.head.appendChild(st)}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
