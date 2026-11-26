@@ -15372,7 +15372,7 @@ function rpStepSound(ply){
     const items=moveParts(pc,mover,f,t,cp,promo).map(x=>({t:x.t,who:mover,rate:x.rate}));
     if(chk)items.push({t:forkCheck(af,mover,t)?'\u0e23\u0e38\u0e01\u0e09\u0e32\u0e15':'\u0e23\u0e38\u0e01',who:'g',rate:1});
     if(items.length)spkAnnounce(items,{keep:false,cue:null});
-    try{if(CO.on&&CO.snd&&anReady()){const e=anExplain(ply),sg=[e.tag.replace(/[^\u0e00-\u0e7f0-9 ]/g,'').trim()+' \u0e04\u0e30\u0e41\u0e19\u0e19 '+String(e.score).replace('-','\u0e25\u0e1a ')].concat(e.L.slice(0,2).map(x=>x.replace(/^\u26a0\s*/,'').slice(0,110)));coSpeak(sg,true)}}catch(x){}}}
+    try{if(CO.on&&CO.snd&&anReady()){const e=anExplain(ply),sg=[e.tag.replace(/[^\u0e00-\u0e7f0-9 ]/g,'').trim()+' \u0e04\u0e30\u0e41\u0e19\u0e19 '+anSpeakFix(e.score)].concat(e.L.slice(0,2).map(x=>anSpeakFix(x.replace(/^\u26a0\s*/,'')).slice(0,140)));coSpeak(sg,true)}}catch(x){}}}
 {const old=render;render=function(){const r=old.apply(this,arguments);try{
   const cur=replayView?replayView.ply:-1;
   if(gid!==rpLastGid){rpLastGid=gid;rpLastPly=replayView?replayView.ply:-1}
@@ -16361,11 +16361,14 @@ const olSideIcon=c=>c==='w'?'⚪':'⚫';
 {const old=$('analyzeGame').onclick;$('analyzeGame').onclick=async function(){const was=anBusy;if(!was)anHold=true;let r;try{r=await old.apply(this,arguments)}finally{if(!was)anHold=false}
   try{if(!was&&analysisReport&&analysisReport.status==='complete'&&anReady()&&mlog.length){anSaid='';viewPly(0)}}catch(e){}return r}}
 let anSaid='',anHold=false;
+const AN_TD=['ศูนย์','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
+function anSpeakFix(txt){   // ทำข้อความให้พูดแล้วคนฟังเข้าใจ: เลขทศนิยมอ่านทีละหลัก (+1.52 → บวก 1 จุด หนึ่ง ห้า สอง...) · ก3-ก4 → ก 3 ไป ก 4 · ตัดอีโมจิ
+  return String(txt).replace(/[\u{1F300}-\u{1FAFF}⚪⚫✔⚠✖ℹ☀-➿]/gu,' ').replace(/([กขคงจฉชญ])([1-8])\s*[-x×:]\s*([กขคงจฉชญ])([1-8])/g,'$1 $2 ไป $3 $4').replace(/([+\-−]?)(\d+)\.(\d+)/g,(m,sg,i,d)=>(sg==='+'?'บวก ':sg?'ลบ ':'')+i+' จุด '+[...d].map(x=>AN_TD[+x]).join(' ')).replace(/→/g,' ไป ').replace(/\s*·\s*/g,', ').replace(/\s+/g,' ').trim()}
 function anSpeakText(cc){
   const cl=cc.cloneNode(true);cl.querySelectorAll('.anVB').forEach(x=>x.remove());
   const t=cl.querySelector('.anH')?[...cl.querySelectorAll('.anH,.anS')]:[];                  // หัวการ์ด + ทุกบรรทัดคำอธิบาย (รวมบรรทัดจาง)
   let txt=(t.length?t.map(x=>x.textContent).join('. '):cl.textContent);
-  return txt.replace(/[\u{1F300}-\u{1FAFF}⚪⚫✔⚠✖ℹ☀-➿]/gu,' ').replace(/→/g,' ไป ').replace(/\s*·\s*/g,', ').replace(/\s+/g,' ').trim()}
+  return anSpeakFix(txt)}
 /* เสียงอ่านผลวิเคราะห์: ใช้ speechSynthesis โดยตรง · สวิตช์ของตัวเอง (🔊/🔇 บนการ์ดและบนปุ่มลอย) เปิดไว้เป็นค่าเริ่มต้น ไม่ผูกกับ "เปิดเสียงพูด" ของเกม */
 let anVoiceOn=(()=>{try{return localStorage.getItem('makruk-anvoice')!=='0'}catch(e){return true}})(),anVT=0,anWarn=0;
 function anVoiceStop(){clearTimeout(anVT);anVT=0;try{spkReset()}catch(e){}try{if(hasSpeech())speechSynthesis.cancel()}catch(e){}}
