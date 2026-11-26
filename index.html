@@ -13302,9 +13302,10 @@ function olLobbyRender(){
 }
 async function olLeaderboard(){
   const box=$('olLb');box.textContent='กำลังโหลดอันดับ…';
-  try{await olInit();const s=await OL.db.ref('players').orderByChild('elo').limitToLast(20).once('value');const L=[];s.forEach(c=>{L.push(c.val())});L.sort((a,b)=>b.elo-a.elo);
+  try{await olInit();const s=await OL.db.ref('players').orderByChild('elo').limitToLast(20).once('value');const L=[];s.forEach(c=>{L.push(Object.assign({_k:c.key},c.val()))});L.sort((a,b)=>b.elo-a.elo);
     box.innerHTML='<table class="olLbT"><thead><tr><th>#</th><th>ชื่อ</th><th>ยศ</th><th>Elo</th><th>ชนะ/เสมอ/แพ้</th></tr></thead><tbody>'+
-      L.map((p,i)=>'<tr'+(OL.me&&p.name===OL.me.name?' class="me"':'')+'><td>'+(i+1)+'</td><td>'+esc(p.name)+'</td><td>'+olRankIcon(p.elo)+' '+olRank(p.elo)+'</td><td><b>'+p.elo+'</b></td><td>'+(p.w||0)+'/'+(p.d||0)+'/'+(p.l||0)+'</td></tr>').join('')+'</tbody></table>'+(L.length?'':'<p>ยังไม่มีผู้เล่น</p>');
+      L.map((p,i)=>'<tr'+(OL.me&&p.name===OL.me.name?' class="me"':'')+'><td>'+(i+1)+'</td><td>'+esc(p.name)+' <button type="button" class="olGb" data-k="'+esc(p._k||'')+'" data-n="'+esc(p.name)+'" title="ดูเกมที่ '+esc(p.name)+' เล่นไว้">📜</button></td><td>'+olRankIcon(p.elo)+' '+olRank(p.elo)+'</td><td><b>'+p.elo+'</b></td><td>'+(p.w||0)+'/'+(p.d||0)+'/'+(p.l||0)+'</td></tr>').join('')+'</tbody></table>'+(L.length?'':'<p>ยังไม่มีผู้เล่น</p>')+'<p class="olKeepW">📜 กดที่ปุ่มหลังชื่อเพื่อดูเกมที่ผู้เล่นคนนั้นเล่นไว้ · ⚠ '+OL_KEEP_WARN+'</p><div id="olGames" hidden></div>';
+    box.querySelectorAll('.olGb').forEach(b=>{b.onclick=()=>olShowGames(b.dataset.k,b.dataset.n)});
   }catch(e){box.textContent='⚠ โหลดอันดับไม่ได้: '+e.message}
 }
 /* ---- เข้า/ออกห้อง ---- */
@@ -15683,7 +15684,7 @@ TB_OK.push('RR');
    · ลงชื่อ (ชื่อเล่น + PIN) ได้ตลอดจากหน้าล็อบบี้ เพื่อเก็บ Elo ตามเดิม
    · เวลา: คนเปิดห้องเลือก "นาทีต่อเกม" และ "บวกเวลาต่อตา" ห้องจะใช้ค่านี้ทั้งสองฝ่าย (บันทึกใน lobby/rN: tc, ti)
    · ไฟล์ที่ชื่อมีคำว่า online (เช่น makruk_online.html) หรือเปิดด้วย ?online / #online: เปิดล็อบบี้ให้ทันทีเมื่อเปิดโปรแกรม */
-const OL_TC=[0,1,3,5,10,15,20,30,45,60],OL_TI=[0,2,3,5,10,15,30];
+const OL_TC=[0,1,3,5,7,10,15,20,30,45,60],OL_TI=[0,2,3,5,10,15,30];
 {const ct=$('ct');if(ct)for(const m of OL_TC)if(m&&![...ct.options].some(o=>+o.value===m)){const o=document.createElement('option');o.value=String(m);o.textContent=m+' นาที';
    const after=[...ct.options].find(x=>+x.value>m);ct.insertBefore(o,after||null)}
  const ci=$('ci');if(ci)for(const s of OL_TI)if(s&&![...ci.options].some(o=>+o.value===s)){const o=document.createElement('option');o.value=String(s);o.textContent='+'+s+' วินาที';
@@ -15982,7 +15983,7 @@ async function olRematchGo(oldGid){
 
 /* V8.9.92: PGN ของเกมออนไลน์: ปุ่มดาวน์โหลดใต้แชต + เก็บลงคลังในเครื่องอัตโนมัติเมื่อจบเกม */
 function olPgnMeta(){if(!OL.gid||!OL.info)return null;const i=OL.info,r=(OL.resFor===OL.gid&&OL.resV)?OL.resV:null,el=OL.elo||{};
-  return{w:(i.w&&i.w.n)||'ขาว',b:(i.b&&i.b.n)||'ดำ',we:el.w,be:el.b,room:OL.room,res:r}}
+  return{w:(i.w&&i.w.n)||'ขาว',b:(i.b&&i.b.n)||'ดำ',we:(typeof el.wNew==='number'&&typeof el.w==='number')?el.wNew-el.w:undefined,be:(typeof el.bNew==='number'&&typeof el.b==='number')?el.bNew-el.b:undefined,room:OL.room,res:r}}   // Elo ก่อนเริ่มเกม (เดิมใส่ค่าที่เปลี่ยนไป)
 {const old=buildPgn;buildPgn=function(){let t=old.apply(this,arguments);const m=olPgnMeta();if(!m)return t;
   try{const q=x=>pgnEscape(String(x)),set=(k,v)=>{const re=new RegExp('^\\['+k+' "[^"]*"\\]','m');t=re.test(t)?t.replace(re,'['+k+' "'+q(v)+'"]'):t.replace(/\n\n/,'\n['+k+' "'+q(v)+'"]\n\n')};
     set('Event','เรียวหมากรุกออนไลน์ ห้องที่ '+m.room+' '+olRn(m.room));set('Site','realmakruk online');set('White',m.w);set('Black',m.b);
@@ -16614,6 +16615,141 @@ function mvUpdate(force){try{
  '#mvList{max-height:260px;overflow:auto;font-size:13px;line-height:1.5;margin-top:4px}.mvR{display:grid;grid-template-columns:2.2em 1fr 1fr;gap:4px}.mvN{opacity:.65}.mvE{opacity:.6}'+
  '#mvBtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}#mvBtns button{width:auto;margin:0;padding:3px 9px;font-weight:700}'+
  'body.fsTl #fsTools{height:calc(100vh - 12px)}body.fsTl #fsTools>#mvBox{flex:1 1 150px;min-height:110px;display:flex;flex-direction:column;margin:0}body.fsTl #mvBox #mvList{flex:1 1 auto;max-height:none;min-height:0}body.fsTl #fsTools>#mvBox:not([open]){flex:0 0 auto;min-height:0}';document.head.appendChild(st)}
+/* ===== v9019: นั่งรอคู่แข่งครบเวลาแล้วไม่มีใครมา → เรียวเมืองทอง (AI) มาเล่นด้วยอัตโนมัติ เป็นแขก ไม่คิดคะแนน · เล่นครบจำนวนเกมแล้วพากลับห้องรวม
+   ปรับเงื่อนไขที่ OL_AIOFFER: on เปิด/ปิด · waitSec รอกี่วินาที · level ระดับ AI (1 ง่าย 2 ปานกลาง 3 ยาก 4 ยากมาก) · maxGames เล่นกี่เกมแล้วกลับห้องรวม · auto true = เริ่มเองไม่ถาม / false = ขึ้นกล่องถามก่อน
+   เกมกับ AI แสดงตัวเป็น AI ตามปกติ (ไม่ปลอมเป็นผู้เล่นคน) ===== */
+const OL_AIOFFER={on:true,waitSec:30,level:'2',maxGames:2,auto:true};
+let olAia=null;   // ชุดเกมกับ AI ที่เริ่มจากการรอ: {n:เกมที่,g:รหัสเกม,done}
+{let since=0,key='',shown=false;
+ const hide=id=>{const e=$(id||'olAiOff');if(e)e.hidden=true};
+ function dlg(id,html,btns){const bd=$('bd');if(!bd)return null;let e=$(id);
+   if(!e){e=document.createElement('div');e.id=id;e.className='olAiD';e.setAttribute('role','dialog');bd.appendChild(e)}
+   e.innerHTML='<div class="olApT">'+html+'</div><div class="olApB">'+btns.map(b=>'<button type="button" id="'+b[0]+'">'+b[1]+'</button>').join('')+'</div>';
+   e.hidden=false;return e}
+ async function startAi(){shown=true;hide();try{if($('olAiLv'))$('olAiLv').value=OL_AIOFFER.level}catch(x){}
+   await olPlayAi();olAia={n:1,g:gid,done:false};try{smsg('เล่นกับ เรียวเมืองทอง (AI) · เกมที่ 1/'+OL_AIOFFER.maxGames)}catch(x){}}
+ function offer(){const e=dlg('olAiOff','⏳ ยังไม่มีคนมาเล่นด้วย<br><small>ให้ 🤖 เรียวเมืองทอง (AI) มาเล่นด้วยไหม<br>เล่นเป็นแขก ไม่คิดคะแนน</small>',[['olAoYes','🤖 เล่นเลย'],['olAoNo','⏳ รอคนต่อ']]);if(!e)return;
+   $('olAoNo').onclick=()=>{shown=true;hide()};$('olAoYes').onclick=startAi;
+   e.onkeydown=ev=>{if(ev.key==='Escape'){shown=true;hide()}};try{$('olAoYes').focus({preventScroll:true})}catch(x){}}
+ setInterval(()=>{try{
+   const waiting=!!(OL_AIOFFER.on&&OL.room&&!OL.spect&&!OL.gid);
+   if(!waiting){since=0;key='';shown=false;hide();return}
+   const k=String(OL.room);if(k!==key){key=k;since=Date.now();shown=false;hide();return}
+   if(shown)return;
+   if(Date.now()-since>=OL_AIOFFER.waitSec*1000){if(OL_AIOFFER.auto)startAi();else{const e=$('olAiOff'),bd=$('bd');if(!e||e.hidden||!bd||!bd.contains(e))offer()}}}catch(e){}},1000);
+ /* ชุดเกมกับ AI: จบเกม → (ยังไม่ครบ) ถามเล่นอีกตาสลับสี / (ครบแล้ว) กลับห้องรวม */
+ setInterval(()=>{try{
+   if(!olAia)return;
+   if(gid!==olAia.g){if(!olAia.pending){olAia=null;hide('olAiNext')}return}      // ผู้เล่นเริ่มเกมใหม่/เปลี่ยนโหมดเอง → เลิกคุมชุดนี้
+   if(!over||olAia.done)return;olAia.done=true;const n=olAia.n,mx=OL_AIOFFER.maxGames;
+   if(n<mx){const e=dlg('olAiNext','🏁 จบเกมที่ '+n+'/'+mx+'<br><small>เล่นอีกตาไหม (สลับสี)</small>',[['olAnYes','🤖 เล่นอีกตา'],['olAnNo','🌐 ไปห้องรวม']]);if(!e)return;
+     $('olAnYes').onclick=()=>{hide('olAiNext');const me=$('me');me.value=me.value==='w'?'b':'w';me.dispatchEvent(new Event('change',{bubbles:true}));olAia.pending=true;$('nw').click();olAia={n:n+1,g:gid,done:false};try{smsg('เล่นกับ เรียวเมืองทอง (AI) · เกมที่ '+(n+1)+'/'+mx)}catch(x){}};
+     $('olAnNo').onclick=()=>{hide('olAiNext');olAia=null;try{olOpen()}catch(x){}}}
+   else{const e=dlg('olAiNext','🏁 เล่นครบ '+mx+' เกมแล้ว<br><small>ไปห้องรวมเพื่อหาคู่แข่งคนจริงนะ</small>',[['olAnGo','🌐 ไปห้องรวม']]);if(!e)return;
+     const go=()=>{hide('olAiNext');olAia=null;try{olOpen()}catch(x){}};$('olAnGo').onclick=go;setTimeout(()=>{if($('olAiNext')&&!$('olAiNext').hidden)go()},6000)}}catch(e){}},700);
+ {const old=olLeaveLocal;olLeaveLocal=function(){hide();return old.apply(this,arguments)}}
+ {const old=olStartGame;olStartGame=function(){hide();olAia=null;hide('olAiNext');return old.apply(this,arguments)}}
+ const st=document.createElement('style');st.textContent='.olAiD[hidden]{display:none}.olAiD{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;min-width:min(78%,260px);padding:14px 16px;border-radius:14px;background:rgba(20,28,40,.93);color:#fff;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.55);border:1px solid rgba(255,209,0,.55)}.olAiD .olApT{font-size:17px;font-weight:800;line-height:1.35}.olAiD small{font-weight:500;opacity:.85;font-size:13px}.olAiD .olApB{display:flex;gap:8px;margin-top:10px;justify-content:center;flex-wrap:wrap}.olAiD button{width:auto;min-width:0;height:40px;padding:0 14px;margin:0;font-size:15px;font-weight:700;border-radius:10px;cursor:pointer}#olAoYes,#olAnYes,#olAnGo{background:#2ecc71;color:#102;border:0}#olAoNo,#olAnNo{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}';document.head.appendChild(st)}
+/* ===== v9020: โหมดบอท 🤖 — เปิดหน้าเว็บด้วย ?bot=1 แล้วเรียวเมืองทอง (AI) จะไปนั่งรอในห้อง · มีคนมาก็เล่นด้วย ไม่เกิน N เกม แล้วออกห้องรวมพักสักครู่ แล้วสุ่มห้องใหม่นั่งรอต่อ
+   ตัวอย่าง: index.html?bot=1  หรือ  ?bot=1&rooms=1,4&level=2&games=2&tc=7
+   ชื่อเป็น "🤖 แขก-เลข" (มีป้ายบอกว่าเป็น AI) · เป็นแขก ไม่คิดคะแนน · ต้องเปิดหน้านี้ค้างไว้ในเครื่องที่ต้องการให้บอททำงาน ===== */
+const OL_BOT=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('bot')!=='1')return null;
+  const n=(k,d)=>{const v=parseFloat(q.get(k));return isFinite(v)&&v>0?v:d};
+  let rooms=(q.get('rooms')||'1,4').split(',').map(x=>+x).filter(x=>x>=1&&x<=OL_ROOMS);if(!rooms.length)rooms=[1,4];
+  return{rooms,level:String(q.get('level')||'2'),games:Math.round(n('games',2)),tc:Math.round(n('tc',7)),
+    t:{think:[1,4],overWait:[25,45],lastWait:[10,20],rest:[90,240],retry:20,waitMax:600}}}catch(e){return null}})();
+if(OL_BOT){
+ OL_AIOFFER.on=false;
+ {const old=olGuest;olGuest=function(){const r=old.apply(this,arguments);try{if(OL.me&&!/^🤖/.test(OL.me.name))OL.me.name='🤖 '+OL.me.name}catch(e){}return r}}
+ const S={st:'boot',next:0,games:0,lastRoom:0,gid:null,sitAt:0,overAt:0,moveKey:'',calledKey:'',calledAt:0,moveAt:0,busy:false};
+ const rnd=a=>(a[0]+Math.random()*(a[1]-a[0]))*1000;
+ const bar=document.createElement('div');bar.id='olBotBar';bar.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99999;background:rgba(20,28,40,.92);color:#fff;padding:6px 10px;border-radius:10px;font-size:13px;max-width:70vw';document.body.appendChild(bar);
+ const say=t=>{bar.textContent='🤖 โหมดบอท · '+t};
+ async function tick(){
+   const now=Date.now();
+   if(S.st==='boot'){if(S.busy)return;S.busy=true;try{await olOpen();if(!OL.me)olGuest()}catch(e){S.busy=false;say('เชื่อมต่อไม่ได้ ลองใหม่…');return}S.busy=false;S.st='idle';S.next=now+3000;return}
+   if(!OL.db||!OL.me)return;
+   if(S.st==='idle'){
+     if(OL.room&&!OL.spect){S.st=OL.gid?'play':'wait';S.sitAt=now;return}
+     say('พักอยู่ที่ห้องรวม'+(S.next>now?' (อีก '+Math.ceil((S.next-now)/1000)+' วินาทีจะไปนั่งห้องใหม่)':''));
+     if(now<S.next)return;
+     const L=OL.lobby||{},free=OL_BOT.rooms.filter(i=>{const r=L['r'+i]||{};return !r.status||r.status==='empty'||olStale(r)});
+     const pref=free.filter(i=>i!==S.lastRoom),pool=pref.length?pref:free;
+     if(!pool.length){S.next=now+OL_BOT.t.retry*1000;return}
+     const i=pool[Math.floor(Math.random()*pool.length)];
+     try{const a=$('olTc');if(a)a.value=String(OL_BOT.tc);const b=$('olTi');if(b)b.value='0'}catch(e){}
+     S.busy=true;try{await olRoomAct(i,'w')}catch(e){}S.busy=false;
+     if(OL.room===i){S.st='wait';S.sitAt=Date.now();S.games=0;S.lastRoom=i;S.gid=null}else S.next=Date.now()+OL_BOT.t.retry*1000;
+     return}
+   if(!OL.room||OL.spect){S.st='idle';S.next=now+rnd(OL_BOT.t.rest);S.games=0;return}
+   if(S.st==='wait'){
+     if(OL.gid){S.st='play';S.gid=null;return}
+     say('นั่งรออยู่ห้องที่ '+OL.room+' · เวลา '+OL_BOT.tc+' นาที/เกม');
+     if(now-S.sitAt>OL_BOT.t.waitMax*1000){S.busy=true;try{await olLeave()}catch(e){}S.busy=false;S.st='idle';S.next=Date.now()+rnd([20,60])}
+     return}
+   if(S.st==='play'){
+     if(OL.gid!==S.gid){S.gid=OL.gid;S.games++;S.overAt=0;S.moveKey='';S.calledKey=''}
+     const ended=over||OL.reported;
+     if(!ended){
+       say('กำลังเล่น เกมที่ '+S.games+'/'+OL_BOT.games);
+       if(!OL.color||turn!==OL.color||thinking||setup||replayView)return;
+       const key=OL.gid+':'+mlog.length;
+       if(S.calledKey===key){if(now-S.calledAt>15000)S.calledKey='';return}
+       if(S.moveKey!==key){S.moveKey=key;const low=(typeof clk!=='undefined'&&clk[OL.color]<20000);S.moveAt=now+(low?200:rnd(OL_BOT.t.think));return}
+       if(now<S.moveAt)return;
+       S.calledKey=key;S.calledAt=now;try{aiIn(+OL_BOT.level)}catch(e){}
+       return}
+     // จบเกมแล้ว
+     const last=S.games>=OL_BOT.games,opc=OL.color==='w'?'b':'w',rm=OL.rm||{};
+     if(!S.overAt)S.overAt=now+rnd(last?OL_BOT.t.lastWait:OL_BOT.t.overWait);
+     say('จบเกมที่ '+S.games+'/'+OL_BOT.games+(last?' · ครบแล้ว กำลังออกห้อง':' · รอคู่แข่งขอเล่นอีกตา'));
+     if(!last&&rm[opc]&&!rm[OL.color]){try{OL.db.ref('games/'+OL.gid+'/rematch/'+OL.color).set(true)}catch(e){}return}
+     if(now>=S.overAt&&!(!last&&rm[opc])){S.busy=true;try{await olLeave()}catch(e){}S.busy=false;S.st='idle';S.games=0;S.next=Date.now()+rnd(OL_BOT.t.rest)}
+   }
+ }
+ setInterval(()=>{if(S.busy&&S.st!=='boot')return;tick().catch(()=>{S.busy=false})},1000);
+ OL_BOT.S=S;
+}
+/* ===== v9021: บันทึกเกมที่เล่นไว้ตามชื่อผู้เล่น (ดูได้จากปุ่ม 📜 หลังชื่อในอันดับเซียน) · ลบอัตโนมัติเมื่อเก่ากว่า 3 เดือน
+   เก็บใน Firebase ใต้ games/ (ใช้สิทธิ์เดิม ไม่ต้องแก้ Rules):
+     games/zsv/<gid>          = {at,w:{n,k},b:{n,k},win,why,n,room,pgn}   ข้อความ PGN ของเกม
+     games/zpg/<คีย์ผู้เล่น>/<gid> = {at,w,b,win,why,n}                       รายการเกมของผู้เล่นแต่ละคน (เฉพาะผู้เล่นที่ลงชื่อ · แขกไม่เก็บเพราะไม่มีชื่อถาวร)
+     games/zmo/<ปีเดือน>/<gid> = {w:คีย์,b:คีย์}  และ games/zmm/<ปีเดือน>=1   ดัชนีรายเดือนไว้ลบของเก่า (ลบทั้งเกมใน games/<gid> ด้วย) ===== */
+const OL_KEEP_DAYS=90;
+const OL_KEEP_WARN='เกมที่บันทึกไว้จะถูกลบอัตโนมัติเมื่อเก่ากว่า 3 เดือน (ลบทุก 3 เดือน) · ถ้าอยากเก็บถาวรให้กดดาวน์โหลดไฟล์ PGN ไว้เอง';
+const olMon=t=>{const d=new Date(t||Date.now());return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')};
+function olIdxGame(r){try{if(!OL.db||!r||!r.gid||OL.spect)return;const m=olMon();
+  OL.db.ref('games/zmo/'+m+'/'+r.gid).set({w:(r.w&&r.w.k)||'',b:(r.b&&r.b.k)||''}).catch(()=>{});OL.db.ref('games/zmm/'+m).set(1).catch(()=>{})}catch(e){}}
+{const old=olStartGame;olStartGame=function(r){const out=old.apply(this,arguments);olIdxGame(r);return out}}
+function olSaveRemote(g,v){try{const i=OL.info;if(!OL.db||!i||!i.w||!i.b||OL.spect||OL.gid!==g||!mlog.length)return;
+  const why=String((v&&v.why)||''),n=mlog.length,pgn=buildPgn();
+  OL.db.ref('games/zsv/'+g).transaction(cur=>cur||{at:olTS(),w:{n:i.w.n,k:i.w.k},b:{n:i.b.n,k:i.b.k},win:v.win,why,n,room:OL.room,pgn},()=>{},false).catch(()=>{});
+  const me=OL.me;if(me&&!olIsGuestKey(me.key))OL.db.ref('games/zpg/'+me.key+'/'+g).set({at:olTS(),w:i.w.n,b:i.b.n,win:v.win,why,n}).catch(()=>{})}catch(e){}}
+{const old=olResult;olResult=function(v){const r=old.apply(this,arguments);try{const g=OL.gid;if(g&&v&&!OL.spect)setTimeout(()=>olSaveRemote(g,v),1200)}catch(e){}return r}}
+async function olShowGames(key,name){const box=$('olGames');if(!box||!key)return;box.hidden=false;box.textContent='กำลังโหลดเกมของ '+name+'…';
+  try{await olInit();const s=await OL.db.ref('games/zpg/'+key).limitToLast(30).once('value');const L=[];s.forEach(c=>{L.push(Object.assign({_g:c.key},c.val()))});L.sort((a,b)=>(b.at||0)-(a.at||0));
+    const dt=t=>{try{return new Date(t).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}catch(e){return ''}};
+    const rs=x=>x.win==='w'?'ขาวชนะ':x.win==='b'?'ดำชนะ':'เสมอ';
+    box.innerHTML='<h4>📜 เกมของ '+esc(name)+' ('+L.length+')</h4><p class="olKeepW">⚠ '+OL_KEEP_WARN+'</p>'+(L.length?'':'<p>ยังไม่มีเกมที่บันทึกไว้ (บันทึกเฉพาะเกมที่เล่นหลังเปิดระบบนี้)</p>')+
+      '<div class="olGl">'+L.map(x=>'<div class="olGr" data-g="'+esc(x._g)+'"><span>'+dt(x.at)+'</span><span>⚪ '+esc(x.w)+' vs ⚫ '+esc(x.b)+'</span><span>'+rs(x)+(x.why?' · '+esc(x.why):'')+' · '+(x.n||0)+' ตา</span><button type="button" class="olGd">💾 PGN</button><button type="button" class="olGc">📋 คัดลอก</button></div>').join('')+'</div>';
+    const getPgn=async g=>{const r=await OL.db.ref('games/zsv/'+g+'/pgn').once('value');return r.val()};
+    box.querySelectorAll('.olGr').forEach(row=>{const g=row.dataset.g;
+      row.querySelector('.olGd').onclick=async()=>{try{const t=await getPgn(g);if(!t){alert('ไฟล์เกมนี้ถูกลบแล้ว');return}dlFile('makruk-'+g+'.pgn',t)}catch(e){}};
+      row.querySelector('.olGc').onclick=async ev=>{try{const t=await getPgn(g);if(!t){ev.target.textContent='ถูกลบแล้ว';return}mvCopy(t,ev.target)}catch(e){}}})
+  }catch(e){box.textContent='⚠ โหลดเกมไม่ได้: '+e.message}}
+/* ลบเกมที่เก่ากว่า 3 เดือน: ทำเองเมื่อเปิดหน้า (ไม่เกินวันละ 2 ครั้งต่อเครื่อง) · ลบทั้งเดือนที่สิ้นสุดก่อนวันตัด */
+async function olPurge(){try{if(!OL.db)return;const k='makruk-purge';if(Date.now()-(+localStorage.getItem(k)||0)<43200000)return;localStorage.setItem(k,String(Date.now()));
+  const cut=Date.now()-OL_KEEP_DAYS*86400000,s=await OL.db.ref('games/zmm').once('value'),old=[];
+  s.forEach(c=>{const y=+String(c.key).slice(0,4),m=+String(c.key).slice(4,6);if(y>2000&&m>=1&&m<=12&&new Date(y,m,1).getTime()<cut)old.push(c.key)});
+  for(const m of old){const g=await OL.db.ref('games/zmo/'+m).once('value'),jobs=[];
+    g.forEach(c=>{const v=c.val()||{},id=c.key;jobs.push(OL.db.ref('games/'+id).remove(),OL.db.ref('games/zsv/'+id).remove());
+      for(const kk of[v.w,v.b])if(kk&&!olIsGuestKey(kk))jobs.push(OL.db.ref('games/zpg/'+kk+'/'+id).remove())});
+    await Promise.all(jobs.map(j=>j.catch(()=>{})));await OL.db.ref('games/zmo/'+m).remove();await OL.db.ref('games/zmm/'+m).remove()}
+}catch(e){}}
+{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{setTimeout(olPurge,6000+Math.random()*6000)}catch(e){}return r}}
+{const st=document.createElement('style');st.textContent='.olKeepW{font-size:12.5px;opacity:.9;margin:8px 0;padding:6px 8px;border-radius:8px;background:rgba(255,193,7,.14);border:1px solid rgba(255,193,7,.5)}#olGames{margin-top:8px}#olGames h4{margin:4px 0}.olGr{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:4px 0;border-top:1px solid rgba(128,128,128,.3);font-size:13px}.olGr button,.olGb{width:auto;margin:0;padding:1px 8px;height:auto;min-height:0;font-size:13px}.olGl{max-height:260px;overflow:auto}';document.head.appendChild(st)}
+// ป้ายเตือนที่ปุ่ม "บันทึกเกม" ในห้อง
+{const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);try{const b=$('olPgnB');if(b&&!/3 เดือน/.test(b.title))b.title+=' · เกมที่ระบบเก็บไว้ให้ในอันดับเซียนจะถูกลบเมื่อเก่ากว่า 3 เดือน'}catch(e){}return r}}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
