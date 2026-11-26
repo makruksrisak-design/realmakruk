@@ -16077,11 +16077,11 @@ function olBtnPlace(){const qb=$('qb');if(!qb)return;let row=$('olBtnRow');
  document.head.appendChild(st)}
 /* ค่าเริ่มต้นของเว็บ: ตั้งให้ทุกเบราว์เซอร์ "หนึ่งครั้งต่อรหัสเวอร์ชัน" (OL_DEFVER) · อยากให้ทุกคนได้ค่าใหม่ แค่เปลี่ยนรหัสนี้ · ผู้เล่นกดปุ่ม "คืนค่าเริ่มต้นของเว็บ" ในหน้าห้องรวมได้เองทุกเมื่อ
    ค่าที่ตั้ง: ธีมหน้าเกม = ฟ้าเรียบ · กระดาน = ฟ้าครามลายไม้ เส้นทอง (nb10) ไม่ใส่ลายไม้ทับ · ตัวหมาก = ไม้เงา · เส้นตารางระดับ 1 สีเส้นไม่ตามขอบ (เสียง เสียงพูด ฯลฯ ไม่ถูกแตะ) */
-const OL_DEFVER='ol-2026-11-26c';
+const OL_DEFVER='ol-2026-11-26d';
 function olApplyDefaults(){
   try{const t=$('theme');if(t){t.value='blue';document.documentElement.dataset.palette='blue';localStorage.setItem('makruk-theme','blue')}}catch(e){}
-  try{gridCfg=Object.assign({},GRID_DEF);gridApply(true)}catch(e){}
   try{const c=$('bcol');if(c){const v=[...c.options].some(o=>o.value==='nb10')?'nb10':([...c.options].some(o=>o.value==='wood2')?'wood2':'');if(v){c.value=v;$('bgrain').checked=false;c.dispatchEvent(new Event('change'))}}}catch(e){}
+  try{gridCfg=Object.assign({},GRID_DEF);gridApply(true)}catch(e){}   // หลังเลือกกระดาน: กระดานลายภาพ/rose จะตั้งเส้นตารางของมันเอง (roseSync) จึงตั้งเส้นทับทีหลัง
   try{$('pr').click()}catch(e){}
 }
 (function(){try{if(localStorage.getItem('makruk-oldefver')===OL_DEFVER)return;olApplyDefaults();localStorage.setItem('makruk-oldefver',OL_DEFVER)}catch(e){}})();
@@ -16093,6 +16093,63 @@ function olApplyDefaults(){
 {const st=document.createElement('style');st.textContent='#olBox .olRoom>b{flex:1 1 100%}#olBox .olRoom>span{flex:1 1 auto}#olBox .olRoom>button{flex:0 0 auto;white-space:nowrap}';document.head.appendChild(st)}
 /* V9.0.06: ปิดตัวช่วยตั้งแต่เข้านั่งห้อง ไม่ต้องรอเริ่มเกม (ตอนรอคู่แข่งเอนจินคิดต่อเนื่อง/แถบประเมิน/ลูกศรยังขึ้นอยู่) */
 {const old=olEnter;olEnter=function(){const r=old.apply(this,arguments);try{olFairOn()}catch(e){}return r}}
+/* ===== V9.0.08: ค่าเริ่มต้นของเว็บจากไฟล์ defaults.json (แก้บน GitHub ได้เอง ไม่ต้องแก้โค้ด) =====
+   รูปแบบ: {"ver":"รหัสเวอร์ชัน","theme":"blue","board":{v,c,a,g,p,b,s},"grid":{w,o,a,c},"pieceSet":"" หรือชื่อชุดตัวหมากที่ฝังในเกม}
+   ทุกเบราว์เซอร์ได้ค่านี้ "หนึ่งครั้งต่อรหัส ver" (เปลี่ยน ver = ทุกคนได้ค่าใหม่อีกครั้ง) · ไม่มีไฟล์ / เปิดจากไฟล์ในเครื่อง / ไฟล์ผิดรูปแบบ = ใช้ค่าที่ฝังในโค้ดเหมือนเดิม
+   ปุ่มสร้างไฟล์ (เห็นเฉพาะเครื่องที่เปิดหน้าเว็บด้วย ?admin=1 หนึ่งครั้ง): "💾 บันทึกค่าตอนนี้เป็น defaults.json" ในหน้าห้องรวม */
+let olDefCfg=null;
+const olHex=v=>/^#[0-9a-f]{6}$/i.test(String(v||''));
+function olCfgClean(j){
+  if(!j||typeof j!=='object'||typeof j.ver!=='string'||!j.ver||j.ver.length>40)return null;
+  const o={ver:j.ver};
+  if(['classic','wood','green','blue','night'].includes(j.theme))o.theme=j.theme;
+  const g=j.grid;if(g&&typeof g==='object'){const x={};
+    if(Number.isInteger(g.w)&&g.w>=0&&g.w<=5)x.w=g.w;if(Number.isFinite(g.o)&&g.o>=10&&g.o<=100)x.o=Math.round(g.o);
+    if(typeof g.a==='boolean')x.a=g.a;if(olHex(g.c))x.c=String(g.c).toLowerCase();o.grid=x}
+  const b=j.board;if(b&&typeof b==='object'&&typeof b.v==='string'){const x={v:b.v};
+    if(olHex(b.c))x.c=b.c;x.a=!!b.a;x.g=!!b.g;
+    if(Number.isInteger(b.p)&&b.p>=0)x.p=b.p;if(Number.isFinite(b.b)&&b.b>=40&&b.b<=140)x.b=Math.round(b.b);if(Number.isFinite(b.s)&&b.s>=0&&b.s<=100)x.s=Math.round(b.s);o.board=x}
+  if(typeof j.pieceSet==='string')o.pieceSet=j.pieceSet.slice(0,60);
+  return o;
+}
+function olApplyCfg(c){
+  if(c.theme){try{const t=$('theme');t.value=c.theme;document.documentElement.dataset.palette=c.theme;localStorage.setItem('makruk-theme',c.theme)}catch(e){}}
+  try{const b=c.board,el=$('bcol');
+    if(b&&el&&[...el.options].some(o=>o.value===b.v)){
+      if(b.c)$('bcus').value=b.c;$('balt').checked=!!b.a;$('bgrain').checked=!!b.g;
+      if(b.p!=null&&$('bpat').options[b.p])$('bpat').value=String(b.p);if(b.b!=null)$('bbri').value=String(b.b);if(b.s!=null)$('bgs').value=String(b.s);
+      el.value=b.v;el.dispatchEvent(new Event('change'))}}catch(e){}
+  try{gridCfg=Object.assign({},GRID_DEF,c.grid||{});gridApply(true)}catch(e){}   // หลังกระดาน (roseSync ของกระดานลายภาพจะตั้งเส้นตารางเอง)
+  try{const n=c.pieceSet,s=$('setSel');
+    if(n&&BSETS[n]&&s){s.value=BI+n;s.dispatchEvent(new Event('change'))}else $('pr').click()}catch(e){}
+}
+function olCfgSnapshot(){
+  let b=null;try{b=JSON.parse(localStorage.getItem('makruk-board3')||'null')}catch(e){}
+  let ps='',warn='';
+  try{const d=detectSet();if(d&&d.startsWith(BI))ps=d.slice(BI.length);else if(d)warn='ตัวหมากที่ใช้อยู่เป็นชุดที่บันทึกเอง ใส่ในไฟล์ไม่ได้ จึงบันทึกเป็นค่าเริ่มต้น (ไม้เงา)'}catch(e){}
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return{cfg:{ver:d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes()),theme:$('theme').value,board:b,grid:Object.assign({},gridCfg),pieceSet:ps},warn};
+}
+(function(){try{if(/[?&]admin=1(&|$)/.test(location.search))localStorage.setItem('makruk-admin','1')}catch(e){}})();
+(async function(){
+  try{
+    if(!/^https?:$/.test(location.protocol))return;
+    const r=await fetch('defaults.json',{cache:'no-store'});if(!r.ok)return;
+    const c=olCfgClean(await r.json());if(!c)return;olDefCfg=c;
+    if(localStorage.getItem('makruk-defjson')===c.ver)return;
+    if(OL.room)return;                                                   // กำลังนั่งห้องออนไลน์: ไม่เปลี่ยนกระดานกลางเกม · รอบหน้าที่เข้าเว็บจะได้ค่าใหม่
+    olApplyCfg(c);localStorage.setItem('makruk-defjson',c.ver);
+  }catch(e){}
+})();
+{const old=olApplyDefaults;olApplyDefaults=function(){if(olDefCfg){olApplyCfg(olDefCfg);return}return old.apply(this,arguments)}}
+{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);
+  try{let adm=false;try{adm=localStorage.getItem('makruk-admin')==='1'}catch(e){}
+    const row=$('olDefRow');if(adm&&row&&!$('olCfgB')){
+      row.insertAdjacentHTML('beforeend','<button type="button" id="olCfgB" title="บันทึกธีม กระดาน ตัวหมาก เส้นตาราง ที่ตั้งอยู่ตอนนี้เป็นไฟล์ defaults.json แล้วอัปโหลดทับไฟล์เดิมบน GitHub">💾 บันทึกค่าตอนนี้เป็น defaults.json</button><span id="olCfgM" role="status"></span>');
+      $('olCfgB').onclick=()=>{const s=olCfgSnapshot(),txt=JSON.stringify(s.cfg,null,1);
+        try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download='defaults.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){}
+        try{navigator.clipboard&&navigator.clipboard.writeText(txt)}catch(e){}
+        $('olCfgM').textContent=' ✓ ดาวน์โหลด defaults.json แล้ว (รหัส '+s.cfg.ver+') · อัปโหลดทับไฟล์เดิมบน GitHub'+(s.warn?' · ⚠ '+s.warn:'')}}}catch(e){}return r}}
 </script>
 </body>
 </html>

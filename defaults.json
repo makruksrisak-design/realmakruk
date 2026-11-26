@@ -1,0 +1,7 @@
+{
+ "ver": "2026-11-26-1",
+ "theme": "blue",
+ "board": {"v":"nb10","c":"#d9c69a","a":false,"g":false,"p":0,"b":100,"s":100},
+ "grid": {"w":1,"o":100,"a":false,"c":"#b6c84e"},
+ "pieceSet": ""
+}
