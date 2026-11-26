@@ -16078,12 +16078,13 @@ function olBtnPlace(){const qb=$('qb');if(!qb)return;let row=$('olBtnRow');
  document.head.appendChild(st)}
 /* ค่าเริ่มต้นของเว็บ: ตั้งให้ทุกเบราว์เซอร์ "หนึ่งครั้งต่อรหัสเวอร์ชัน" (OL_DEFVER) · อยากให้ทุกคนได้ค่าใหม่ แค่เปลี่ยนรหัสนี้ · ผู้เล่นกดปุ่ม "คืนค่าเริ่มต้นของเว็บ" ในหน้าห้องรวมได้เองทุกเมื่อ
    ค่าที่ตั้ง: ธีมหน้าเกม = ฟ้าเรียบ · กระดาน = ฟ้าครามลายไม้ เส้นทอง (nb10) ไม่ใส่ลายไม้ทับ · ตัวหมาก = ไม้เงา · เส้นตารางระดับ 1 สีเส้นไม่ตามขอบ (เสียง เสียงพูด ฯลฯ ไม่ถูกแตะ) */
-const OL_DEFVER='ol-2026-11-26d';
+const OL_DEFVER='ol-2026-11-26e';
 function olApplyDefaults(){
   try{const t=$('theme');if(t){t.value='blue';document.documentElement.dataset.palette='blue';localStorage.setItem('makruk-theme','blue')}}catch(e){}
   try{const c=$('bcol');if(c){const v=[...c.options].some(o=>o.value==='nb10')?'nb10':([...c.options].some(o=>o.value==='wood2')?'wood2':'');if(v){c.value=v;$('bgrain').checked=false;c.dispatchEvent(new Event('change'))}}}catch(e){}
   try{gridCfg=Object.assign({},GRID_DEF);gridApply(true)}catch(e){}   // หลังเลือกกระดาน: กระดานลายภาพ/rose จะตั้งเส้นตารางของมันเอง (roseSync) จึงตั้งเส้นทับทีหลัง
   try{$('pr').click()}catch(e){}
+  try{tntSet('txt',false);tntSet('snd',false)}catch(e){}   // V9.0.12: สำนวนหมากรุก (ตัวอักษร+เสียง) ปิดเป็นค่าเริ่มต้น · ผู้เล่นเปิดเองได้ที่ปุ่มสำนวน
 }
 (function(){try{if(localStorage.getItem('makruk-oldefver')===OL_DEFVER)return;olApplyDefaults();localStorage.setItem('makruk-oldefver',OL_DEFVER)}catch(e){}})();
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);
@@ -16121,6 +16122,7 @@ function olApplyCfg(c){
       if(b.p!=null&&$('bpat').options[b.p])$('bpat').value=String(b.p);if(b.b!=null)$('bbri').value=String(b.b);if(b.s!=null)$('bgs').value=String(b.s);
       el.value=b.v;el.dispatchEvent(new Event('change'))}}catch(e){}
   try{gridCfg=Object.assign({},GRID_DEF,c.grid||{});gridApply(true)}catch(e){}   // หลังกระดาน (roseSync ของกระดานลายภาพจะตั้งเส้นตารางเอง)
+  try{if(c.tnt===false||c.tnt===undefined){tntSet('txt',false);tntSet('snd',false)}}catch(e){}
   try{const n=c.pieceSet,s=$('setSel');
     if(n&&BSETS[n]&&s){s.value=BI+n;s.dispatchEvent(new Event('change'))}else $('pr').click()}catch(e){}
 }
@@ -16182,9 +16184,10 @@ const MU_TRACKS=[
  {n:'แสงแรกของวัน',k:'ร่วมสมัย',type:'mod',bpm:68,root:261.63,sc:[0,2,4,7,9],ch:[[0,4,7],[-5,-1,2],[-3,0,4],[-7,-3,0]],arp:2,dens:.55},
  {n:'ทะเลสงบ',k:'ร่วมสมัย',type:'mod',bpm:52,root:293.66,sc:[0,2,4,7,9],ch:[[0,4,7,14],[-3,0,4,7],[-7,-3,0,4],[-5,-1,2,7]],arp:1,dens:.4}
 ];
-const MU={ctx:null,chain:null,cur:null,on:true,track:0,vol:50,timer:null,started:false,cfgLoaded:false};
-try{const o=JSON.parse(localStorage.getItem('makruk-mu')||'null');if(o&&typeof o==='object'){MU.on=o.on!==false;if(Number.isInteger(o.track)&&o.track>=-1&&o.track<MU_TRACKS.length)MU.track=o.track;if(Number.isFinite(o.vol)&&o.vol>=0&&o.vol<=100)MU.vol=Math.round(o.vol)}}catch(e){}
-function muSave(){try{localStorage.setItem('makruk-mu',JSON.stringify({on:MU.on,track:MU.track,vol:MU.vol}))}catch(e){}}
+const MU_DEFTRACK=5,MU_VER=2;   // เพลงเริ่มต้น = ทะเลสงบ · เปลี่ยน MU_VER = ทุกเครื่องกลับมาใช้เพลงเริ่มต้นอีกครั้ง (เปิด/ปิดและความดังที่ตั้งไว้ยังอยู่)
+const MU={ctx:null,chain:null,cur:null,on:true,track:MU_DEFTRACK,vol:50,timer:null,started:false,cfgLoaded:false};
+try{const o=JSON.parse(localStorage.getItem('makruk-mu')||'null');if(o&&typeof o==='object'){MU.on=o.on!==false;if(o.ver===MU_VER&&Number.isInteger(o.track)&&o.track>=-1&&o.track<MU_TRACKS.length)MU.track=o.track;if(Number.isFinite(o.vol)&&o.vol>=0&&o.vol<=100)MU.vol=Math.round(o.vol)}}catch(e){}
+function muSave(){try{localStorage.setItem('makruk-mu',JSON.stringify({ver:MU_VER,on:MU.on,track:MU.track,vol:MU.vol}))}catch(e){}}
 function muChain(ctx){                                           // ห่วงโซ่เสียง: ทางตรง + เสียงก้อง → คอมเพรสเซอร์ → ลำโพง
   const inp=ctx.createGain(),dry=ctx.createGain(),wet=ctx.createGain(),conv=ctx.createConvolver(),master=ctx.createGain(),comp=ctx.createDynamicsCompressor();
   const len=Math.floor(ctx.sampleRate*2.4),buf=ctx.createBuffer(2,len,ctx.sampleRate);
@@ -16294,6 +16297,7 @@ muBuildUi();
   const arm=()=>{const h=ev=>{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#muBtn,#muPanel'))return;['pointerdown','keydown','touchend'].forEach(t=>removeEventListener(t,h,true));if(MU.on)muStart();muUi()};
     ['pointerdown','keydown','touchend'].forEach(t=>addEventListener(t,h,true))};
   if(MU.on)arm();
+  {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(MU.on&&!MU.cur&&navigator.userActivation&&navigator.userActivation.hasBeenActive)muStart();muUi()}catch(e){}return r}}   // เข้าห้องรวมแล้วเพลงต้องเล่น (ถ้าผู้ใช้เคยแตะหน้าจอแล้ว)
   document.addEventListener('visibilitychange',()=>{try{if(!MU.ctx)return;if(document.hidden)MU.ctx.suspend();else if(MU.on&&MU.started)MU.ctx.resume()}catch(e){}});
 })();
 </script>
