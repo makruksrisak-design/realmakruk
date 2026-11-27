@@ -15714,7 +15714,7 @@ function olGuest(){
 olLobbyRender=function(){
   const d=$('olBox');if(!d)return;
   const me=OL.me,guest=!!(me&&me.guest);
-  {const lg=$('olLog'),mb=$('olMe');if(lg&&mb&&mb.nextElementSibling!==lg)lg.parentNode.insertBefore(mb,lg)}   // การ์ดผู้เล่นอยู่บนสุด
+  {const first=$('olWho')||$('olLog'),mb=$('olMe');if(first&&mb&&mb.nextElementSibling!==first)first.before(mb)}   // การ์ดผู้เล่นอยู่บนสุด
   $('olLog').hidden=!!me&&!(guest&&OL.showLogin);
   const tcSel='<label class="olTcL">⏱ เวลาของห้องที่จะเปิด <select id="olTc" aria-label="นาทีต่อเกม">'+OL_TC.map(m=>'<option value="'+m+'">'+(m?m+' นาที':'ไม่จับเวลา')+'</option>').join('')+'</select>'+
     ' <select id="olTi" aria-label="บวกเวลาต่อตา">'+OL_TI.map(s=>'<option value="'+s+'">'+(s?'+'+s+' วิ/ตา':'ไม่บวกเวลา')+'</option>').join('')+'</select></label>';
@@ -15818,7 +15818,7 @@ function olLobbyChatAdd(v){const L=$('olLcLog');if(!L||!v)return;const mine=OL.m
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{
   const box=$('olBox');if(box&&!$('olLc')){const w=document.createElement('div');w.id='olLc';
     w.innerHTML='<div class="olSh">💬 แชตล็อบบี้ (ทุกคนที่อยู่หน้านี้)</div><div id="olLcLog" role="log" aria-live="polite"></div><form id="olLcF" autocomplete="off"><input id="olLcIn" maxlength="120" placeholder="ทักทาย หาคู่ดวล…" aria-label="ข้อความแชตล็อบบี้"><button type="submit">ส่ง</button></form>';
-    {const anchor=$('olLb')||$('olRooms');anchor.insertAdjacentElement('afterend',w)}   /* V8.9.90: แชตล็อบบี้อยู่ใต้รายการห้อง */
+    box.querySelector('.olTabs').before(w);
     $('olLcF').onsubmit=ev=>{ev.preventDefault();const t=String($('olLcIn').value||'').trim().slice(0,120);$('olLcIn').value='';if(!t||!OL.me||!OL.db)return;
       OL.db.ref('games/lobby_chat/chat').push({n:OL.me.name,m:t,at:olTS()}).catch(e=>olSt('⚠ '+e.message))}}
   if(OL.db&&!OL.lcRef){OL.lcRef=OL.db.ref('games/lobby_chat/chat').limitToLast(30);OL.lcRef.on('child_added',s=>olLobbyChatAdd(s.val()))}
@@ -16486,10 +16486,12 @@ function anDockPlace(c){const pn=$('pn'),bx=$('bx');let side=false;
 const olLobWho={ref:null,key:null,on:false,off:0};
 function olWhoRender(v){const box=$('olWhoList'),hd=$('olWhoH');if(!box||!hd)return;
   const now=Date.now()+(olLobWho.off||0),a=Object.keys(v||{}).map(k=>Object.assign({k},v[k])).filter(x=>x&&x.n&&(!x.at||now-x.at<300000)).sort((p,q)=>(p.at||0)-(q.at||0));
+  const scrollTop=box.scrollTop;
   hd.textContent='👥 อยู่ในห้องรวม ('+a.length+')';box.textContent='';
   if(!a.length){const e=document.createElement('div');e.className='olWhoE';e.textContent='ยังไม่มีใครในห้องรวม';box.appendChild(e);return}
   for(const x of a){const d=document.createElement('div');d.className='olWhoI'+(OL.me&&x.k===OL.me.key?' me':'');
-    d.textContent=x.n+' ('+olEloTxt(x)+')';box.appendChild(d)}}   /* คะแนน (Elo) ต่อท้ายชื่อ · แขกขึ้น (แขก) เหมือนรายการห้อง */
+    d.textContent=x.n+' ('+olEloTxt(x)+')';box.appendChild(d)}
+  box.scrollTop=scrollTop}   /* คะแนน (Elo) ต่อท้ายชื่อ · แขกขึ้น (แขก) เหมือนรายการห้อง */
 function olWhoLeave(){try{if(olLobWho.ref)olLobWho.ref.remove().catch(()=>{})}catch(e){}olLobWho.ref=null;olLobWho.key=null}   /* ไม่ cancel onDisconnect: ถ้าปิดหน้าแล้ว remove ส่งไม่ทัน เซิร์ฟเวอร์ยังลบให้เองเมื่อหลุด */
 function olWhoSync(force){try{
   const box=$('olBox'),open=!!(box&&!box.hidden),want=open&&OL.db&&OL.me&&!OL.room;
@@ -16503,9 +16505,12 @@ function olWhoSync(force){try{
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{
   const box=$('olBox');if(box&&!$('olHead')){
     const h=document.createElement('div');h.id='olHead';const L=document.createElement('div');L.id='olHeadL';
-    const w=document.createElement('div');w.id='olWho';w.innerHTML='<div class="olSh" id="olWhoH">👥 อยู่ในห้องรวม (0)</div><div id="olWhoList" role="list" aria-live="polite"></div>';
+    const w=document.createElement('div');w.id='olWho';w.innerHTML='<div class="olSh" id="olWhoH">👥 อยู่ในห้องรวม (0)</div><div id="olWhoList" role="list" aria-live="polite" aria-labelledby="olWhoH" tabindex="0"></div>';
     const first=$('olMe')||$('olLog');first.parentNode.insertBefore(h,first);
-    for(const id of['olMe','olLog']){const e=$(id);if(e)L.appendChild(e)}h.append(L,w);
+    L.append($('olMe'),w,$('olLog'));
+    const side=document.createElement('div');side.id='olHeadSide';
+    const chat=$('olLc');if(chat)side.appendChild(chat);
+    h.append(L,side);
     new MutationObserver(()=>olWhoSync()).observe(box,{attributes:true,attributeFilter:['hidden']});
     if(OL.db){OL.db.ref('.info/connected').on('value',s=>{if(s.val()===true)olWhoSync(true)});try{OL.db.ref('.info/serverTimeOffset').on('value',s=>{const o=s.val();if(typeof o==='number')olLobWho.off=o})}catch(e){}}}
   olWhoSync()}catch(e){}return r}}
@@ -16515,9 +16520,11 @@ function olWhoSync(force){try{
 try{setInterval(()=>{try{if(olLobWho.ref)olLobWho.ref.child('at').set(olTS()).catch(()=>{})}catch(e){}},60000);
   document.addEventListener('visibilitychange',()=>{try{if(!document.hidden){olWhoSync(true)}}catch(e){}})}catch(e){}
 try{addEventListener('pagehide',()=>olWhoLeave())}catch(e){}
-{const st=document.createElement('style');st.textContent='#olHead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-start}#olHeadL{flex:1 1 300px;min-width:0}#olLog[hidden]{display:none}'+
- '#olWho{flex:1 1 170px;max-width:100%;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box}#olWho .olSh{font-weight:800;margin-bottom:4px}'+
- '#olWhoList{max-height:150px;overflow:auto;font-size:13px;line-height:1.5}.olWhoI{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.olWhoI.me{font-weight:800;color:#c0392b}.olWhoE{opacity:.6}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent='#olHead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-start}#olHeadL,#olHeadSide{flex:1 1 230px;min-width:0}#olHeadSide #olLc{margin:0 0 8px}#olHeadL #olLog:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:8px;margin-top:8px}'+
+ '#olHeadL #olLog>label{display:flex;flex-direction:column;align-items:stretch;min-width:0;margin:0}#olHeadL #olLog input{box-sizing:border-box;width:100%;min-width:0;margin:0}#olLog[hidden]{display:none}'+
+ '#olWho{max-width:100%;margin-top:8px;padding:6px 8px;border-radius:10px;border:1px solid rgba(41,128,185,.5);box-sizing:border-box}#olWho .olSh{font-weight:800;margin-bottom:4px}'+
+ '#olWhoList{max-height:150px;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;scrollbar-width:auto;scrollbar-color:#8297ad rgba(128,128,128,.2);font-size:13px;line-height:1.5}'+
+ '#olWhoList:focus-visible{outline:2px solid #2980b9;outline-offset:2px}.olWhoI{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.olWhoI.me{font-weight:800;color:#c0392b}.olWhoE{opacity:.6}';document.head.appendChild(st)}
 /* V9.0.18: ปุ่ม "🎲 สุ่มเล่น" บนสุดของล็อบบี้ — สุ่มเลือกห้องที่มีคนนั่งรออยู่แล้วท้าดวลทันที (ใช้ olRoomAct 'b' เดิม) */
 const olWaitRooms=()=>{const L=OL.lobby||{},a=[];for(let i=1;i<=OL_ROOMS;i++){const r=L['r'+i];if(r&&r.status==='waiting'&&r.w&&!olStale(r)&&!(OL.me&&r.w.k===OL.me.key))a.push(i)}return a};
 let olRandBusy=false;
