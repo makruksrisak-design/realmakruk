@@ -16494,8 +16494,9 @@ function anDockPlace(c){const pn=$('pn'),bx=$('bx');let side=false;
 {const st=document.createElement('style');st.textContent='#olChatLog .olMsg.sys{opacity:.75;font-style:italic;font-size:.92em}';document.head.appendChild(st)}
 /* V9.0.18: กล่อง "คนในห้องรวม" ข้างฟอร์ม/การ์ดผู้เล่นในหน้าต่างล็อบบี้ · ทะเบียนอยู่ที่ games/lobby_chat/who/<key> (ใช้สิทธิ์ games เดิม) · ลบชื่อเมื่อปิดหน้าต่างล็อบบี้ / เข้าห้องเล่น / ออกจากระบบ / หลุดเน็ต (onDisconnect) */
 const olLobWho={ref:null,key:null,on:false,off:0};
+function olWhoIsPlayer(entry){return !!(entry?.n && entry.n!=='🤖 เรียวเมืองทอง (AI)')}
 function olWhoRender(v){const box=$('olWhoList'),hd=$('olWhoH');if(!box||!hd)return;
-  const now=Date.now()+(olLobWho.off||0),a=Object.keys(v||{}).map(k=>Object.assign({k},v[k])).filter(x=>x&&x.n&&(!x.at||now-x.at<300000)).sort((p,q)=>(p.at||0)-(q.at||0));
+  const now=Date.now()+(olLobWho.off||0),a=Object.keys(v||{}).map(k=>Object.assign({k},v[k])).filter(x=>olWhoIsPlayer(x)&&(!x.at||now-x.at<300000)).sort((p,q)=>(p.at||0)-(q.at||0));
   const scrollTop=box.scrollTop;
   hd.textContent='👥 อยู่ในห้องรวม ('+a.length+')';box.textContent='';
   if(!a.length){const e=document.createElement('div');e.className='olWhoE';e.textContent='ยังไม่มีใครในห้องรวม';box.appendChild(e);return}
@@ -16565,7 +16566,7 @@ function olDing(){try{const A=window.AudioContext||window.webkitAudioContext;if(
   setTimeout(()=>{try{c.close()}catch(e){}},1500)}catch(e){}}
 /* ห้องรวม: ชื่อใหม่ (ไม่ใช่เรา) โผล่ในรายชื่อหลังภาพแรก = กริ่ง 1 ที ต่อการอัปเดต 1 ครั้ง */
 {const old=olWhoRender;olWhoRender=function(v){try{const ks=Object.keys(v||{}),prev=olWhoRender._k;olWhoRender._k=new Set(ks);
-  if(prev&&OL.me&&ks.some(k=>!prev.has(k)&&k!==OL.me.key&&v[k]&&v[k].n))olDing()}catch(e){}return old.apply(this,arguments)}}
+  if(prev&&OL.me&&ks.some(k=>!prev.has(k)&&k!==OL.me.key&&olWhoIsPlayer(v[k])))olDing()}catch(e){}return old.apply(this,arguments)}}
 {const old=olWhoSync;olWhoSync=function(){const was=olLobWho.on;const r=old.apply(this,arguments);try{if(was&&!olLobWho.on)olWhoRender._k=null}catch(e){}return r}}   // ปิดหน้าต่างล็อบบี้แล้วเปิดใหม่ = ภาพแรกใหม่ ไม่กริ่งซ้ำ
 /* ในห้อง: ข้อความระบบ "เข้าห้อง/เข้ามารับชม" ของคนอื่น (หลังเข้าห้องเกิน 1.5 วินาที กันเสียงจากประวัติแชตเก่า) = กริ่ง 1 ที */
 {const old=olEnter;olEnter=function(){try{OL.chT0=Date.now()}catch(e){}return old.apply(this,arguments)}}
