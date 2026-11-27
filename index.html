@@ -16903,7 +16903,11 @@ const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียว�
 
 /* ===== v9029: ปุ่มในรายการห้องแข่งขัน (ท้าดวล / เปิดห้องเล่น / รับชมสด / กลับเข้าห้อง) เป็นสีน้ำเงิน ตัวหนังสือขาว เห็นชัดในธีมมืด ===== */
 {const st=document.createElement('style');st.id='olBlueBtn';
- st.textContent='html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]){background:#1f6fe0;color:#fff;border:1px solid #8cc0ff;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.35);box-shadow:0 1px 3px rgba(0,0,0,.35)}'+
+ st.textContent='html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]){background:#1f6fe0;color:#fff;border:1px solid #8cc0ff;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.35);box-shadow:0 1px 3px rgba(0,0,0,.35);padding:2px 9px;min-height:0;height:auto;line-height:1.35;font-size:13px;border-radius:6px;margin:0 0 0 auto;flex:none;white-space:nowrap}'+
+ 'html body #olBox #olRooms .olRoom>span{flex:1 1 0;min-width:0}'+
+ 'html body #olBox #olRooms .olRoom button[data-a="x"]{padding:2px 9px;min-height:0;font-size:13px;margin:0 0 0 auto;flex:none}'+
+ 'html body #olBox #olRooms .olRoom button[data-a]{padding:2px 9px;font-size:13px;line-height:1.3;min-height:0;height:auto;border-radius:7px;white-space:nowrap;flex:0 0 auto}'+
+ 'html body #olBox #olRooms .olRoom>span{flex:1 1 110px}'+
  'html body #olBox #olRooms .olRoom button[data-a].pri{background:#2b86ff;border-color:#bcdcff}'+
  'html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]):hover,html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]):focus-visible{background:#4a9bff;outline:2px solid #fff}';
  document.head.appendChild(st)}
@@ -16928,6 +16932,17 @@ try{olAutoLog()}catch(e){}
    for(let e=rm;e;e=e.parentElement){const c=getComputedStyle(e).backgroundColor,q=c.match(/[\d.]+/g);if(q&&!(q.length>3&&+q[3]<.5)){m=q;break}}
    const L=m?(0.299*m[0]+0.587*m[1]+0.114*m[2]):255;box.style.setProperty('--olRn',L<140?'#6db3ff':'#0b57c4')}catch(e){}};
  const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);paint();return r}}
+
+/* ===== v9035: ตัดบรรทัดหัวล็อบบี้ "🌐 เรียวหมากรุกออนไลน์ · ลงทะเบียน…" ออก (เหลือปุ่ม ✖) · ปุ่ม "🚪 ออกจากห้อง" พื้นแดง ตัวขาวใหญ่ เห็นชัด ===== */
+{const st=document.createElement('style');st.id='olV35';
+ st.textContent='html body #olBox .olTop #olH{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}'+
+ 'html body #olBox .olTop{justify-content:flex-end;position:sticky;top:0;height:0;margin:0;padding:0;overflow:visible;z-index:6}'+
+ 'html body #olBox .olIn{padding-top:12px}'+
+ 'html body #olBox .olTop #olClose{position:absolute;top:0;right:0;width:46px;height:46px;min-height:0;padding:0;font-size:20px;display:flex;align-items:center;justify-content:center}'+
+ 'html body #olBox #olRand{margin-right:56px;width:calc(100% - 56px)}'+
+ 'html body #olLeaveB{background:#d62f2f!important;color:#fff!important;border:2px solid #ffb3b3!important;font-size:20px!important;font-weight:800!important;line-height:1.3!important;padding:6px 16px!important;height:auto!important;min-height:42px!important;max-height:none!important;overflow:visible!important;display:inline-flex;align-items:center;gap:6px;border-radius:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.45);text-shadow:0 1px 1px rgba(0,0,0,.4);opacity:1!important;cursor:pointer}'+
+ 'html body #olLeaveB:hover,html body #olLeaveB:focus-visible{background:#f04444!important;outline:2px solid #fff}';
+ document.head.appendChild(st)}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
