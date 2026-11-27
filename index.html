@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>หมากรุกไทย — กระดานสีเดียวและเชื่อมต่อเอนจิน</title>
-<meta name="description" content="เกมหมากรุกไทย เล่นกับ AI หรือเล่นสองคน พร้อมประวัติการเดิน บันทึกเกม และวิเคราะห์ตาเดิน">
+<title>หมากรุกไทยออนไลน์ เล่นกับ AI | เรียวหมากรุก</title>
+<meta name="description" content="เล่นหมากรุกไทยออนไลน์กับ AI บนเรียวหมากรุก ใช้ได้ทั้งมือถือและคอมพิวเตอร์ เปิดเว็บแล้วเริ่มเล่นได้เลย ไม่ต้องล็อกอิน">
+<link rel="canonical" href="https://makruksrisak-design.github.io/realmakruk/">
 <meta name="theme-color" content="#ece6d6">
 <!-- ใช้ system fonts เพื่อให้เปิดเล่นออฟไลน์ได้ -->
 <style>
@@ -15892,8 +15893,7 @@ olLeave=async function(){
    ref.transaction(cur=>cur&&cur.status==='waiting'&&cur.w&&cur.w.k===OL.me.key?{status:'empty'}:undefined,()=>{},false)}}catch(e){}};
  addEventListener('pagehide',sh)}
 /* ห้องที่รอคู่แข่งค้างเกิน 15 นาที (เจ้าของปิดหน้าไปโดยไม่ออกห้อง) = ถือว่าว่าง */
-const OL_DEAD={};   // v9037: เกมที่ผู้เล่นออกกันหมดแล้ว (นับเป็นห้องว่าง)
-const olStale=r=>!!(r&&((r.gid&&OL_DEAD[r.gid])||(r.status==='waiting'&&Date.now()-(r.at||0)>900000)||(r.hb&&r.status==='playing'&&Date.now()-(r.at||0)>2700000)));   // รอเกิน 15 นาที / ห้องที่มีเรียวเมืองทอง (AI) เล่นกับเจ้าของห้องค้างเกิน 45 นาที = ถือว่าว่าง
+const olStale=r=>!!(r&&((r.status==='waiting'&&Date.now()-(r.at||0)>900000)||(r.hb&&r.status==='playing'&&Date.now()-(r.at||0)>2700000)));   // รอเกิน 15 นาที / ห้องที่มีเรียวเมืองทอง (AI) เล่นกับเจ้าของห้องค้างเกิน 45 นาที = ถือว่าว่าง
 {const old=olLobbyRender;olLobbyRender=function(){try{const L=OL.lobby||{};for(const k of Object.keys(L))if(olStale(L[k]))L[k]={status:'empty'}}catch(e){}return old.apply(this,arguments)}}
 {const st=document.createElement('style');st.textContent=
  '#olUnder{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:6px}#olUnder button{width:auto;margin:0;padding:3px 9px;height:32px;font-weight:700}#olUnder #olRtc{flex:1 1 100%;margin:0}'+
@@ -16621,7 +16621,7 @@ function mvUpdate(force){try{
 /* ===== v9019: นั่งรอคู่แข่งครบเวลาแล้วไม่มีใครมา → เรียวเมืองทอง (AI) มาเล่นด้วยอัตโนมัติ เป็นแขก ไม่คิดคะแนน · เล่นครบจำนวนเกมแล้วพากลับห้องรวม
    ปรับเงื่อนไขที่ OL_AIOFFER: on เปิด/ปิด · waitSec รอกี่วินาที · level ระดับ AI (1 ง่าย 2 ปานกลาง 3 ยาก 4 ยากมาก) · maxGames เล่นกี่เกมแล้วกลับห้องรวม · auto true = เริ่มเองไม่ถาม / false = ขึ้นกล่องถามก่อน
    เกมกับ AI แสดงตัวเป็น AI ตามปกติ (ไม่ปลอมเป็นผู้เล่นคน) ===== */
-const OL_AIOFFER={on:true,waitSec:10,level:'3',agg:4,maxGames:2,auto:false,mode:'room'};   // mode 'room' = เรียวเมืองทอง (AI) มานั่งเล่นในห้องออนไลน์เดียวกัน (ถามก่อน) · 'local' = ออกไปเล่นกับ AI ในเครื่อง
+const OL_AIOFFER={on:true,waitSec:10,level:'3',maxGames:2,auto:false,mode:'room'};   // mode 'room' = เรียวเมืองทอง (AI) มานั่งเล่นในห้องออนไลน์เดียวกัน (ถามก่อน) · 'local' = ออกไปเล่นกับ AI ในเครื่อง
 let olAia=null;   // ชุดเกมกับ AI ที่เริ่มจากการรอ: {n:เกมที่,g:รหัสเกม,done}
 {let since=0,key='',shown=false;
  const hide=id=>{const e=$(id||'olAiOff');if(e)e.hidden=true};
@@ -16700,12 +16700,7 @@ setInterval(()=>{try{
     if(key!==OL.gid+':'+mlog.length)return;
     if(!mv){
       if(lv===1){let bs=-1e9;for(const x of L.slice().sort(()=>Math.random()-.5)){const sc2=ev(apply(B,x))*(bc==='w'?1:-1)+Math.random()*80;if(sc2>bs){bs=sc2;mv=x}}}
-      else{   // v9038: คิดด้วยเอนจินเบื้องหลังแบบเดียวกับเกมปกติ ใส่โหมดบุกทะลวงฟัน (ตั้งเฉพาะตอนเรียกคิด) · ใช้ไม่ได้ค่อยถอยไปค้นหาแบบคลาสสิก
-        try{const ms=Math.max(300,Math.min(engMs(builtinEng,lv),Math.round((clk[bc]||60000)/25)));
-          const keep=aiSacrificeLevel;aiSacrificeLevel=OL_AIOFFER.agg|0;let pr;try{pr=builtinEng.playMove(lv,fen(),ms)}finally{aiSacrificeLevel=keep}
-          const r=await pr,f=sqi(r.slice(0,2)),t=sqi(r.slice(2,4));mv=L.find(x=>x[0]==f&&x[1]==t)||null}catch(e){}
-        if(key!==OL.gid+':'+mlog.length)return;
-        if(!mv)mv=search(B,bc,aiInMs(lv),mtUse(lv)?64:[0,0,6,10,14][lv])}}
+      else mv=search(B,bc,aiInMs(lv),mtUse(lv)?64:[0,0,6,10,14][lv])}
     send(mv)})()
 }catch(e){}},700);
 /* ===== v9020: โหมดบอท 🤖 — เปิดหน้าเว็บด้วย ?bot=1 แล้วเรียวเมืองทอง (AI) จะไปนั่งรอในห้อง · มีคนมาก็เล่นด้วย ไม่เกิน N เกม แล้วออกห้องรวมพักสักครู่ แล้วสุ่มห้องใหม่นั่งรอต่อ
@@ -16715,7 +16710,7 @@ const OL_BOT=(()=>{try{const q=new URLSearchParams(location.search);if(q.get('bo
   const n=(k,d)=>{const v=parseFloat(q.get(k));return isFinite(v)&&v>0?v:d};
   let rooms=(q.get('rooms')||'1,4').split(',').map(x=>+x).filter(x=>x>=1&&x<=OL_ROOMS);if(!rooms.length)rooms=[1,4];
   const embed=q.get('embed')==='1',stay=q.get('stay')==='1',nm=(q.get('name')||'').trim().slice(0,30);   // v9027: stay=1 → เล่นจบทีละเกมแล้วกลับมานั่งรอห้องเดิมทันที · name=ชื่อบอท
-  return{rooms,stay,embed,agg:q.get('agg')!=null?Math.max(0,Math.min(5,+q.get('agg')||0)):4,side:q.get('side')==='b'?'b':'w',name:nm,level:String(q.get('level')||'3'),games:stay?1:Math.round(n('games',2)),tc:Math.round(n('tc',7)),
+  return{rooms,stay,embed,side:q.get('side')==='b'?'b':'w',name:nm,level:String(q.get('level')||'3'),games:stay?1:Math.round(n('games',2)),tc:Math.round(n('tc',7)),
     t:{think:[1,4],overWait:[25,45],lastWait:stay?[4,8]:[10,20],rest:stay?[2,5]:[90,240],retry:stay?5:20,waitMax:600}}}catch(e){return null}})();
 if(OL_BOT){
  OL_AIOFFER.on=false;
@@ -16759,8 +16754,8 @@ if(OL_BOT){
        if(S.calledKey===key){if(now-S.calledAt>15000)S.calledKey='';return}
        if(S.moveKey!==key){S.moveKey=key;const low=(typeof clk!=='undefined'&&clk[OL.color]<20000);S.moveAt=now+(low?200:rnd(OL_BOT.t.think));return}
        if(now<S.moveAt)return;
-       S.calledKey=key;S.calledAt=now;try{const lv0=+OL_BOT.level;if(OL_BOT.agg>0)aiSacrificeLevel=OL_BOT.agg;   /* v9038: โหมดบุกทะลวงฟัน ระดับ 4 (ตั้งในหน้าบอทเอง) */(async()=>{let bm=null;if(lv0>=2)bm=await olBookMove(OL.color,lv0);if(key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(bm&&turn===OL.color&&legal(B,turn).some(x=>x[0]===bm[0]&&x[1]===bm[1])){play(bm[0],bm[1]);return}
-         if(lv0>=2){   // เฟรมฝังในหน้าของผู้เล่นคนอื่น: คิดในเธรดเบื้องหลัง ไม่ให้หน้าของเขากระตุก
+       S.calledKey=key;S.calledAt=now;try{const lv0=+OL_BOT.level;(async()=>{let bm=null;if(lv0>=2)bm=await olBookMove(OL.color,lv0);if(key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(bm&&turn===OL.color&&legal(B,turn).some(x=>x[0]===bm[0]&&x[1]===bm[1])){play(bm[0],bm[1]);return}
+         if(OL_BOT.embed&&lv0>=2){   // เฟรมฝังในหน้าของผู้เล่นคนอื่น: คิดในเธรดเบื้องหลัง ไม่ให้หน้าของเขากระตุก
            let mv=null;try{const ms=Math.max(300,Math.min(engMs(builtinEng,lv0),Math.round((clk[OL.color]||60000)/25)));const r=await builtinEng.playMove(lv0,fen(),ms);const f=sqi(r.slice(0,2)),t=sqi(r.slice(2,4));mv=legal(B,turn).find(x=>x[0]===f&&x[1]===t)||null}catch(e){}
            if(key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(mv&&turn===OL.color){play(mv[0],mv[1]);return}}
          aiIn(lv0)})()}catch(e){}
@@ -16887,7 +16882,7 @@ async function olBookMove(side,lv){try{if(typeof opnTry!=='function')return null
 
 /* ===== v9028: บอท 🤖 เรียวเมืองทอง ประจำห้อง — เมื่อมีคนเปิดหน้านี้ในเครื่องคอมพิวเตอร์และเข้าส่วนออนไลน์ หน้านั้นจะเปิดเฟรมซ่อน (โหมดบอท) ไปนั่งรอในห้องที่ตั้งไว้
    · ห้องไหนมีบอท/คนนั่งอยู่แล้วก็ข้าม (ห้องหนึ่งมีบอทตัวเดียว) · ปิดหน้า = บอทหายและห้องว่างเอง · เจ้าของหน้ากดปิดบอทได้จากป้ายมุมซ้ายล่าง · ไม่ทำงานบนมือถือ/จอแคบ ===== */
-const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียวเมืองทอง (AI)',level:'3',agg:4,tc:7,minWidth:900};
+const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียวเมืองทอง (AI)',level:'3',tc:7,minWidth:900};
 {let frames=[],chip=null,started=false;
  const q=new URLSearchParams(location.search),force=q.get('autobot')==='1';
  const enabled=()=>{try{return localStorage.getItem('makruk-autobot')!=='0'}catch(e){return true}};
@@ -16901,7 +16896,7 @@ const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียว�
  window.abStop=function(){for(const f of frames){try{f.contentWindow.olLeave()}catch(e){}setTimeout(()=>{try{f.remove()}catch(e){}},400)}frames=[]};
  window.abStart=function(){if(frames.length||!eligible()||!enabled())return;
   OL_AUTOBOT.rooms.forEach((r,i)=>{const f=document.createElement('iframe');f.setAttribute('aria-hidden','true');f.tabIndex=-1;f.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px';
-   f.src=location.pathname+'?bot=1&embed=1&stay=1&rooms='+r+'&level='+OL_AUTOBOT.level+'&agg='+(OL_AUTOBOT.agg||0)+'&tc='+OL_AUTOBOT.tc+((OL_AUTOBOT.sides||{})[r]==='b'?'&side=b':'')+'&name='+encodeURIComponent(OL_AUTOBOT.name);
+   f.src=location.pathname+'?bot=1&embed=1&stay=1&rooms='+r+'&level='+OL_AUTOBOT.level+'&tc='+OL_AUTOBOT.tc+((OL_AUTOBOT.sides||{})[r]==='b'?'&side=b':'')+'&name='+encodeURIComponent(OL_AUTOBOT.name);
    setTimeout(()=>document.body.appendChild(f),i*1500);frames.push(f)});chipDraw()};
  {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!started&&eligible()){started=true;setTimeout(()=>{if(enabled())abStart();else chipDraw()},2500)}}catch(e){}return r}}
  setInterval(()=>{if(chip&&frames.length)chip.firstChild.textContent=chipTxt()},3000);
@@ -16949,25 +16944,6 @@ try{olAutoLog()}catch(e){}
  'html body #olLeaveB{background:#d62f2f!important;color:#fff!important;border:2px solid #ffb3b3!important;font-size:20px!important;font-weight:800!important;line-height:1.3!important;padding:6px 16px!important;height:auto!important;min-height:42px!important;max-height:none!important;overflow:visible!important;display:inline-flex;align-items:center;gap:6px;border-radius:10px!important;box-shadow:0 2px 6px rgba(0,0,0,.45);text-shadow:0 1px 1px rgba(0,0,0,.4);opacity:1!important;cursor:pointer}'+
  'html body #olLeaveB:hover,html body #olLeaveB:focus-visible{background:#f04444!important;outline:2px solid #fff}';
  document.head.appendChild(st)}
-
-/* ===== v9037: เคลียร์ห้องที่ไม่มีใครอยู่แล้ว — ห้องสถานะ "กำลังแข่งขัน" ที่ผู้เล่นทั้งสองหลุด/ปิดหน้าไปหมด (ไม่มีใครกดออก) จะถูกตั้งเป็นห้องว่างโดยเครื่องใดก็ตามที่เปิดล็อบบี้อยู่ ===== */
-{const seen={};
- function olJanitor(){try{if(!OL.db)return;const L=OL.lobby||{},now=Date.now();
-  for(const k of Object.keys(L)){const r=L[k];if(!r||r.status!=='playing'||!r.gid)continue;
-   const num=+String(k).replace(/\D/g,'');if(OL.room===num)continue;
-   if(OL_DEAD[r.gid])continue;
-   if(seen[r.gid]&&now-seen[r.gid]<25000)continue;seen[r.gid]=now;
-   const tc=+r.tc||0,maxAge=tc>0?(2*tc+20)*60000:3*3600000,tooOld=now-(r.at||0)>maxAge,gid=r.gid;
-   OL.db.ref('games/'+gid).once('value').then(sn=>{try{const g=sn.val()||{},gw=+g.gone_w||0,gb=+g.gone_b||0;
-     const bothGone=gw&&gb&&now-Math.max(gw,gb)>60000;
-     if(!(bothGone||tooOld))return;
-     OL_DEAD[gid]=1;
-     OL.db.ref('lobby/'+k).transaction(cur=>cur&&cur.gid===gid&&cur.status==='playing'?{status:'empty'}:undefined,()=>{},false);
-     try{olLobbyRender()}catch(e){}
-    }catch(e){}}).catch(()=>{})}
- }catch(e){}}
- {const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{setTimeout(olJanitor,300)}catch(e){}return r}}
- setInterval(olJanitor,30000)}
 try{const s=$('analysisEngine');if(s)s.value='internal'}catch(e){}   // V9.0.16: ค่าเริ่มต้นของเอนจินวิเคราะห์ทั้งเกม = เรียวเมืองทอง (AI ภายใน) · ผู้เล่นเลือกเอนจินภายนอกเองได้ในแผง
 </script>
 </body>
