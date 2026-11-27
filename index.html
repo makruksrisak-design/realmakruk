@@ -13278,7 +13278,16 @@ function olBox(){
   $('olTabR').onclick=()=>olTab('r');$('olTabL').onclick=()=>olTab('l');
   return d;
 }
-function olSt(t){const e=$('olSt');if(e)e.textContent=t}
+function olSt(t,guestHint){
+  const status=$('olSt');if(!status)return;
+  status.classList.toggle('olGuestStatus',!!guestHint);
+  if(!guestHint){status.textContent=t;return}
+  const title=document.createElement('strong');title.textContent=t;
+  status.replaceChildren(title,document.createTextNode(' · '+guestHint));
+}
+function olGuestStatus(me){
+  olSt('👤 คุณคือแขกคนที่ '+String(me.name).replace(/^แขก-/,''),'กดเล่นที่ห้องข้างล่างได้เลย ไม่คิดคะแนน ไม่ต้องลงชื่อ');
+}
 function olTab(t){$('olRooms').hidden=t!=='r';$('olLb').hidden=t!=='l';$('olTabR').setAttribute('aria-selected',String(t==='r'));$('olTabL').setAttribute('aria-selected',String(t==='l'));if(t==='l')olLeaderboard()}
 async function olOpen(){
   const d=olBox();d.hidden=false;olLobbyRender();
@@ -13500,6 +13509,7 @@ function olBarSync(){
  '#olBox .olIn{background:var(--pn,#fff);color:inherit;border-radius:14px;max-width:640px;width:100%;max-height:92vh;overflow:auto;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.4)}'+
  '#olBox .olTop{display:flex;justify-content:space-between;align-items:center}#olBox h3{margin:0}#olBox .olTop button{width:auto}'+
  '#olBox form label{display:block;margin:6px 0}#olBox form button{width:auto}#olSt{min-height:1.3em;margin:6px 0;font-weight:700}'+
+ '#olSt.olGuestStatus{padding:8px 12px;border:1px solid #c9a34e;border-radius:10px;background:#30271b;color:#f7ebdd;font-weight:400}#olSt.olGuestStatus strong{color:#f4d68b;font-weight:700}'+
  '#olBox .olCard{padding:8px 10px;border-radius:10px;border:1px solid rgba(128,128,128,.5);margin:6px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}#olBox .olCard button{width:auto;margin-left:auto}'+
  '#olBox .olTabs{display:flex;gap:6px;margin:10px 0 6px}#olBox .olTabs button{flex:1;width:auto}#olBox .olTabs button[aria-selected=true]{background:#2980b9;color:#fff}'+
  '#olBox .olRoom{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid rgba(128,128,128,.3)}#olBox .olRoom.cur{background:rgba(41,128,185,.15)}#olBox .olRoom span{flex:1 1 200px;min-width:0}#olBox .olRoom button{width:auto;margin:0}'+
@@ -15707,7 +15717,7 @@ function olGuest(){
   let s=null;try{s=JSON.parse(sessionStorage.getItem('makruk-olguest')||'null')}catch(e){}
   if(!s||!s.id){s={id:Math.random().toString(36).slice(2,8),n:'แขก-'+String(Math.floor(1000+Math.random()*9000))};try{sessionStorage.setItem('makruk-olguest',JSON.stringify(s))}catch(e){}}
   OL.me={key:'guest_'+s.id,name:s.n,elo:null,w:0,d:0,l:0,guest:true};return OL.me}
-{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!OL.me&&OL.db){olGuest();olSt('👤 คุณคือแขกคนที่ '+String(OL.me.name).replace(/^แขก-/,'')+' · กดเล่นที่ห้องข้างล่างได้เลย ไม่คิดคะแนน ไม่ต้องลงชื่อ')}olLobbyRender()}catch(e){}return r}}
+{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(!OL.me&&OL.db){olGuest();olGuestStatus(OL.me)}olLobbyRender()}catch(e){}return r}}
 {const old=olLogout;olLogout=function(){const r=old.apply(this,arguments);try{if(!OL.me&&!(OL.room&&!OL.spect)){olGuest();olLobbyRender()}}catch(e){}return r}}
 {const old=olLogin;olLogin=async function(){if(OL.room&&!OL.spect&&OL.me&&OL.me.guest)throw new Error('ออกจากห้องก่อนจึงลงชื่อได้');const r=await old.apply(this,arguments);OL.showLogin=false;return r}}
 /* ล็อบบี้: แขก + เลือกเวลา */
@@ -16930,7 +16940,7 @@ const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียว�
 
 /* ===== v9031: ข้อความ "คุณคือแขกคนที่ … กดเข้าเล่นที่ห้องข้างล่างได้เลย" อยู่บรรทัดสถานะบนสุดของล็อบบี้ (แทนการ์ดซ้ำเดิม) · แสดงเมื่อบรรทัดนั้นว่างอยู่ ===== */
 {const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{const me=OL.me,e=$('olSt');
-  if(me&&me.guest&&!OL.room&&e&&!e.textContent.trim())olSt('👤 คุณคือแขกคนที่ '+String(me.name).replace(/^แขก-/,'')+' · กดเล่นที่ห้องข้างล่างได้เลย ไม่คิดคะแนน ไม่ต้องลงชื่อ')}catch(x){}return r}}
+  if(me&&me.guest&&!OL.room&&e&&!e.textContent.trim())olGuestStatus(me)}catch(x){}return r}}
 
 /* ===== v9032: ไม่มีปุ่ม "เข้าสู่ระบบ / สมัครใหม่" และข้อความอธิบาย — ใส่ชื่อแล้วกรอกรหัสครบ 4 หลัก เข้าให้อัตโนมัติ (กด Enter ก็ได้) ===== */
 function olAutoLog(){const f=$('olLog'),pin=$('olPin'),nm=$('olName');
