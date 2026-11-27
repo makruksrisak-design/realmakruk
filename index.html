@@ -585,7 +585,7 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 <details><summary>🔍 วิเคราะห์หลังจบเกม</summary><p class="muted">วิเคราะห์ด้วยเอนจินที่ใช้งานอยู่ (Fairy-Stockfish ถ้าเชื่อมต่อไว้ ไม่เช่นนั้นเรียวเมืองทอง) กดปุ่มอีกครั้งระหว่างวิเคราะห์เพื่อหยุด</p><div id="pgnBatchPicker" hidden><label for="pgnGameSelect">เลือกเกมในไฟล์ PGN</label><select id="pgnGameSelect"></select></div><div id="pgnGameInfo" hidden role="region" aria-label="รายละเอียดเกม PGN" style="font-size:13px;line-height:1.6;margin:8px 0;overflow-wrap:anywhere"></div><label for="analysisEngine" style="display:block;margin:8px 0 4px">เอนจินสำหรับวิเคราะห์ทั้งเกม</label><select id="analysisEngine" style="width:100%;margin-bottom:8px"><option value="fairy">Fairy-Stockfish (เอนจินภายนอกที่เชื่อมต่อ)</option><option value="internal">เรียวเมืองทอง (AI ภายใน)</option></select><button id="analyzeGame">วิเคราะห์ตาเดินทั้งเกม</button><div id="analysisOut" aria-live="polite"></div></details>
 <details><summary>🧩 ฝึกหาตาเดินที่ดีที่สุด</summary><p class="muted">สร้างโจทย์จากตำแหน่งปัจจุบันด้วยเอนจินที่ใช้งานอยู่ (Fairy-Stockfish ถ้าเชื่อมต่อไว้ ไม่เช่นนั้นเรียวเมืองทอง)</p><button id="newPuzzle">สร้างโจทย์จากตำแหน่งนี้</button><div id="puzzleOut" aria-live="polite"></div></details>
 <details open><summary>⚙ ตัวเลือกเพิ่มเติม</summary>
-<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="showTmr" checked style="width:auto"> แสดงตัวนับเวลาที่เอนจินกำลังคิด (ตัวเลข ⏱ เหนือกระดาน)</label>
+<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="showTmr" checked style="width:auto"> แสดงตัวนับถอยหลังเวลาคิดของเอนจิน (⏱ ท้ายชื่อฝ่ายที่กำลังคิด)</label>
 <label for="cntMode">การนับศักดิ์กระดาน (ไม่มีเบี้ยคว่ำ และทั้งสองฝ่ายยังมีหมากนอกจากขุน)</label><select id="cntMode"><option value="ask" selected>ตามกติกา: ฝ่ายที่เป็นรองกดขอนับเอง (หยุดนับได้) นับ 1–64</option><option value="auto">เริ่มนับให้อัตโนมัติ นับ 1–64 (ฝ่ายที่หมากน้อยกว่าเป็นฝ่ายนับ)</option></select>
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="aiCount" checked style="width:auto"> ให้เรียวเมืองทองขอนับเองเมื่อเป็นรอง (หมากน้อยกว่าอย่างน้อยโคน 1 ตัว) และขอหยุดนับเมื่อหมากเท่ากันหรือได้เปรียบ</label>
 <label for="pcRule">กติกานับศักดิ์หมาก (ไม่มีเบี้ยคว่ำ และฝ่ายหนึ่งเหลือแต่ขุน)</label><select id="pcRule"><option value="std" selected>มาตรฐาน: เริ่มนับที่จำนวนหมากบนกระดาน (รวมขุนทั้งสอง) พอฝ่ายที่หนีเดินตาแรกให้นับต่อเป็นจำนวนนั้น+1 (เช่น มี 5 ตัวนับ 6, เหลือ 3 ตัวนับ 4) ถึงเลขจำกัด และไม่คำนวณใหม่เมื่อมีหมากถูกกิน</option><option value="old">แบบเดิมของเกมนี้: เริ่มนับ 1 ถึงเลขจำกัด (เริ่มใหม่ถ้าหมากฝ่ายได้เปรียบเปลี่ยน)</option></select>
@@ -1900,8 +1900,28 @@ function rootScores(depth){
   for(const m of L){make(m);const v=-search(depth-1,-INF_,INF_,1,true);unmake();res.push({m,s:v})}
   return res;
 }
+// Play a proven knight-and-met win directly, within the current Makruk count.
+function nmTableWin(moves,repetitionCounts){
+  const own=side===0?NPV0:NPV1,enemy=side===0?NPV1:NPV0;
+  if(!TBT.has('NM')||PCN0||PCN1||own!==VAL[N]+VAL[M]||enemy||!(tbProbe(0)>0))return '';
+  let best='',bestScore=0,bestVisits=Infinity;
+  for(const move of moves){
+    const uci=mvToUci(move),visits=repetitionCounts?.[uci]||0;
+    make(move);
+    const score=-tbProbe(1);
+    unmake();
+    // A mate ends the game before the repetition rule is checked.
+    if(score<=0||(visits>=2&&score!==MATE-1))continue;
+    if(score>bestScore||(score===bestScore&&visits<bestVisits)){
+      best=uci;
+      bestScore=score;
+      bestVisits=visits;
+    }
+  }
+  return best;
+}
 /* lv: 1=easy (shallow, noisy) .. 4=strongest. returns uci move */
-function playMove(lv,fen,ms,free,repeatedMoves){
+function playMove(lv,fen,ms,free,repeatedMoves,repetitionCounts){
   setFen(fen);aggRoot();TBUSE=lv>=2;
   if(lv<=1){
     const rs=rootScores(2);if(!rs.length)return '';
@@ -1909,6 +1929,8 @@ function playMove(lv,fen,ms,free,repeatedMoves){
     return mvToUci(b);
   }
   const L=legalMoves();if(!L.length)return '';
+  const tableMove=nmTableWin(L,repetitionCounts);
+  if(tableMove)return tableMove;
   const maxd=free?64:(lv===2?6:64);          /* ระดับ 3 ไม่จำกัดความลึกแล้ว (เดิมจำกัด 12 ชั้น) ใช้เวลาเต็ม ~2.5 วินาที */
   const plan=khonMetTablePlan(L);
   if(plan&&plan.best)return mvToUci(plan.best);
@@ -2863,14 +2885,14 @@ function click(i){
   render();
 }
 function aiIn(lv){
-  thinking=true;render();const g=gid;engTimerStart(aiInMs(lv||+$('lv').value));
+  thinking=true;render();const g=gid,clock=engTimerStart(aiInMs(lv||+$('lv').value),turn);
   setTimeout(()=>{
-    if(g!=gid){engTimerStop();return}
-    if(paused||replayView){engTimerStop();thinking=false;render();return}
+    if(g!=gid){engTimerStop(clock);return}
+    if(paused||replayView){engTimerStop(clock);thinking=false;render();return}
     const c=turn,L=legal(B,c);let best=L[0];lv=lv||+$('lv').value;
     if(lv==1){let bs=-1e9;L.sort(()=>Math.random()-.5);for(const m of L){const s=ev(apply(B,m))*(c=='w'?1:-1)+Math.random()*80;if(s>bs){bs=s;best=m}}}
     else best=search(B,c,aiInMs(lv),mtUse(lv)?64:[0,0,6,10,14][lv]);
-    engTimerStop();thinking=false;play(best[0],best[1]);
+    engTimerStop(clock);thinking=false;play(best[0],best[1]);
   },60);
 }
 /* ถ้าตาที่เอนจินเลือกจะทำให้ตำแหน่งซ้ำครั้งที่ 3 (เสมอ): เลือกตาอื่นที่ไม่ซ้ำ ถ้าไม่เสียเปรียบเกิน 0.5 เบี้ย
@@ -2895,9 +2917,14 @@ async function ai(force){
   const side=turn,lv=aa?+$(side=='w'?'lvw':'lvb').value:+$('lv').value;
   aiCountDecide(side);
   if((!aa||aaChoice(side)==='main')&&!extEng()&&$('fsmain').checked&&!noAuto){const g0=gid;thinking=true;render();await autoConnect(false);thinking=false;if(g0!=gid||over||paused||replayView||setup){render();return}}
+  if(aa&&!aaReady(side)){aaEngineUnavailable(side,'เอนจินที่เลือกไม่พร้อมใช้งาน');return}
+  if(aa&&typeof ser!=='undefined'&&ser&&!ser.done&&aaChoice(side)==='main'){
+    const p=side==='w'?serWhite():serBlack();p.ch=aaRequestedKey(side);$(side==='w'?'enw':'enb').value=p.ch;
+    p.name=aaLabel(side);
+  }
   const e=aa?sideEngine(side):activeEng();
   if(!e)return aiIn(lv);
-  thinking=true;render();const g=gid;
+  thinking=true;render();const g=gid;let clock=null;
   try{
     const opm=(typeof opnTry==='function')?await opnTry(side,lv,e,g):null;
     if(g!=gid)return;
@@ -2905,17 +2932,16 @@ async function ai(force){
     if(opm){thinking=false;play(opm[0],opm[1]);return}
     {const gm=(typeof gbTry==='function')?await gbTry(side,lv,g):null;if(g!=gid)return;if(paused||replayView){thinking=false;render();return}if(gm){thinking=false;play(gm[0],gm[1]);return}}   // V8.9.26 ตำราจากเกมจริง
     {const tm=(typeof tbAiMove==='function')?await tbAiMove(side,g):null;if(g!=gid)return;if(paused||replayView){thinking=false;render();return}if(tm){thinking=false;play(tm[0],tm[1]);return}}   // V8.9.28 ตารางคำตอบท้ายเกม
-    engTimerStart(engMs(e,lv));
-    const mv=await(e.playMove?e.playMove(lv,fen(),engMs(e,lv)):e.best(fen(),engMs(e,lv)));
-    engTimerStop();
-    if(g!=gid)return;
-    if(paused||replayView){thinking=false;render();return}
+    const budget=engMs(e,lv);clock=engTimerStart(budget,side);
+    const mv=await(e.playMove?e.playMove(lv,fen(),budget):e.best(fen(),budget));
+    if(g!=gid){engTimerStop(clock);return}
+    if(paused||replayView){engTimerStop(clock);thinking=false;render();return}
     const f=sqi(mv.slice(0,2)),t=sqi(mv.slice(2,4));
     if(!legal(B,turn).some(m=>m[0]==f&&m[1]==t))throw new Error('เอนจินส่งตาเดินที่ไม่ถูกกติกา: '+mv);
     let f2=f,t2=t;
-    if(repAfter([f,t])>=2){[f2,t2]=await avoidRep(e,f,t,lv);if(g!=gid)return;if(paused||replayView){thinking=false;render();return}}
-    thinking=false;play(f2,t2);
-  }catch(x){engTimerStop();if(g!=gid)return;$('es').textContent='เอนจินภายนอกใช้ไม่ได้ ('+(x&&x.message?x.message:'')+') ใช้เรียวเมืองทองแทนในตานี้';thinking=false;aiIn(lv)}
+    if(repAfter([f,t])>=2){[f2,t2]=await avoidRep(e,f,t,lv);if(g!=gid){engTimerStop(clock);return}if(paused||replayView){engTimerStop(clock);thinking=false;render();return}}
+    engTimerStop(clock);thinking=false;play(f2,t2);
+  }catch(x){engTimerStop(clock);if(g!=gid)return;if(aa){if(paused||replayView){thinking=false;render();return}aaEngineUnavailable(side,x&&x.message?x.message:'เอนจินตอบผิดปกติ');return}$('es').textContent='เอนจินภายนอกใช้ไม่ได้ ('+(x&&x.message?x.message:'')+') ใช้เรียวเมืองทองแทนในตานี้';thinking=false;aiIn(lv)}
 }
 $('ap').onclick=()=>{if(!aa)return;paused=!paused;$('ap').textContent=paused?'เล่นต่อ':'หยุดชั่วคราว';if(!paused)kick();render()};
 $('as').onclick=()=>{if(!aa||over||thinking||setup)return;paused=true;$('ap').textContent='เล่นต่อ';ai(true)};
@@ -3155,11 +3181,27 @@ $('qLineClear').onclick=()=>{const b=$('fx');if(b)b.click();else{fut=null;pi=nul
   Object.defineProperty(el,'textContent',{configurable:true,get(){return base},set(v){base=String(v);proto.set.call(el,'');nm.textContent=base;el.appendChild(nm);el.appendChild(cb);el.appendChild(span)}});
   window.setWhoT=t=>{span.textContent=t;if(!/^ ⏱ (ตาคุณ|ฝ่าย)/.test(t))span.classList.remove('low')};
 })();
-let engEnd=0,engIv=null;
-function engTimerTick(){const r=Math.max(0,engEnd-Date.now()),sec=r/1000;setWhoT(' ⏱ '+(sec<60?sec.toFixed(1)+' วินาที':Math.floor(sec/60)+':'+String(Math.floor(sec%60)).padStart(2,'0')+' นาที'))}
+let engEnd=0,engIv=null,engOwner=null;
+function engTimerPaint(){if(typeof rmThinkPaint==='function')rmThinkPaint()}
+function engTimerTick(){
+  const o=engOwner;if(!o)return;
+  if(o.side&&(o.g!==gid||o.ply!==hist.length||o.side!==turn||!thinking||paused||over||setup||replayView)){engTimerStop(o);return}
+  const r=Math.max(0,engEnd-Date.now()),sec=r/1000;
+  setWhoT(' ⏱ '+(sec<60?sec.toFixed(1)+' วินาที':Math.floor(sec/60)+':'+String(Math.floor(sec%60)).padStart(2,'0')+' นาที'));
+  engTimerPaint();
+}
 var showTmr=true;try{showTmr=localStorage.getItem('makruk-tmr')!=='0'}catch(e){}
-function engTimerStart(ms){if(!showTmr||!(ms>=450))return;engEnd=Date.now()+ms;clearInterval(engIv);engIv=setInterval(engTimerTick,100);engTimerTick()}
-function engTimerStop(){clearInterval(engIv);engIv=null;engEnd=0;const c0=document.getElementById('whoT');if(!(c0&&/^ ⏱ (ตาคุณ|ฝ่าย)/.test(c0.textContent)))setWhoT('')}
+function engTimerStart(ms,side){
+  const o={side:side==='w'||side==='b'?side:null,g:gid,ply:hist.length};
+  if(!showTmr||!Number.isFinite(ms)||ms<(o.side?0:450))return o;
+  engEnd=Date.now()+ms;engOwner=o;clearInterval(engIv);engIv=setInterval(engTimerTick,100);engTimerTick();return o;
+}
+function engTimerStop(owner){
+  if(arguments.length&&engOwner!==owner)return;
+  clearInterval(engIv);engIv=null;engEnd=0;engOwner=null;
+  const c0=document.getElementById('whoT');if(!(c0&&/^ ⏱ (ตาคุณ|ฝ่าย)/.test(c0.textContent)))setWhoT('');
+  engTimerPaint();
+}
 var bkTh=100,bkSec=2;try{const a=+localStorage.getItem('makruk-bkth'),b=+localStorage.getItem('makruk-bksec');if(a>0)bkTh=a;if(b>0)bkSec=b}catch(e){}
 $('bkTh').value=String(bkTh);if($('bkTh').value!==String(bkTh)){bkTh=100;$('bkTh').value='100'}
 $('bkSec').value=String(bkSec);if($('bkSec').value!==String(bkSec)){bkSec=2;$('bkSec').value='2'}
@@ -4327,7 +4369,7 @@ function mtEngine(){if(!mtEng){new Function(document.getElementById('engSrc').te
 function engWorker(){
   if(engW)return engW;if(engNoWorker)return null;
   try{
-    const src=document.getElementById('engSrc').textContent+'\nself.onmessage=function(e){var d=e.data;try{var r;if(MakrukEngine.setAgg)MakrukEngine.setAgg(d.agg||0);if(d.cmd==="analyse"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.analyse(d.fen,d.ms,d.o)}else if(d.cmd==="play"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.playMove(d.lv,d.fen,d.ms,d.free,d.repeatedMoves)}else if(d.cmd==="loadnn"){MakrukEngine.loadNN(d.ab);MakrukEngine.setNN(true);r=true}else if(d.cmd==="tbload"){r=MakrukEngine.tbLoad(d.key,d.W,d.Bk)}else if(d.cmd==="tbval"){r=MakrukEngine.tbVal(d.fen)}else if(d.cmd==="tbpick"){r=MakrukEngine.tbPick(d.fen)}else if(d.cmd==="nninfo")r={loaded:MakrukEngine.nnLoaded(),on:MakrukEngine.nnOn()};self.postMessage({id:d.id,r:r})}catch(x){self.postMessage({id:d.id,err:String(x&&x.message||x)})}};';
+    const src=document.getElementById('engSrc').textContent+'\nself.onmessage=function(e){var d=e.data;try{var r;if(MakrukEngine.setAgg)MakrukEngine.setAgg(d.agg||0);if(d.cmd==="analyse"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.analyse(d.fen,d.ms,d.o)}else if(d.cmd==="play"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.playMove(d.lv,d.fen,d.ms,d.free,d.repeatedMoves,d.repetitionCounts)}else if(d.cmd==="loadnn"){MakrukEngine.loadNN(d.ab);MakrukEngine.setNN(true);r=true}else if(d.cmd==="tbload"){r=MakrukEngine.tbLoad(d.key,d.W,d.Bk)}else if(d.cmd==="tbval"){r=MakrukEngine.tbVal(d.fen)}else if(d.cmd==="tbpick"){r=MakrukEngine.tbPick(d.fen)}else if(d.cmd==="nninfo")r={loaded:MakrukEngine.nnLoaded(),on:MakrukEngine.nnOn()};self.postMessage({id:d.id,r:r})}catch(x){self.postMessage({id:d.id,err:String(x&&x.message||x)})}};';
     const w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
     w.onmessage=e=>{const j=engJobs.get(e.data.id);if(!j)return;engJobs.delete(e.data.id);e.data.err?j.rej(new Error(e.data.err)):j.res(e.data.r)};
     w.onerror=()=>{engNoWorker=true;if(engW===w)engW=null;try{w.terminate()}catch(x){}for(const[,j]of engJobs)j.rej(new Error('worker error'));engJobs.clear()};
@@ -4342,7 +4384,7 @@ function runEng(p){
     if(delayed&&gen0!==killGen){rej(Object.assign(new Error('stopped'),{stopped:true}));return}
     const w=engWorker();
     if(w){const id=++engSeq;engJobs.set(id,{res,rej});w.postMessage(Object.assign({id},p))}
-    else setTimeout(()=>{try{const E=mtEngine();if(E.setAgg)E.setAgg(p.agg||0);if(E.setCounting)E.setCounting(p.cntCur||0,p.cntMax||0);res(p.cmd==='analyse'?E.analyse(p.fen,p.ms,p.o):E.playMove(p.lv,p.fen,p.ms,p.free,p.repeatedMoves))}catch(x){rej(x)}},0);
+    else setTimeout(()=>{try{const E=mtEngine();if(E.setAgg)E.setAgg(p.agg||0);if(E.setCounting)E.setCounting(p.cntCur||0,p.cntMax||0);res(p.cmd==='analyse'?E.analyse(p.fen,p.ms,p.o):E.playMove(p.lv,p.fen,p.ms,p.free,p.repeatedMoves,p.repetitionCounts))}catch(x){rej(x)}},0);
   };
   const pr=nnBusy?nnBusy.then(()=>new Promise(exec)):new Promise(exec);
   return pr.finally(()=>{engPend--});
@@ -4362,11 +4404,29 @@ function getCnt(){
 
 const builtinEng={builtin:true,name:'เรียวเมืองทอง',sockOk:()=>true,get pending(){return engPend},
   analyse(fen,ms,o){const c=getCnt();return runEng({cmd:'analyse',fen,ms,o:o||{},cntCur:c.cur,cntMax:c.max})},
-  playMove(lv,fen,ms){
+  async playMove(lv,fen,ms){
     const c=getCnt(),m=mat(B),own=m[turn],enemy=m[opp(turn)];
     const chase=own.n===2&&own.S===1&&own.M===1&&enemy.n===1&&enemy.M===1&&!own.P&&!enemy.P;
     const repeatedMoves=chase&&hist.length?legal(B,turn).filter(m=>repAfter(m)>0).map(([f,t])=>sqn(f)+sqn(t)):[];
-    return runEng({cmd:'play',lv,fen,ms,free:mtUse(lv),cntCur:c.cur,cntMax:c.max,agg:aiSacrificeLevel|0,repeatedMoves});
+    let repetitionCounts;
+    if(lv>=2&&own.n===2&&own.N===1&&own.M===1&&!own.P&&!enemy.n&&!enemy.P){
+      if(hist.length){
+        repetitionCounts=Object.fromEntries(legal(B,turn).map(([f,t])=>[sqn(f)+sqn(t),repAfter([f,t])]));
+      }
+      const generation=killGen;
+      engWorker();
+      const loading=tbEnsure('NM');
+      if(loading&&+$('ct').value>0){
+        // Prepare in the background when the game clock cannot spare the full load.
+        const started=Date.now();
+        let timer;
+        const deadline=new Promise(resolve=>{timer=setTimeout(resolve,Math.floor(ms/2))});
+        try{await Promise.race([loading,deadline])}finally{clearTimeout(timer)}
+        ms=Math.max(1,ms-(Date.now()-started));
+      }else await loading;
+      if(generation!==killGen)throw Object.assign(new Error('stopped'),{stopped:true});
+    }
+    return runEng({cmd:'play',lv,fen,ms,free:mtUse(lv),cntCur:c.cur,cntMax:c.max,agg:aiSacrificeLevel|0,repeatedMoves,repetitionCounts});
   },
   best(fen,ms){const c=getCnt();return runEng({cmd:'play',lv:4,fen,ms,cntCur:c.cur,cntMax:c.max})},
   stop(){killEng()}};
@@ -4384,7 +4444,7 @@ const activeEng=()=>extEng()||builtinEng;
 /* ===== AI vs AI: เลือกเอนจินแยกฝ่าย (ขาว/ดำ) ===== */
 function engLabelFor(v){
   if(v==='in'||!eng[v])return bName();
-  const o=[...$('en').options].find(x=>x.value===v);let n=o?o.textContent:'';
+  const o=[...$('en').options].find(x=>x.value===v);let n=o?o.textContent:String(eng[v].name||'External Engine');
   {const sf=engStockfish(eng[v],n);if(sf)return sf}
   let p;do{p=n;n=n.replace(/\s*\([^()]*\)\s*$/,'')}while(n!==p);
   do{p=n;n=n.replace(/\s+v?\d[\w.\-]*\s*$/i,'')}while(n!==p&&n.length>0);
@@ -4400,11 +4460,26 @@ function sideEngine(side){
   $('es').textContent='เอนจินที่เลือกให้ฝ่าย'+(side=='w'?'ขาว':'ดำ')+' ('+engLabelFor(v)+') ใช้ไม่ได้ในตอนนี้ ใช้เรียวเมืองทองแทน';
   return builtinEng;
 }
+// AI vs AI: distinguish the selected engine from its connection status.
+function aaRequestedKey(side){
+  const v=aaChoice(side);return v==='main'?$('en').value:v;
+}
+function aaReady(side){
+  const k=aaRequestedKey(side);
+  if(k==='in')return !(aaChoice(side)==='main'&&$('fsmain').checked&&!noAuto);
+  const e=eng[k];return !!(e&&!e.dead&&(!e.sockOk||e.sockOk()));
+}
 function aaLabel(side){
-  const v=aaChoice(side);
-  if(v==='main')return engLabel();
-  if(v==='in')return bName();
-  const e=eng[v];return e&&!e.dead&&(!e.sockOk||e.sockOk())?engLabelFor(v):bName();   /* เอนจินหลุด → เรียวเมืองทองเล่นแทน */
+  const k=aaRequestedKey(side);
+  if(k==='in'&&aaReady(side))return bName();
+  const participant=typeof ser!=='undefined'&&ser?(side==='w'?serWhite():serBlack()):null;
+  const n=k==='in'?'Fairy':eng[k]?engLabelFor(k):participant&&participant.ch===k?participant.name:'เอนจินภายนอก';
+  return n+(aaReady(side)?'':' · ไม่พร้อม');
+}
+function aaEngineUnavailable(side,detail){
+  thinking=false;engTimerStop();setPaused(true);
+  const text='หยุดการแข่งขัน: ฝ่าย'+(side==='w'?'ขาว':'ดำ')+' '+aaLabel(side)+' · '+detail+' · เชื่อมต่อเอนจินเดิม แล้วกดเล่นต่อ (ไม่ใช้ AI ตัวอื่นแทน)';
+  $('es').textContent=text;smsg(text);
 }
 /* หัวกระดานใน AI vs AI: ชื่อเอนจินของฝ่ายที่ถึงตา (กำลังคิด) พร้อมสัญลักษณ์สีหมาก; หยุดชั่วคราว/จบเกม แสดง "AI กับ AI" */
 function aaWho(){
@@ -4429,11 +4504,15 @@ function syncAaEngines(){
     src.forEach(x=>add(x.v,x.t));
     add('main','ตามเอนจินหลัก ('+engLabel()+')');
     const want=[...el.options].find(o=>o.value===aaPref[c]||o.textContent===aaPref[c]),keep=[...el.options].find(o=>o.value===cur);
-    el.value=want?want.value:keep?keep.value:def;
+    const seriesSide=typeof ser!=='undefined'&&ser?(c==='w'?serWhite():serBlack()):null;
+    if(seriesSide&&![...el.options].some(o=>o.value===seriesSide.ch))add(seriesSide.ch,seriesSide.name+' (ไม่พร้อม)');
+    const locked=seriesSide&&[...el.options].find(o=>o.value===seriesSide.ch);
+    el.value=locked?locked.value:want?want.value:keep?keep.value:def;
   });
 }
 ['enw','enb'].forEach(id=>$(id).addEventListener('change',()=>{
   const c=id=='enw'?'w':'b',el=$(id),o=el.selectedOptions[0];
+  if(typeof ser!=='undefined'&&ser&&!ser.done){const selected=c==='w'?serWhite():serBlack();el.value=selected.ch;smsg('หยุดชุดเกมก่อนเปลี่ยนเอนจิน');render();return}
   aaPref[c]=(el.value==='in'||el.value==='main')?el.value:(o?o.textContent:'in');
   try{localStorage.setItem('makruk-aaeng',JSON.stringify(aaPref))}catch(e){}
   render();
@@ -5744,14 +5823,15 @@ function serSides(){const w=serWhite(),b=serBlack();$('enw').value=w.ch;$('enb')
 function serBegin(){
   serEnd(true);
   const mx=serGameCount();if(!mx){serValidateCount();aaArmed=false;return}
+  const participant=c=>{const v=aaChoice(c),k=aaRequestedKey(c);return {ch:v==='main'&&aaReady(c)?k:v,lv:$(c==='w'?'lvw':'lvb').value,name:aaLabel(c).replace(/ · ไม่พร้อม$/,'')}};
   ser={max:mx,n:0,games:[],swapped:false,done:false,stopped:false,counted:-1,partial:0,
-       A:{ch:aaChoice('w'),lv:$('lvw').value,name:aaLabel('w')},B:{ch:aaChoice('b'),lv:$('lvb').value,name:aaLabel('b')},
+       A:participant('w'),B:participant('b'),
        tm:mt.on?mtMs():0};
   let a=ser.A.name,b=ser.B.name;
   if(a===b){a+=' (ตัวที่ 1)';b+=' (ตัวที่ 2)'}
   if(ser.A.lv!==ser.B.lv){a+=' · '+LVN[ser.A.lv-1];b+=' · '+LVN[ser.B.lv-1]}
   ser.A.name=a;ser.B.name=b;
-  serLive();
+  serSides();serLive();
 }
 function serEnd(silent){
   clearTimeout(serTimer);
@@ -12079,7 +12159,7 @@ function engStockfish(u,n){                                                     
   const wasm=!!(u&&u.wasm),i=s.search(/Stockfish/i);
   if(i<0&&!wasm)return '';
   const w=(i>=0?s.slice(i):'Stockfish').replace(/\[[^\]]*\]/g,' ').split(/\s+/).filter(Boolean);   // from the word Stockfish on: "Fairy-" and whatever stood before it are gone
-  const head=(w.shift()||'Stockfish').replace(/^stockfish/i,'Stockfish');
+  const head=(w.shift()||'Stockfish').replace(/^stockfish/i,/(?:fairy[- ]stockfish)/i.test(s)||wasm?'Fairy':'Stockfish');
   const rest=w.filter(x=>!/^(?:64|32|LB|BMI2|PEXT|POPCNT|AVX2|AVX512|VNNI|SSE\d*|SSSE3|NEON)$/i.test(x)).map(x=>x.length>12?x.slice(0,12):x);
   if(wasm&&!/wasm/i.test(rest.join(' ')))rest.unshift('WASM');                          // ("WASM" in the text of the option can be the way it was connected, not a part of the name)
   const out=[head].concat(rest.slice(0,2));
@@ -12605,7 +12685,7 @@ function sideNm(side){                                          // the name of t
   if(aa)return aaLabel(side);
   return side===me?getHumanName():engLabel()}
 {const old=pnInfo;pnInfo=function(){
-  const p=old.apply(this,arguments);if(p.show||setup)return p;
+  const p=old.apply(this,arguments);if(setup||(p.show&&(!aa||replayView)))return p;
   return{show:true,w:sideNm('w'),b:sideNm('b'),ev:'',site:'',date:'',round:'',res:'',elo:{w:'',b:''}}}}
 /* AI vs AI: the badge under the board names the engine that really thinks (the side that was to move when it started) */
 let aaThinkSide=null;
@@ -13055,14 +13135,27 @@ function tbSend(key,d){
   else{const E=mtEngine();if(E.tbLoad)E.tbLoad(key,d.W,d.Bk)}
   tbLoaded=tbLoaded.filter(k=>k!==key);tbLoaded.push(key);while(tbLoaded.length>2)tbLoaded.shift();
 }
-async function tbEnsure(key){
-  if(tbLoaded.includes(key)||tbBusy.has(key))return;
-  tbBusy.set(key,1);const t0=Date.now();
-  try{let d=tbMem[key]?{W:tbMem[key].W.slice(0),Bk:tbMem[key].Bk.slice(0)}:await tbIdbGet(key),cached=!!d;
-    if(!d){d=await tbBuildWorker(key);if(!await tbIdbPut(key,d)){tbMem[key]={W:d.W.slice(0),Bk:d.Bk.slice(0)};for(const k of Object.keys(tbMem))if(k!==key&&Object.keys(tbMem).length>2)delete tbMem[k]}}
-    tbMs[key]={ms:Date.now()-t0,cached};tbSend(key,d);
-    try{egTbNote()}catch(x){}
-  }catch(e){}finally{tbBusy.delete(key)}
+function tbEnsure(key){
+  if(tbLoaded.includes(key))return;
+  const pending=tbBusy.get(key);
+  if(pending)return pending;
+  const started=Date.now();
+  const loading=(async()=>{
+    let d=tbMem[key]?{W:tbMem[key].W.slice(0),Bk:tbMem[key].Bk.slice(0)}:await tbIdbGet(key);
+    const cached=!!d;
+    if(!d){
+      d=await tbBuildWorker(key);
+      if(!await tbIdbPut(key,d)){
+        tbMem[key]={W:d.W.slice(0),Bk:d.Bk.slice(0)};
+        for(const k of Object.keys(tbMem))if(k!==key&&Object.keys(tbMem).length>2)delete tbMem[k];
+      }
+    }
+    tbMs[key]={ms:Date.now()-started,cached};
+    tbSend(key,d);
+    egTbNote().catch(()=>{});
+  })().catch(()=>{}).finally(()=>tbBusy.delete(key));
+  tbBusy.set(key,loading);
+  return loading;
 }
 function tbBuild(key){tbEnsure(key)}                                 // (ชื่อเดิม)
 {const old=engWorker;engWorker=function(){const had=engW,w=old.apply(this,arguments);if(w&&w!==had)tbLoaded=[];return w}}   // เธรดเอนจินใหม่ = ต้องส่งตารางให้ใหม่ (โหลดจากเครื่องได้ทันที)
@@ -17267,26 +17360,9 @@ function pnSeen(el){try{if(!el||el.hidden)return false;const c=getComputedStyle(
     if(k.overflow!=='visible'||k.overflowX!=='visible'||k.overflowY!=='visible'){const q=a.getBoundingClientRect();L=Math.max(L,q.left);T=Math.max(T,q.top);R=Math.min(R,q.right);B=Math.min(B,q.bottom)}}
   L=Math.max(L,0);T=Math.max(T,0);R=Math.min(R,innerWidth);B=Math.min(B,innerHeight);
   return (R-L)*(B-T)>=.5*r.width*r.height}catch(e){return false}}
-function pnSafety(){try{
-  const bd=$('bd'),old=[$('pnFBt'),$('pnFBb')];
-  const rm=()=>old.forEach(e=>e&&e.remove());
-  if(OL.room&&$('olSide')){rm();return} // no floating backups in the online room
-  if(!bd||setup||typeof pnInfo!=='function'){rm();return}
-  const p=pnInfo();if(!p||!p.show||!bd.getBoundingClientRect().width){rm();return}
-  const top=$('pnTop'),bot=$('pnBot');
-  if(pnSeen(top)&&pnSeen(bot)){rm();return}
-  // Online: a name plate may sit just outside the board's box, yet remain visible.
-  // Check its actual rendered hit area, independently for each player, before drawing a backup.
-  const onlinePrimaryVisible=el=>{if(!OL.room||!el||el.hidden)return false;const c=getComputedStyle(el),r=el.getBoundingClientRect();if(c.display==='none'||c.visibility==='hidden'||r.width<40||r.height<10||r.left<0||r.top<0||r.right>innerWidth||r.bottom>innerHeight)return false;
-    for(let a=el.parentElement;a&&a!==document.documentElement;a=a.parentElement){const k=getComputedStyle(a),q=a.getBoundingClientRect();if(k.display==='none'||k.visibility==='hidden')return false;if(['hidden','clip','auto','scroll'].includes(k.overflowY)&& (r.top<q.top-1||r.bottom>q.bottom+1))return false;if(['hidden','clip','auto','scroll'].includes(k.overflowX)&&(r.left<q.left-1||r.right>q.right+1))return false}return true};
-  const topOk=onlinePrimaryVisible(top),botOk=onlinePrimaryVisible(bot);if(topOk&&botOk){rm();return}
-  const mk=(id)=>{let e=$(id);if(!e){e=document.createElement('div');e.id=id;e.className='pnb';e.style.cssText='position:fixed;z-index:45;display:flex;align-items:center;gap:6px;box-sizing:border-box;padding:3px 10px;border-radius:9px;background:rgba(16,20,32,.92);color:#fff;font:600 14px/1.3 system-ui,sans-serif;pointer-events:none;white-space:nowrap;overflow:hidden;max-width:96vw;border:1px solid rgba(255,255,255,.35)';document.body.appendChild(e)}return e};
-  const r=bd.getBoundingClientRect(),topSide=flip?'w':'b',botSide=flip?'b':'w',t=mk('pnFBt'),b=mk('pnFBb');
-  t.innerHTML=pnBarHtml(topSide,p);b.innerHTML=pnBarHtml(botSide,p);
-  const h=32;t.style.left=Math.max(2,r.left)+'px';t.style.top=Math.max(2,r.top-h-2)+'px';
-  b.style.left=Math.max(2,r.left)+'px';b.style.top=Math.min(innerHeight-h-2,r.bottom+2)+'px';
-  if(topOk)t.remove();if(botOk)b.remove();
-}catch(e){}}
+function pnSafety(){ // One canonical nameplate per side; never recreate a floating copy.
+ for(const id of ['pnFBt','pnFBb']){const e=$(id);if(e)e.remove()}
+}
 {const old=render;render=function(){const r=old.apply(this,arguments);try{setTimeout(pnSafety,60)}catch(e){}return r}}
 addEventListener('resize',()=>{setTimeout(pnSafety,200)});addEventListener('scroll',()=>{pnSafety()},{passive:true});
 setInterval(pnSafety,1200);
@@ -18184,5 +18260,98 @@ html body #olBox #rmLobbyExitFull:disabled{opacity:.55;cursor:default}
 @media(max-width:420px){html body #olBox #rmLobbyTopActions{gap:6px}html body #olBox #rmLobbyFullHint,html body #olBox #rmLobbyExitFull{font-size:11px}html body #olBox #rmLobbyExitFull{padding:4px 5px}}
 </style>
 
+<style id="rm-all-name-fix">
+/* Local names are real rows, not overlays. Online names remain in the chat dock. */
+body.rm-local-name-layout #bw > :is(#pnHead,#pnFoot,#enFoot){position:relative!important;inset:auto!important;z-index:auto;box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:auto;min-height:26px;padding:1px 2px;flex:0 0 auto;gap:5px;container-type:inline-size;pointer-events:none}
+body.rm-local-name-layout #bw > :is(#pnHead,#pnFoot,#enFoot)[hidden]{display:none!important}
+body.rm-local-name-layout #bw > #pnHead{flex-wrap:wrap}
+body.rm-local-name-layout #bw > #pnFoot{flex-wrap:wrap}
+body.rm-local-name-layout #bw > :is(#pnHead,#pnFoot) .pnb{max-width:100%!important;min-width:0;flex:0 1 auto;min-height:25px;line-height:1.35;font-size:clamp(12px,3.6vw,16px)}
+body.rm-local-name-layout #bw > #pnHead #pnTop{max-width:calc(100% - 32px)!important}
+body.rm-local-name-layout #bw > :is(#pnHead,#pnFoot) .pnName{flex:1 1 auto;min-width:0;white-space:normal;overflow-wrap:anywhere;overflow:visible;text-overflow:clip}
+body.rm-local-name-layout #bw > :is(#pnHead,#pnFoot) .pnSB{background:#151b29;color:#fff}
+body.rm-local-name-layout #bw > :is(#pnHead,#pnFoot) .pnSW{background:#f3f4f6;color:#111}
+body.rm-local-name-layout #bw > :is(#pnHead,#pnFoot) .rm-local-turn{outline:2px solid #46ce86;outline-offset:0}
+body.rm-local-name-layout #bw > #pnHead #gmInfo{flex:1 1 12em;min-width:0}
+body.rm-local-name-layout:not(.rm-local-names) #bw > #pnHead :is(#pnTop,#gmInfo),body.rm-local-name-layout:not(.rm-local-names) #bw > #pnFoot{display:none!important}
+body.rm-local-names #whoN{display:none!important}
+body.rm-local-names #who2{min-height:0;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px}
+body.rm-local-names #who2:not(:has(#whoT:not(:empty),#cntBig.on,#rmSeriesCounter:not(:empty))){display:none!important}
+body.rm-local-names #whoT{position:static!important;inset:auto!important;visibility:visible!important;margin:0;white-space:normal;max-width:100%;overflow-wrap:anywhere}
+#rmSeriesCounter{font-size:12px;white-space:nowrap}
+#rmSeriesCounter:empty{display:none}
+body.rm-local-name-layout #bw > #enFoot{justify-content:flex-end}
+body.rm-local-name-layout #bw > #enFoot #enBadge{max-width:100%;white-space:normal;flex-wrap:wrap}
+body.rm-local-name-layout #bw > #enFoot :is(.enName,.enWhat){white-space:normal;overflow-wrap:anywhere}
+#pnFBt,#pnFBb{display:none!important}
+</style>
+<script id="rm-all-name-fix-js">
+function rmNameRows(){try{
+ const bw=$('bw'),bx=$('bx'),bd=$('bd'),head=$('pnHead'),foot=$('pnFoot'),en=$('enFoot');
+ if(!bw||!bx||!bd)return;
+ const online=!!OL.room, local=!online, live=local&&!!head&&!head.hidden&&!pnOff;
+ document.body.classList.toggle('rm-local-name-layout',local);
+ document.body.classList.toggle('rm-local-names',live);
+ if(local){
+  if(head&&head.parentNode!==bw)bw.insertBefore(head,bx);
+  if(foot&&foot.parentNode!==bw)bw.insertBefore(foot,bx.nextSibling);
+  if(en&&en.parentNode!==bw)bw.insertBefore(en,foot&&foot.parentNode===bw?foot.nextSibling:bx.nextSibling);
+ }else{
+  for(const e of [head,foot,en])if(e&&e.parentNode!==bd)bd.appendChild(e);
+ }
+ pnSafety();
+ for(const [id,c] of [['pnTop',flip?'w':'b'],['pnBot',flip?'b':'w']]){
+  const e=$(id);if(!e)continue;
+  const active=live&&!setup&&!replayView&&!over&&!paused&&turn===c;
+  e.classList.toggle('rm-local-turn',active);
+  if(live&&!replayView)e.title=e.textContent+(active?(thinking?' · กำลังคิดตาเดิน':' · ถึงตาเดิน'):'');
+ }
+ const who=$('who2');let series=$('rmSeriesCounter');
+ const text=live&&aa&&typeof ser!=='undefined'&&ser&&!ser.done?'เกม '+Math.min(ser.n+1,ser.max)+'/'+ser.max:'';
+ if(text&&who){if(!series){series=document.createElement('span');series.id='rmSeriesCounter';who.appendChild(series)}if(series.textContent!==text)series.textContent=text}
+ else if(series)series.remove();
+}catch(e){}}
+{const old=pnUpdate;pnUpdate=function(){const r=old.apply(this,arguments);rmNameRows();return r}}
+{const old=pnApplyOff;pnApplyOff=function(){const r=old.apply(this,arguments);rmNameRows();return r}}
+// The active nameplate already identifies the thinking player. Keep separate analysis status, but in its own row.
+{const old=enState;enState=function(){const st=old.apply(this,arguments);return st&&st.w==='กำลังคิดตาเดิน'&&document.body.classList.contains('rm-local-names')?null:st}}
+{const old=enTick;enTick=function(){const r=old.apply(this,arguments);rmNameRows();return r}}
+try{pnUpdate()}catch(e){}
+</script>
+
+<style id="rm-side-think-clock-style">
+body.rm-local-names #bw > :is(#pnHead,#pnFoot) .pnb:has(.rmThinkClock){flex-wrap:wrap;column-gap:6px;row-gap:2px}
+body.rm-local-names #bw > :is(#pnHead,#pnFoot) .pnb:has(.rmThinkClock) .pnName{flex:1 1 auto;flex-shrink:1;min-width:0}
+body.rm-local-names #bw > :is(#pnHead,#pnFoot) .rmThinkClock{flex:0 0 auto;white-space:nowrap;font-size:.85em;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.35;padding:1px 5px;border-radius:6px;background:rgba(128,128,128,.16);border:1px solid rgba(128,128,128,.4)}
+body.rm-local-names #bw > :is(#pnHead,#pnFoot) .rmThinkClock[data-active="1"]{background:#d5f5e3;color:#14532d;border-color:#46ce86;text-shadow:none}
+body.rm-local-names #whoT.rm-think-routed{display:none!important}
+body.rm-local-names #who2:not(:has(#whoT:not(.rm-think-routed):not(:empty),#cntBig.on,#rmSeriesCounter:not(:empty))){display:none!important}
+</style>
+<script id="rm-side-think-clock">
+function rmThinkPaint(){
+ const chip=$('whoT'),visible=document.body.classList.contains('rm-local-names'),local=!OL.room;
+ const enabled=local&&visible&&showTmr&&!pvp&&!setup&&!replayView&&!over;
+ const owner=engOwner;
+ if(owner&&owner.side&&(owner.g!==gid||owner.ply!==hist.length||owner.side!==turn||!thinking||paused||over||setup||replayView)){engTimerStop(owner);return}
+ let routed=false;
+ for(const [id,c] of [['pnTop',flip?'w':'b'],['pnBot',flip?'b':'w']]){
+  const e=$(id);if(!e)continue;
+  let t=e.querySelector('.rmThinkClock');
+  if(!enabled||e.hidden||(!aa&&c===me)){if(t)t.remove();continue}
+  const name=e.querySelector('.pnName');if(!name){if(t)t.remove();continue}
+  if(!t){t=document.createElement('span');t.className='rmThinkClock';name.after(t)}
+  const active=!!(owner&&owner.side===c&&thinking&&!paused);
+  const txt=active?('⏱ '+(Math.max(0,engEnd-Date.now())/1000).toFixed(1)+' วินาที'):'⏱ —';
+  if(t.textContent!==txt)t.textContent=txt;
+  t.dataset.active=active?'1':'0';t.title=active?'เวลาคิดที่เหลือของฝ่าย'+(c==='w'?'ขาว':'ดำ'):'ยังไม่ได้คิดตาเดิน';
+  if(active)routed=true;
+ }
+ if(chip)chip.classList.toggle('rm-think-routed',routed);
+}
+{const old=pnUpdate;pnUpdate=function(){const r=old.apply(this,arguments);rmThinkPaint();return r}}
+{const old=pnApplyOff;pnApplyOff=function(){const r=old.apply(this,arguments);rmThinkPaint();return r}}
+{const old=enTick;enTick=function(){const r=old.apply(this,arguments);rmThinkPaint();return r}}
+try{rmThinkPaint()}catch(e){}
+</script>
 </body>
 </html>
