@@ -4427,7 +4427,7 @@ function mtEngine(){if(!mtEng){new Function(document.getElementById('engSrc').te
 function engWorker(){
   if(engW)return engW;if(engNoWorker)return null;
   try{
-    const src=document.getElementById('engSrc').textContent+'\nself.onmessage=function(e){var d=e.data;try{var r;if(MakrukEngine.setAgg)MakrukEngine.setAgg(d.agg||0);if(d.cmd==="analyse"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.analyse(d.fen,d.ms,d.o)}else if(d.cmd==="play"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.playMove(d.lv,d.fen,d.ms,d.free,d.repeatedMoves,d.repetitionCounts)}else if(d.cmd==="loadnn"){MakrukEngine.loadNN(d.ab);MakrukEngine.setNN(true);r=true}else if(d.cmd==="tbload"){r=MakrukEngine.tbLoad(d.key,d.W,d.Bk)}else if(d.cmd==="tbval"){r=MakrukEngine.tbVal(d.fen)}else if(d.cmd==="tbpick"){r=MakrukEngine.tbPick(d.fen)}else if(d.cmd==="nninfo")r={loaded:MakrukEngine.nnLoaded(),on:MakrukEngine.nnOn()};self.postMessage({id:d.id,r:r})}catch(x){self.postMessage({id:d.id,err:String(x&&x.message||x)})}};';
+    const src=document.getElementById('engSrc').textContent+'\nself.onmessage=function(e){var d=e.data;try{var r;if(d.requireNN&&(!MakrukEngine.nnLoaded()||!MakrukEngine.nnOn()))throw new Error("Online NNUE not loaded");if(MakrukEngine.setAgg)MakrukEngine.setAgg(d.agg||0);if(d.cmd==="analyse"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.analyse(d.fen,d.ms,d.o)}else if(d.cmd==="play"){if(MakrukEngine.setCounting)MakrukEngine.setCounting(d.cntCur||0,d.cntMax||0);r=MakrukEngine.playMove(d.lv,d.fen,d.ms,d.free,d.repeatedMoves,d.repetitionCounts)}else if(d.cmd==="loadnn"){MakrukEngine.loadNN(d.ab);MakrukEngine.setNN(true);r=true}else if(d.cmd==="tbload"){r=MakrukEngine.tbLoad(d.key,d.W,d.Bk)}else if(d.cmd==="tbval"){r=MakrukEngine.tbVal(d.fen)}else if(d.cmd==="tbpick"){r=MakrukEngine.tbPick(d.fen)}else if(d.cmd==="nninfo")r={loaded:MakrukEngine.nnLoaded(),on:MakrukEngine.nnOn()};self.postMessage({id:d.id,r:r})}catch(x){self.postMessage({id:d.id,err:String(x&&x.message||x)})}};';
     const w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
     w.onmessage=e=>{const j=engJobs.get(e.data.id);if(!j)return;engJobs.delete(e.data.id);e.data.err?j.rej(new Error(e.data.err)):j.res(e.data.r)};
     w.onerror=()=>{engNoWorker=true;if(engW===w)engW=null;try{w.terminate()}catch(x){}for(const[,j]of engJobs)j.rej(new Error('worker error'));engJobs.clear()};
@@ -4441,7 +4441,8 @@ function runEng(p){
   const exec=(res,rej)=>{
     if(delayed&&gen0!==killGen){rej(Object.assign(new Error('stopped'),{stopped:true}));return}
     const w=engWorker();
-    if(w){const id=++engSeq;engJobs.set(id,{res,rej});w.postMessage(Object.assign({id},p))}
+    if(p.requireNN&&(!nnActive()||!w)){rej(new Error("Online NNUE worker unavailable"));return}
+    if(w){const id=++engSeq;engJobs.set(id,{res,rej});try{w.postMessage(Object.assign({id},p))}catch(e){engJobs.delete(id);rej(e)}}
     else setTimeout(()=>{try{const E=mtEngine();if(E.setAgg)E.setAgg(p.agg||0);if(E.setCounting)E.setCounting(p.cntCur||0,p.cntMax||0);res(p.cmd==='analyse'?E.analyse(p.fen,p.ms,p.o):E.playMove(p.lv,p.fen,p.ms,p.free,p.repeatedMoves,p.repetitionCounts))}catch(x){rej(x)}},0);
   };
   const pr=nnBusy?nnBusy.then(()=>new Promise(exec)):new Promise(exec);
@@ -4461,8 +4462,8 @@ function getCnt(){
 
 
 const builtinEng={builtin:true,name:'เรียวเมืองทอง',sockOk:()=>true,get pending(){return engPend},
-  analyse(fen,ms,o){const c=getCnt();return runEng({cmd:'analyse',fen,ms,o:o||{},cntCur:c.cur,cntMax:c.max})},
-  async playMove(lv,fen,ms){
+  analyse(fen,ms,o,opts={}){const c=getCnt();return runEng({cmd:'analyse',fen,ms,o:o||{},cntCur:c.cur,cntMax:c.max,agg:opts.agg||0,requireNN:!!opts.requireNN})},
+  async playMove(lv,fen,ms,opts={}){
     const c=getCnt(),m=mat(B),own=m[turn],enemy=m[opp(turn)];
     const chase=own.n===2&&own.S===1&&own.M===1&&enemy.n===1&&enemy.M===1&&!own.P&&!enemy.P;
     const repeatedMoves=chase&&hist.length?legal(B,turn).filter(m=>repAfter(m)>0).map(([f,t])=>sqn(f)+sqn(t)):[];
@@ -4484,7 +4485,7 @@ const builtinEng={builtin:true,name:'เรียวเมืองทอง',so
       }else await loading;
       if(generation!==killGen)throw Object.assign(new Error('stopped'),{stopped:true});
     }
-    return runEng({cmd:'play',lv,fen,ms,free:mtUse(lv),cntCur:c.cur,cntMax:c.max,agg:aiSacrificeLevel|0,repeatedMoves,repetitionCounts});
+    return runEng({cmd:'play',lv,fen,ms,free:opts.free??mtUse(lv),cntCur:c.cur,cntMax:c.max,agg:opts.agg??(aiSacrificeLevel|0),requireNN:!!opts.requireNN,repeatedMoves,repetitionCounts});
   },
   best(fen,ms){const c=getCnt();return runEng({cmd:'play',lv:4,fen,ms,cntCur:c.cur,cntMax:c.max})},
   stop(){killEng()}};
@@ -5756,7 +5757,7 @@ $('setImpF').onchange=async()=>{
 };
 /* ===== NNUE ของเรียวเมืองทอง: เลือกไฟล์ makruk.nnue → เก็บสำเนาใน IndexedDB → ส่งให้เอนจิน ===== */
 try{nnWanted=localStorage.getItem('makruk-nn')!=='0'}catch(e){}
-if(/[?&]embed=1/.test(location.search))nnWanted=false;   // v9028: เฟรมบอทที่ฝังอยู่ ไม่โหลดไฟล์ NNUE
+if(new URLSearchParams(location.search).get('bot')==='1')nnWanted=true; // Online bots must load the network, including embedded frames.
 const NN_BYTES=47721376;
 function nnActive(){return !!(nnWanted&&nnBuf)}
 function bName(){return 'เรียวเมืองทอง'+(nnActive()?' NNUE':'')}
@@ -9021,16 +9022,16 @@ function opnCands(sys,side){                         // ตาที่ยัง
     if(pc&&pc[0]===side&&pc[1]===s[0]&&L.some(m=>m[0]===f&&m[1]===t))out.push({i,u,f,t})});
   return{d,out};
 }
-async function opnSafe(u,g){                         // ตรวจสั้นๆ ด้วยเรียวเมืองทอง: ตาในตำราต้องไม่แย่กว่าตาที่ดีที่สุดเกิน ~0.9 เบี้ย
+async function opnSafe(u,g,opts={}){                         // ตรวจสั้นๆ ด้วยเรียวเมืองทอง: ตาในตำราต้องไม่แย่กว่าตาที่ดีที่สุดเกิน ~0.9 เบี้ย
   try{
-    const f=fen(),r0=await builtinEng.analyse(f,OPN_MS,{});
+    const f=fen(),r0=await builtinEng.analyse(f,OPN_MS,{},opts);
     if(g!=null&&g!==gid)return{ok:false,stale:true};
     if(!r0||!r0.length)return{ok:true,unknown:true};
-    const s0=r0[0].s,r1=await builtinEng.analyse(f,OPN_MS,{searchmoves:[u]});
+    const s0=r0[0].s,r1=await builtinEng.analyse(f,OPN_MS,{searchmoves:[u]},opts);
     if(g!=null&&g!==gid)return{ok:false,stale:true};
     if(!r1||!r1.length)return{ok:false,s0};
     return{ok:r1[0].s>=s0-70&&s0>-450,s0,s1:r1[0].s};
-  }catch(x){return{ok:true,unknown:true}}
+  }catch(x){return{ok:!opts.requireNN,unknown:true}}
 }
 const OPN_V={K:0,P:100,M:180,S:230,N:300,R:500,F:180};                     // ค่าหมาก (F = เบี้ยหงาย ค่าเท่าเม็ด)
 const opnVal=p=>p?(OPN_V[p[1]]||0):0;
@@ -9056,7 +9057,7 @@ function opnInfoSet(){
   }
   el.textContent=parts.join(' · ');
 }
-async function opnTry(side,lv,e,g){                  // เรียกจาก ai() ก่อนถามเครื่องคิด: คืน [from,to] ถ้าจะเดินตามตำรา ไม่เช่นนั้น null
+async function opnTry(side,lv,e,g,opts={}){                  // เรียกจาก ai() ก่อนถามเครื่องคิด: คืน [from,to] ถ้าจะเดินตามตำรา ไม่เช่นนั้น null
   try{
     const mode=opnMode[side];if(!mode||mode==='off'||pvp||setup||replayView||opnG.out[side])return null;
     if(!opnIsStd()){opnOut(side,'ตำแหน่งไม่ได้เริ่มจากกระดานมาตรฐาน');return null}
@@ -9069,7 +9070,7 @@ async function opnTry(side,lv,e,g){                  // เรียกจาก
     if(opnMat(B,side)-opnMat(B,op)<=-90){opnOut(side,'เสียหมากแล้ว เลิกเดินตามตำรา');return null}      // AI เสียหมากไปแล้ว (เช่นเบี้ย 1 ตัว): เลิกตำรา ให้เครื่องคิดเล่นเอง
     let skip=false,hang=false;
     for(const c of out.slice(0,3)){
-      const r=await opnSafe(c.u,g);
+      const r=await opnSafe(c.u,g,opts);
       if(r.stale||g!==gid)return null;
       if(r.s0!==undefined&&r.s0<=-450){opnOut(side,'เสียเปรียบมากแล้ว');return null}
       if(r.ok){
@@ -17139,7 +17140,7 @@ let olAia=null;   // ชุดเกมกับ AI ที่เริ่มจ�
    if(!e){e=document.createElement('div');e.id=id;e.className='olAiD';e.setAttribute('role','dialog');bd.appendChild(e)}
    e.innerHTML='<div class="olApT">'+html+'</div><div class="olApB">'+btns.map(b=>'<button type="button" id="'+b[0]+'">'+b[1]+'</button>').join('')+'</div>';
    e.hidden=false;return e}
- async function startAi(){if(OL_AIOFFER.mode==='room'){shown=true;hide();if(!(await olHostBot()))try{smsg('ตอนนี้ให้เรียวเมืองทองเข้าห้องไม่ได้ (ห้องมีการเปลี่ยนแปลง) · รอคนต่อได้เลย')}catch(x){}return}
+ async function startAi(){if(OL_AIOFFER.mode==='room'){shown=true;hide();if(!(await olHostBot()))try{smsg('ตอนนี้ให้เรียวเมืองทองเข้าห้องไม่ได้ (NNUE ไม่พร้อมหรือห้องมีการเปลี่ยนแปลง) · รอคนต่อได้เลย')}catch(x){}return}
    shown=true;hide();try{if($('olAiLv'))$('olAiLv').value=OL_AIOFFER.level}catch(x){}
    await olPlayAi();olAia={n:1,g:gid,done:false};try{smsg('เล่นกับ เรียวเมืองทอง (AI) · เกมที่ 1/'+OL_AIOFFER.maxGames)}catch(x){}}
  function offer(){const e=dlg('olAiOff','⏳ ยังไม่มีคนมาเล่นด้วย<br><small>ให้ 🤖 เรียวเมืองทอง (AI) มานั่งเล่นด้วยในห้องนี้ไหม<br>เล่นเป็นแขก ไม่คิดคะแนน</small>',[['olAoYes','🤖 ตกลง'],['olAoNo','⏳ รอคนต่อ']]);if(!e)return;
@@ -17167,10 +17168,58 @@ let olAia=null;   // ชุดเกมกับ AI ที่เริ่มจ�
 /* ===== v9023: เรียวเมืองทอง (AI) มานั่งเล่นในห้องออนไลน์ให้คนที่รออยู่ (ถามก่อนด้วยกล่องกลางกระดาน) =====
    เครื่องของคนที่รอ "สวมบทบอท": เขียนชื่อ 🤖 เรียวเมืองทอง (AI) เป็นผู้เล่นฝั่งตรงข้ามลงห้อง (เป็นแขก ไม่คิดคะแนน) แล้วคิดตาเดินให้บอทเขียนลง games/<gid>/moves
    เหมือนผู้เล่นคนหนึ่ง → ผู้ชมเห็นเกมจริงในห้อง · รับเล่นอีกตาถ้าคู่แข่งขอ ไม่เกิน OL_AIOFFER.maxGames เกม · ปิดหน้าไป = ห้องถือว่าว่างเองหลัง 45 นาที */
+/* Online AI: one engine, verified Makruk NNUE, attack level 4. NMUM is the requested display suffix. */
+const OL_NN_NAME='🤖 เรียวเมืองทอง (AI) NMUM',OL_ATTACK=4;
+let olNNPreparing=null,olNNWorker=null,olNNBuffer=null;
+function olMakrukNet(ab){return !!(ab&&ab.byteLength===NN_BYTES&&!nnCheck(ab))}
+async function olNNReady(){
+  if(olNNPreparing)return olNNPreparing;
+  const task=(async()=>{
+    if(nnBusy)await nnBusy;
+    let changed=!nnWanted;
+    if(!olMakrukNet(nnBuf)){
+      const rec=await nnStoreGet();
+      if(rec&&olMakrukNet(rec.ab)){nnBuf=rec.ab;nnName=rec.name||'makruk.nnue';nnSaved=true;changed=true}
+      else if(/^https?:$/.test(location.protocol)){
+        const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),20000);
+        try{const r=await fetch('makruk.nnue',{signal:ctl.signal});if(!r.ok)throw new Error('HTTP '+r.status);const ab=await r.arrayBuffer();if(!olMakrukNet(ab))throw new Error('Invalid makruk.nnue');nnBuf=ab;nnName='makruk.nnue';changed=true;nnSaved=false;nnStorePut({ab,name:nnName,size:ab.byteLength,t:Date.now()}).then(ok=>{if(nnBuf===ab){nnSaved=ok;nnUi()}}).catch(()=>{})}finally{clearTimeout(timer)}
+      }
+    }
+    if(!olMakrukNet(nnBuf))throw new Error('ไม่พบ makruk.nnue ที่รองรับ');
+    nnWanted=true;
+    if(changed){nnApply();nnUi()}
+    const w=engWorker();if(!w)throw new Error('Web Worker ไม่พร้อม');
+    if(olNNWorker!==w||olNNBuffer!==nnBuf){
+      const info=await runEng({cmd:'nninfo',requireNN:true});
+      if(!info||!info.loaded||!info.on||w!==engW||!nnActive())throw new Error('NNUE ไม่พร้อม');
+      olNNWorker=w;olNNBuffer=nnBuf;
+    }
+    return true;
+  })();
+  olNNPreparing=task;
+  try{return await task}finally{if(olNNPreparing===task)olNNPreparing=null}
+}
+function olNNError(e){return 'AI: ไม่สามารถใช้ makruk.nnue / เอนจินรุ่นใหม่ได้ · '+(e&&e.message||'ลองใหม่')}
+function olBotBudget(side,lv){const base=lv>=4?7000:lv===2?700:2500;return +$('ct').value>0?Math.max(150,Math.min(base,Math.floor(Math.max(0,clk[side]||0)/25))):base}
+async function olModernMove(side,lv,valid){
+  await olNNReady();if(!valid())return null;
+  const bm=await olBookMove(side,lv);if(!valid())return null;
+  if(bm&&legal(B,side).some(x=>x[0]===bm[0]&&x[1]===bm[1])){await olNNReady();return valid()?bm:null}
+  const ms=olBotBudget(side,lv),generation=killGen;
+  // The existing render hook preloads nearby tablebases. Start the exact table too, if applicable.
+  const tb=tbMat(B);if(tb){const loading=tbEnsure(tb.key);if(loading){let timer;try{await Promise.race([loading,new Promise(resolve=>{timer=setTimeout(resolve,Math.min(350,Math.floor(ms/5)))})])}finally{clearTimeout(timer)}}}
+  if(!valid())return null;if(generation!==killGen)await olNNReady();if(!valid())return null;
+  const u=await builtinEng.playMove(lv,fen(),ms,{agg:OL_ATTACK,free:true,requireNN:true});
+  if(!valid())return null;
+  const f=sqi(u.slice(0,2)),t=sqi(u.slice(2,4)),mv=legal(B,side).find(x=>x[0]===f&&x[1]===t);
+  if(!mv)throw new Error('เอนจินส่งตาเดินไม่ถูกกติกา');return mv;
+}
 const OL_HB={key:null,name:'🤖 เรียวเมืองทอง (AI)',active:false,gid:null,games:0,calledKey:'',moveAt:0,moveKey:'',doneSaid:false,rmDone:''};
 async function olHostBot(){
   try{if(!OL.db||!OL.me||!OL.room||OL.spect||OL.gid)return false;
-    const i=OL.room,ref=OL.db.ref('lobby/r'+i),bot={n:OL_HB.name,k:'guest_bot'+Math.random().toString(36).slice(2,8),e:null,seen:olPresenceNow()};let res=null;
+    const i=OL.room,owner=OL.me.key;await olNNReady();
+    if(!OL.db||!OL.me||OL.me.key!==owner||OL.room!==i||OL.spect||OL.gid)return false;
+    OL_HB.name=OL_NN_NAME;const ref=OL.db.ref('lobby/r'+i),bot={n:OL_HB.name,k:'guest_bot'+Math.random().toString(36).slice(2,8),e:null,seen:olPresenceNow()};let res=null;
     await ref.transaction(cur=>{
       if(cur&&cur.status==='waiting'&&cur.w&&cur.w.k===OL.me.key){const g2='g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const o=Object.assign({},cur,{status:'playing',gid:g2,at:Date.now(),hb:1});
         if(cur.side==='b'){o.w=bot;o.b=cur.w}else o.b=bot;delete o.side;return o}
@@ -17178,7 +17227,7 @@ async function olHostBot(){
     if(!res||res.err||!res.ok)return false;
     try{await olWriteGameHeader(res.val)}catch(e){}
     Object.assign(OL_HB,{key:bot.k,active:true,gid:null,games:0,calledKey:'',moveKey:'',doneSaid:false,rmDone:''});return true}
-  catch(e){return false}}
+  catch(e){olMsg(olNNError(e));return false}}
 function olHbSay(t){try{if(OL.db&&OL.gid)OL.db.ref('games/'+OL.gid+'/chat').push({n:OL_HB.name,m:t,at:olTS()}).catch(()=>{})}catch(e){}}
 setInterval(()=>{try{
   if(!OL_HB.active)return;
@@ -17200,18 +17249,14 @@ setInterval(()=>{try{
   if(OL_HB.moveKey!==key){OL_HB.moveKey=key;const low=(typeof clk!=='undefined'&&clk[bc]<20000);OL_HB.moveAt=now+(low?200:1000+Math.random()*2500);return}
   if(now<OL_HB.moveAt)return;
   OL_HB.calledKey=key;
-  const lv=+OL_AIOFFER.level||3,L=legal(B,bc);if(!L.length)return;let m=L[0];
-  const send=mv=>{try{if(!mv||over||OL.reported||turn!==bc||key!==OL.gid+':'+mlog.length)return;
+  const lv=+OL_AIOFFER.level||3,botKey=OL_HB.key;
+  const valid=()=>OL_HB.active&&OL_HB.key===botKey&&!OL.spect&&!over&&!OL.reported&&turn===bc&&key===OL.gid+':'+mlog.length&&!setup&&!replayView;
+  (async()=>{
+    const mv=await olModernMove(bc,lv,valid);if(!mv||!valid())return;
     const add=(+$('ct').value>0)?(+$('ci').value||0)*1000:0,nc={w:clk.w,b:clk.b};nc[bc]+=add;
-    OL.db.ref('games/'+OL.gid+'/moves/'+mlog.length).set({u:sqn(mv[0])+sqn(mv[1]),c:bc,wt:Math.max(0,Math.round(nc.w)),bt:Math.max(0,Math.round(nc.b))}).catch(()=>{})}catch(e){}};
-  // v9026: เปิดหมากตามตำราเปิดหมากในโปรแกรม (สุ่มระบบเปิดเหมือนเกมปกติ) แล้วค่อยใช้การค้นหาเมื่อออกจากตำรา
-  (async()=>{let mv=null;
-    if(lv>=2){const bm=await olBookMove(bc,lv);if(bm)mv=L.find(x=>x[0]===bm[0]&&x[1]===bm[1])||null}
-    if(key!==OL.gid+':'+mlog.length)return;
-    if(!mv){
-      if(lv===1){let bs=-1e9;for(const x of L.slice().sort(()=>Math.random()-.5)){const sc2=ev(apply(B,x))*(bc==='w'?1:-1)+Math.random()*80;if(sc2>bs){bs=sc2;mv=x}}}
-      else mv=search(B,bc,aiInMs(lv),mtUse(lv)?64:[0,0,6,10,14][lv])}
-    send(mv)})()
+    await OL.db.ref('games/'+OL.gid+'/moves/'+mlog.length).set({u:sqn(mv[0])+sqn(mv[1]),c:bc,wt:Math.max(0,Math.round(nc.w)),bt:Math.max(0,Math.round(nc.b))});
+  })().catch(e=>{if(valid()){olMsg(olNNError(e));OL_HB.calledKey='';OL_HB.moveAt=Date.now()+3000}})
+
 }catch(e){}},700);
 /* ===== v9020: โหมดบอท 🤖 — เปิดหน้าเว็บด้วย ?bot=1 แล้วเรียวเมืองทอง (AI) จะไปนั่งรอในห้อง · มีคนมาก็เล่นด้วย ไม่เกิน N เกม แล้วออกห้องรวมพักสักครู่ แล้วสุ่มห้องใหม่นั่งรอต่อ
    ตัวอย่าง: index.html?bot=1  หรือ  ?bot=1&rooms=1,4&level=2&games=2&tc=7
@@ -17232,7 +17277,7 @@ if(OL_BOT){
  let stopped=false,running=null;
  async function tick(){
    const now=Date.now();
-   if(S.st==='boot'){if(S.busy)return;S.busy=true;try{await olOpen();if(!OL.me)olGuest()}catch(e){S.busy=false;say('เชื่อมต่อไม่ได้ ลองใหม่…');return}S.busy=false;S.st='idle';S.next=now+3000;return}
+   if(S.st==='boot'){if(S.busy||now<S.next)return;S.busy=true;try{say('กำลังเตรียม NNUE …');await olNNReady();if(stopped)return;await olOpen();if(!OL.me)olGuest();if(stopped)return;OL.me.name=OL_NN_NAME;olLobbyRender()}catch(e){S.busy=false;S.next=Date.now()+30000;say(olNNError(e));return}S.busy=false;S.st='idle';S.next=Date.now()+3000;return}
    if(!OL.db||!OL.me)return;
    if(S.st==='idle'){
      if(OL.room&&!OL.spect){S.st=OL.gid?'play':'wait';S.sitAt=now;return}
@@ -17243,6 +17288,7 @@ if(OL_BOT){
      const pref=free.filter(i=>i!==S.lastRoom),pool=pref.length?pref:free;
      if(!pool.length){S.next=now+OL_BOT.t.retry*1000;return}
      const i=pool[Math.floor(Math.random()*pool.length)];
+     try{await olNNReady();if(stopped||OL.room)return;OL.me.name=OL_NN_NAME}catch(e){say(olNNError(e));S.next=Date.now()+30000;return}
      try{const a=$('olTc');if(a)a.value=String(OL_BOT.tc);const b=$('olTi');if(b)b.value='0'}catch(e){}
      S.busy=true;try{await olRoomAct(i,OL_BOT.side==='b'?'host-b':'w')}catch(e){}S.busy=false;
      if(OL.room===i){S.st='wait';S.sitAt=Date.now();S.games=0;S.lastRoom=i;S.gid=null;}   /* v9030: side=b → บอทนั่งฝั่งดำ คนที่เข้ามาได้ขาว */else S.next=Date.now()+OL_BOT.t.retry*1000;
@@ -17264,11 +17310,11 @@ if(OL_BOT){
        if(S.calledKey===key){if(now-S.calledAt>15000)S.calledKey='';return}
        if(S.moveKey!==key){S.moveKey=key;const low=(typeof clk!=='undefined'&&clk[OL.color]<20000);S.moveAt=now+(low?200:rnd(OL_BOT.t.think));return}
        if(now<S.moveAt)return;
-       S.calledKey=key;S.calledAt=now;try{const lv0=+OL_BOT.level;(async()=>{let bm=null;if(lv0>=2)bm=await olBookMove(OL.color,lv0);if(stopped||key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(bm&&turn===OL.color&&legal(B,turn).some(x=>x[0]===bm[0]&&x[1]===bm[1])){play(bm[0],bm[1]);return}
-         if(OL_BOT.embed&&lv0>=2){   // เฟรมฝังในหน้าของผู้เล่นคนอื่น: คิดในเธรดเบื้องหลัง ไม่ให้หน้าของเขากระตุก
-           let mv=null;try{const ms=Math.max(300,Math.min(engMs(builtinEng,lv0),Math.round((clk[OL.color]||60000)/25)));const r=await builtinEng.playMove(lv0,fen(),ms);const f=sqi(r.slice(0,2)),t=sqi(r.slice(2,4));mv=legal(B,turn).find(x=>x[0]===f&&x[1]===t)||null}catch(e){}
-           if(stopped||key!==OL.gid+':'+mlog.length||over||OL.reported)return;if(mv&&turn===OL.color){play(mv[0],mv[1]);return}}
-         aiIn(lv0)})()}catch(e){}
+       S.calledKey=key;S.calledAt=now;
+       const valid=()=>!stopped&&!over&&!OL.reported&&!OL.spect&&!setup&&!replayView&&turn===OL.color&&key===OL.gid+':'+mlog.length;
+       try{const mv=await olModernMove(OL.color,Math.max(2,Math.min(4,+OL_BOT.level||3)),valid);if(mv&&valid())play(mv[0],mv[1])}
+       catch(e){if(valid()){say(olNNError(e));S.calledKey='';S.moveAt=Date.now()+3000}}
+
        return}
      // จบเกมแล้ว
      const last=S.games>=OL_BOT.games,opc=OL.color==='w'?'b':'w',rm=OL.rm||{};
@@ -17388,7 +17434,7 @@ addEventListener('resize',()=>{setTimeout(pnSafety,200)});addEventListener('scro
 setInterval(pnSafety,1200);
 
 /* v9026: ตัวช่วย — ขอตาเดินจากตำราเปิดหมากของโปรแกรม (opnTry) สำหรับ AI ในห้องออนไลน์ · opnTry ปฏิเสธเมื่อ pvp จึงปิด pvp ไว้ชั่วขณะตอนเรียก (มันอ่านค่าก่อน await ตัวแรก) */
-async function olBookMove(side,lv){try{if(typeof opnTry!=='function')return null;const pv=pvp;let pr;const om=opnMode[side];pvp=false;if(!om||om==='off')opnMode[side]='random';try{pr=opnTry(side,lv,builtinEng,gid)}finally{pvp=pv;opnMode[side]=om}return (await pr)||null}catch(e){return null}}
+async function olBookMove(side,lv){try{if(typeof opnTry!=='function')return null;const pv=pvp,ag=aiSacrificeLevel;let pr;const om=opnMode[side];pvp=false;aiSacrificeLevel=OL_ATTACK;if(!om||om==='off')opnMode[side]='random';try{pr=opnTry(side,lv,builtinEng,gid,{agg:OL_ATTACK,requireNN:true})}finally{pvp=pv;opnMode[side]=om;aiSacrificeLevel=ag}return (await pr)||null}catch(e){return null}}
 
 /* ===== v9028: บอท 🤖 เรียวเมืองทอง ประจำห้อง — เมื่อมีคนเปิดหน้านี้ในเครื่องคอมพิวเตอร์และเข้าส่วนออนไลน์ หน้านั้นจะเปิดเฟรมซ่อน (โหมดบอท) ไปนั่งรอในห้องที่ตั้งไว้
    · ห้องไหนมีบอท/คนนั่งอยู่แล้วก็ข้าม (ห้องหนึ่งมีบอทตัวเดียว) · ปิดหน้า = บอทหายและห้องว่างเอง · เจ้าของหน้ากดปิดบอทได้ที่ท้ายห้องรวม · ไม่ทำงานบนมือถือ/จอแคบ ===== */
