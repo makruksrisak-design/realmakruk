@@ -547,7 +547,7 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 <button id="sfxTry">▶ ฟังเสียงตัวอย่าง (เดิน / กิน / รุก)</button>
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="voiceOn" checked style="width:auto"> เปิดเสียงพูด: เริ่มเกม · รุก · รุกฆาต (ม้ารุกขุนที่กินไม่ได้ พร้อมกินหมากตัวอื่นฟรี หรือกินเรือได้) · รุกจน · อับ · รุกล้อเสมอ · เดินล้อเสมอ · ผลเกม (ฝ่ายขาวชนะ / ฝ่ายดำชนะ / เสมอ)</label>
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="vCut" checked style="width:auto"> เมื่อมีตาเดินใหม่ ให้ตัดเสียงเก่าทิ้งทันทีแล้วพูดตาล่าสุด (ไม่รอพูดจบ จึงไม่พูดซ้อนและไม่ช้ากว่าหมากจริง)</label>
-<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="vHello" checked style="width:auto"> พูดว่า "เรียวหมากรุก" หลังฉากเปิดเกมจบ (เบราว์เซอร์จะยอมให้พูดหลังคุณคลิก แตะ หรือกดแป้นครั้งแรก)</label>
+
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="voiceMv" style="width:auto"> พูดตำแหน่งทุกตาเดิน (เช่น "ม้าขาว กอ ไก่ สาม" … "ไป ขอ ไข่ ห้า" · ฝ่ายดำพูดว่า "มา") · ปิดไว้เป็นค่าเริ่มต้น เพื่อไม่ให้พูดทับกับสำนวนหมากรุก</label>
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="voiceCap" checked style="width:auto"> พูดว่าหมากตัวไหนกินตัวอะไร (เช่น "…กินเรือดำ")</label>
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="cntVoice" checked style="width:auto"> พูดเลขนับศักดิ์ (เช่น "เริ่มนับ สิบเจ็ด" แล้ว "สิบแปด" …)</label>
@@ -3403,11 +3403,7 @@ function announce(over,chk,cp,mover,pc,f,t,promo){
   if(over)endItems().forEach(x=>items.push(x));else if(chk)items.push({t:forkCheck(B,mover,t)?'รุกฆาต':'รุก',who:'g',rate:1});
   if(items.length)spkAnnounce(items,{keep:!!over,cue:(vCue&&parts.length)?mover:null});
 }
-function announceStart(){
-  if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;
-  say('เริ่มเกม');
-  if(vOpp&&!pvp&&!aa&&engLabel()==='เรียวเมืองทอง')say('คุณกำลังสู้กับเรียวเมืองทอง',true);
-}
+function announceStart(){ /* ไม่มีเสียงประกาศเมื่อเริ่มเกม */ }
 /* ===== เสียงนับเลขศักดิ์ ===== */
 const NTH=['','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
 function numTh(n){
@@ -8003,8 +7999,7 @@ function introBlindResume(){
 }
 /* หลังฉากเปิดเกมจบ: คืนโหมด แล้วพูด "โปรแกรมเรียวหมากรุก" */
 function introRelease(){
-  const was=introHold;introBlindResume();introHold=false;
-  if(was)setTimeout(()=>{try{if(typeof helloNow==='function'&&!helloDone)helloNow()}catch(e){}},300);
+  introBlindResume();introHold=false;
 }
 function introEnd(keep){
   const R=introRun;if(!R)return;introRun=null;cancelAnimationFrame(R.raf);window.__introEndAt=performance.now();
@@ -8840,39 +8835,11 @@ function fxUiSync(){                                                 // เร�
 
 let vCut=true;try{vCut=localStorage.getItem('makruk-vcut')!=='0'}catch(e){}
 {const c=$('vCut');if(c){c.checked=vCut;c.onchange=()=>{vCut=c.checked;try{localStorage.setItem('makruk-vcut',vCut?'1':'0')}catch(e){}}}}
-let helloOn=true,helloDone=false;
-try{helloOn=localStorage.getItem('makruk-hello')!=='0'}catch(e){}
-const HELLO_TXT='เรียวหมากรุก';
-const helloAllowed=()=>speechOK===true||!navigator.userActivation||navigator.userActivation.hasBeenActive;
-function helloTake(){                                                // ใช้เป็นประโยคนำของคำพูดแรก เมื่อรู้แล้วว่าพูดได้
-  if(introHold||helloDone||!helloOn||!hasSpeech()||!helloAllowed()||!(voiceOn||blind))return null;
-  helloDone=true;return HELLO_TXT;
-}
-function helloTry(){
-  if(helloDone||introHold)return;
-  const h=helloTake();if(!h)return;
-  if(blind)blindSayList([h]);else spkAnnounce([{t:h,who:'g',rate:1}],{keep:true});
-}
-/* ลองพูดทันทีที่เปิดหน้า โดยไม่รอให้ผู้ใช้ทำอะไร: ใช้ได้เมื่อเบราว์เซอร์อนุญาตให้พูดเอง (เช่นเปิด Chrome ด้วย --autoplay-policy=no-user-gesture-required
-   ซึ่ง start_all_voice.bat ทำให้) ถ้าเบราว์เซอร์ปฏิเสธ (not-allowed) จะพูดตอนผู้ใช้คลิก/แตะ/กดแป้นครั้งแรกแทน */
-function helloNow(){
-  if(introHold||helloDone||!helloOn||!hasSpeech()||!(voiceOn||blind))return;
-  try{
-    const u=new SpeechSynthesisUtterance(HELLO_TXT),c=cfgFor('g');
-    u.lang='th-TH';try{if(c.voice)u.voice=c.voice}catch(e){}
-    u.rate=c.rate;u.pitch=c.pitch;u.volume=Math.min(1,sfxVol*1.25+.1);
-    u.onstart=()=>{helloDone=true;speechOK=true};
-    u.onerror=ev=>{if(ev&&ev.error==='not-allowed')speechOK=false};
-    speechSynthesis.speak(u);
-  }catch(e){}
-}
-['pointerdown','keydown','touchend'].forEach(t=>document.addEventListener(t,()=>{if(!helloDone)setTimeout(helloTry,350)},true));
-{const c=$('vHello');if(c){c.checked=helloOn;c.onchange=()=>{helloOn=c.checked;try{localStorage.setItem('makruk-hello',helloOn?'1':'0')}catch(e){}}}}
-setTimeout(()=>{                                                     // เสียงไทยของเครื่องโหลดช้ากว่าหน้าเว็บเล็กน้อย: รอรายการเสียงก่อน (ไม่เกิน 1.5 วินาที)
-  const go=()=>{if(!helloDone)helloNow()};
-  if(voiceList().length)go();
-  else{try{speechSynthesis.addEventListener('voiceschanged',function f(){speechSynthesis.removeEventListener('voiceschanged',f);go()})}catch(e){}setTimeout(go,1500)}
-},0);
+/* ไม่พูดชื่อโปรแกรมเมื่อเปิดหน้า; คง API ให้โหมดผู้พิการทางสายตา */
+const helloDone=true;
+function helloTake(){return null}
+function helloTry(){}
+function helloNow(){}
 
 /* ===== โหมดผู้พิการทางสายตา (ทดลอง) =====
    เลื่อนเมาส์ / ลากนิ้วบนกระดาน → พูดชื่อช่องและหมาก ตัดเสียงเก่าทิ้งทันทีเมื่อเปลี่ยนช่อง
@@ -10041,8 +10008,7 @@ function tntThinkAt(ms){
 /* เกมใหม่ (เรียกจาก announceStart ซึ่งทุกทางที่เริ่มเกมใหม่ผ่านมาถึง) · ครั้งแรกตอนเปิดหน้าไม่พูด (มีเสียงทักทายและฉากเปิดเกมอยู่ก่อน) */
 function tntNewGame(){
   tntStopThink();tntSt.said={};tntSt.lastPly={};tntSt.lastAt=0;tntSt.idm={};tntSt.ahead=0;
-  const first=!tntBooted;tntBooted=true;const g=gid;
-  if(!first)setTimeout(()=>{if(g!==gid||over||!tntActive())return;tntSay('gameStart',{force:true})},900);
+  tntBooted=true; // ไม่พูดสำนวนต้อนรับตอนเริ่มเกม
   if(turn===me&&!pvp&&!aa)tntArmThink();
 }
 {const _as=announceStart;announceStart=function(){const r=_as.apply(this,arguments);try{tntNewGame()}catch(e){}return r}}
@@ -15198,8 +15164,7 @@ init();
 /* เกมออนไลน์: เสียงประกาศตอนเริ่มบอกชื่อคู่แข่ง (ไม่ใช่ "คุณกำลังสู้กับเรียวเมืองทอง") */
 {const old=announceStart;announceStart=function(){
   try{if(typeof OL!=='undefined'&&OL.room){if(navigator.userActivation&&!navigator.userActivation.hasBeenActive)return;
-    if(!OL.gid)return;const i=OL.info,o=OL.color?(OL.color==='w'?i.b:i.w):null;
-    say('เริ่มเกมออนไลน์');if(o&&o.n)say('คุณเจอกับ '+o.n,true);return}}catch(e){}
+    return; /* ไม่พูดประกาศเมื่อเข้าห้องหรือเริ่มเกมออนไลน์ */}}catch(e){}
   return old.apply(this,arguments)}}
 
 /* ===== V8.9.32 =====
@@ -16523,21 +16488,8 @@ async function olBack(){let s=null;try{s=JSON.parse(sessionStorage.getItem(OL_RK
   }catch(e){}}
  if(document.readyState==='complete')setTimeout(olBack,1500);else addEventListener('load',()=>setTimeout(olBack,1500))
 
-/* V8.9.98: เสียงพูดต้อนรับทุกครั้งที่เข้าหน้าห้องรวม: แขก = แนะนำให้นั่งเล่นได้เลย · สมาชิก = ยินดีต้อนรับคุณ <ชื่อ> */
-let olGreetT=0,olGreetWait=false;
-function olGreetTxt(){const me=OL.me;if(!me)return '';
-  if(me.guest||olIsGuestKey(me.key))return 'คุณคือแขก ถ้าไม่คิดคะแนน กดนั่งเล่นที่ห้องได้เลย';
-  const nm=String(me.name||'').replace(/[^฀-๿a-zA-Z0-9 ._-]/g,'').trim();
-  return 'ยินดีต้อนรับคุณ '+nm+' เข้าสู่หมากรุกออนไลน์ เลือกห้องแล้วนั่งเล่นได้เลย ขอให้สนุกครับ'}
-function olGreet(){try{const box=$('olBox');if(!box||box.hidden||OL.room)return;const t=olGreetTxt();if(!t)return;
-  if(Date.now()-olGreetT<700)return;
-  /* V9.0.09: ไม่เรียก cancel() ก่อนพูด (Chrome มือถือบางรุ่นกลืนเสียงที่พูดต่อจาก cancel ทันที) · เบราว์เซอร์ที่ไม่มี userActivation (เช่นเบราว์เซอร์ในแอป Messenger) ลองพูดทันที ไม่รอแตะครั้งถัดไป */
-  const go=()=>{olGreetT=Date.now();olGreetWait=false;try{if(!$('olBox').hidden&&!OL.room&&voiceOn&&hasSpeech())spkAnnounce([{t:olGreetTxt(),who:'g',rate:1}],{keep:true})}catch(e){}};
-  if(!navigator.userActivation||navigator.userActivation.hasBeenActive)go();
-  else if(!olGreetWait){olGreetWait=true;const h=()=>{removeEventListener('pointerdown',h,true);removeEventListener('keydown',h,true);go()};addEventListener('pointerdown',h,true);addEventListener('keydown',h,true)}}catch(e){}}
-{const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);
-  try{for(let k=0;k<25&&!(OL.me&&OL.me.key);k++)await new Promise(x=>setTimeout(x,150));olGreet()}catch(e){}return r}}
-{const old=olLogin;olLogin=async function(){const r=await old.apply(this,arguments);try{olGreetT=0;setTimeout(olGreet,400)}catch(e){}return r}}
+/* ปิดเสียงต้อนรับห้องรวมทั้งแขกและสมาชิก ไม่ลงทะเบียน callback เสียง */
+function olGreet(){}
 
 /* V8.9.98: ปุ่มเกมออนไลน์อยู่ใต้กระดาน (เหนือแถบปุ่มสีกระดาน) · เลือกฝั่งขาว/ดำได้ก่อนมีคู่แข่ง · ค่าเริ่มต้นกระดาน/ตัวหมาก/เส้น */
 function olFaceSide(v){try{if(OL.gid||!OL.room||OL.spect)return;me=v;flip=(v==='b');$('me').value=v;render();pnUpdate()}catch(e){}}
@@ -16678,9 +16630,9 @@ const MU_TRACKS=[
  {n:'แสงแรกของวัน',k:'ร่วมสมัย',type:'mod',bpm:68,root:261.63,sc:[0,2,4,7,9],ch:[[0,4,7],[-5,-1,2],[-3,0,4],[-7,-3,0]],arp:2,dens:.55},
  {n:'ทะเลสงบ',k:'ร่วมสมัย',type:'mod',bpm:52,root:293.66,sc:[0,2,4,7,9],ch:[[0,4,7,14],[-3,0,4,7],[-7,-3,0,4],[-5,-1,2,7]],arp:1,dens:.4}
 ];
-const MU_DEFTRACK=5,MU_VER=2;   // เพลงเริ่มต้น = ทะเลสงบ · เปลี่ยน MU_VER = ทุกเครื่องกลับมาใช้เพลงเริ่มต้นอีกครั้ง (เปิด/ปิดและความดังที่ตั้งไว้ยังอยู่)
-const MU={ctx:null,chain:null,cur:null,on:true,track:MU_DEFTRACK,vol:50,timer:null,started:false,cfgLoaded:false};
-try{const o=JSON.parse(localStorage.getItem('makruk-mu')||'null');if(o&&typeof o==='object'){MU.on=o.on!==false;if(o.ver===MU_VER&&Number.isInteger(o.track)&&o.track>=-1&&o.track<MU_TRACKS.length)MU.track=o.track;if(Number.isFinite(o.vol)&&o.vol>=0&&o.vol<=100)MU.vol=Math.round(o.vol)}}catch(e){}
+const MU_DEFTRACK=5,MU_VER=3;   // ทุกครั้งที่เปิดหน้า: เปิดเพลงทะเลสงบ · จำเฉพาะความดัง
+const MU={ctx:null,chain:null,cur:null,on:!OL_BOT_PAGE,track:MU_DEFTRACK,vol:50,timer:null,started:false,cfgLoaded:false};
+try{const o=JSON.parse(localStorage.getItem('makruk-mu')||'null');if(o&&typeof o==='object'){if(Number.isFinite(o.vol)&&o.vol>=0&&o.vol<=100)MU.vol=Math.round(o.vol)}}catch(e){}
 function muSave(){try{localStorage.setItem('makruk-mu',JSON.stringify({ver:MU_VER,on:MU.on,track:MU.track,vol:MU.vol}))}catch(e){}}
 function muChain(ctx){                                           // ห่วงโซ่เสียง: ทางตรง + เสียงก้อง → คอมเพรสเซอร์ → ลำโพง
   const inp=ctx.createGain(),dry=ctx.createGain(),wet=ctx.createGain(),conv=ctx.createConvolver(),master=ctx.createGain(),comp=ctx.createDynamicsCompressor();
@@ -16752,10 +16704,10 @@ function muStopTrack(fade){
 function muGain(){if(!MU.chain)return;const sp=(()=>{try{return speechSynthesis.speaking}catch(e){return false}})();
   const g=(MU.vol/100)*1.1*(sp?.3:1);try{MU.chain.master.gain.setTargetAtTime(g,MU.ctx.currentTime,.2)}catch(e){}}
 function muStart(){
-  if(!MU.on)return;
+  if(!MU.on||OL_BOT_PAGE)return;
   try{
     if(!MU.ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;MU.ctx=new AC();MU.chain=muChain(MU.ctx);setInterval(muGain,300)}
-    if(MU.ctx.state==='suspended')MU.ctx.resume();
+    if(MU.ctx.state==='suspended'){const r=MU.ctx.resume();if(r&&r.catch)r.catch(()=>{})}
     muGain();
     if(!MU.cur)muStartTrack(MU.track<0?0:MU.track);
     MU.started=true;
@@ -16788,9 +16740,15 @@ function muBuildUi(){
  '#muPanel{position:fixed;right:10px;bottom:60px;z-index:99991;width:min(280px,calc(100vw - 20px));box-sizing:border-box;padding:10px 12px;border-radius:12px;background:var(--pn,#e0d7c0);color:var(--fg,#1c2540);border:1px solid rgba(0,0,0,.25);box-shadow:0 6px 24px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px;font-size:14px}#muPanel[hidden]{display:none}#muPanel button,#muPanel select{width:100%;margin:0}#muPanel label{margin:0}#muPanel input[type=range]{width:100%}#muPanel small{opacity:.75}#muNow{font-size:13px;opacity:.9}';document.head.appendChild(st)}
 muBuildUi();
 (function(){
-  const arm=()=>{const h=ev=>{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#muBtn,#muPanel'))return;['pointerdown','keydown','touchend'].forEach(t=>removeEventListener(t,h,true));if(MU.on)muStart();muUi()};
-    ['pointerdown','keydown','touchend'].forEach(t=>addEventListener(t,h,true))};
-  if(MU.on)arm();
+  const events=['pointerdown','keydown','touchend'];
+  const disarm=()=>events.forEach(t=>removeEventListener(t,h,true));
+  const h=ev=>{if(ev&&ev.target&&ev.target.closest&&ev.target.closest('#muBtn,#muPanel'))return;
+    if(!MU.on)return;muStart();muUi();
+    if(MU.ctx&&MU.ctx.state==='running')disarm();
+    else if(MU.ctx)try{const r=MU.ctx.resume();if(r&&r.then)r.then(()=>{if(MU.ctx.state==='running'){disarm();muUi()}}).catch(()=>{})}catch(e){}
+  };
+  if(MU.on&&!OL_BOT_PAGE){events.forEach(t=>addEventListener(t,h,true));
+    if(!navigator.userActivation||navigator.userActivation.hasBeenActive)h();}
   {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{if(MU.on&&!MU.cur&&navigator.userActivation&&navigator.userActivation.hasBeenActive)muStart();muUi()}catch(e){}return r}}   // เข้าห้องรวมแล้วเพลงต้องเล่น (ถ้าผู้ใช้เคยแตะหน้าจอแล้ว)
   document.addEventListener('visibilitychange',()=>{try{if(!MU.ctx)return;if(document.hidden)MU.ctx.suspend();else if(MU.on&&MU.started)MU.ctx.resume()}catch(e){}});
 })();
