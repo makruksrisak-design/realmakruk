@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" data-theme="light" data-palette="night">
+<html lang="th" data-theme="light" data-palette="blue">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -204,6 +204,17 @@ select{min-height:42px}
 :root[data-palette="green"]{--sq1:#c7d4b6;--sq2:#c7d4b6;--board-edge:#31503b;--pn:#dce6d5;--bg:#eef2e8;--fg:#1d3526}
 :root[data-palette="blue"]{--sq1:#b9d0e1;--sq2:#b9d0e1;--board-edge:#243f5a;--pn:#d3e0eb;--bg:#eaf1f7;--fg:#1b2e43}
 :root[data-palette="classic"]{--sq1:#d9c69a;--sq2:#d9c69a;--board-edge:#3d3b38;--pn:#e0d7c0;--bg:#ece6d6;--fg:#1c2540}
+:root[data-palette="mint"]{--sq1:#badccb;--sq2:#badccb;--board-edge:#426b58;--pn:#bedfd0;--bg:#dcf1e8;--fg:#244537;color-scheme:light}
+:root[data-palette="sand"]{--sq1:#e8d4aa;--sq2:#e8d4aa;--board-edge:#735c3a;--pn:#e6d7b8;--bg:#f6edd9;--fg:#4a3926;color-scheme:light}
+:root[data-palette="sakura"]{--sq1:#e6c3d1;--sq2:#e6c3d1;--board-edge:#865a71;--pn:#eed5df;--bg:#f9ebf0;--fg:#502b3b;color-scheme:light}
+:root[data-palette="lavender"]{--sq1:#d7c9e6;--sq2:#d7c9e6;--board-edge:#726183;--pn:#e0d6f0;--bg:#f0ebfa;--fg:#413054;color-scheme:light}
+:root[data-palette="peach"]{--sq1:#edc7a6;--sq2:#edc7a6;--board-edge:#895638;--pn:#f1d1ba;--bg:#fcebdd;--fg:#513121;color-scheme:light}
+:root[data-palette="pine"]{--sq1:#789b82;--sq2:#789b82;--board-edge:#344e3c;--pn:#20483e;--bg:#112c28;--fg:#e4f5ea;color-scheme:dark}
+:root[data-palette="plum"]{--sq1:#9e82ac;--sq2:#9e82ac;--board-edge:#503e5a;--pn:#4a3058;--bg:#2f203b;--fg:#f7ebff;color-scheme:dark}
+:root[data-palette="wine"]{--sq1:#ba8c98;--sq2:#ba8c98;--board-edge:#694657;--pn:#552d3f;--bg:#391d29;--fg:#fbeef2;color-scheme:dark}
+:root[data-palette="coffee"]{--sq1:#b19072;--sq2:#b19072;--board-edge:#594534;--pn:#4c382e;--bg:#30251f;--fg:#f8eee3;color-scheme:dark}
+:root[data-palette="slate"]{--sq1:#97a7b4;--sq2:#97a7b4;--board-edge:#475664;--pn:#394959;--bg:#242e38;--fg:#f1f6fa;color-scheme:dark}
+:root[data-palette="deepblue"]{--sq1:#759dbb;--sq2:#759dbb;--board-edge:#153e64;--pn:#214f76;--bg:#102f50;--fg:#f2f8ff;color-scheme:dark}
 :root[data-palette="night"]{--sq1:#454b57;--sq2:#454b57;--board-edge:#111827;--pn:#1f2937;--bg:#111827;--fg:#f3f4f6;color-scheme:dark}
 #toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 #toolbar button{margin-top:4px}
@@ -507,16 +518,13 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 <label for="pvDelay">ดีเลย์ระหว่างตาตอนเล่นแนวเดินบนกระดาน</label><select id="pvDelay"><option value="0.5">0.5 วินาที</option><option value="1">1 วินาที</option><option value="1.5">1.5 วินาที</option><option value="2" selected>2 วินาที</option><option value="3">3 วินาที</option><option value="4">4 วินาที</option><option value="5">5 วินาที</option></select>
 <button id="fb">วิเคราะห์แนวเดินล่วงหน้า</button>
 <div id="fv" aria-live="polite"></div></details>
-<label for="theme">ธีมหน้าเกม (พื้นหลังและแผงเมนู)</label><select id="theme"><option value="classic">ไม้สีอ่อน</option><option value="wood">ไม้เข้ม</option><option value="green">เขียวเรียบ</option><option value="blue">ฟ้าเรียบ</option><option value="night" selected>สีเข้ม</option><option value="custom">กำหนดสีเอง…</option></select>
+<label for="theme">ธีมหน้าเกม (พื้นหลังและแผงเมนู)</label><select id="theme"><option value="classic">ไม้สีอ่อน</option><option value="wood">ไม้เข้ม</option><option value="green">เขียวเรียบ</option><option value="blue" selected>ฟ้าเรียบ</option><option value="deepblue">ฟ้าเข้ม</option><option value="night">สีเข้ม</option><option value="mint">เขียวมิ้นต์</option><option value="sand">ทรายทะเล</option><option value="sakura">ชมพูซากุระ</option><option value="lavender">ม่วงลาเวนเดอร์</option><option value="peach">ส้มพีช</option><option value="pine">เขียวสน</option><option value="plum">ม่วงพลัม</option><option value="wine">แดงไวน์</option><option value="coffee">น้ำตาลกาแฟ</option><option value="slate">เทาหินชนวน</option><option value="custom">กำหนดสีเอง…</option></select>
 <div id="themeCustom" hidden><label for="thBg">สีพื้นหลังหน้าเกม</label><input type="color" id="thBg" value="#ece6d6" style="width:100%;height:40px;padding:2px;border-radius:6px;border:1px solid rgba(128,128,128,.5);background:var(--bg)"><label for="thPn">สีแผงเมนู</label><input type="color" id="thPn" value="#e0d7c0" style="width:100%;height:40px;padding:2px;border-radius:6px;border:1px solid rgba(128,128,128,.5);background:var(--bg)"><div class="muted">สีตัวอักษรปรับให้อ่านง่ายอัตโนมัติ สีกระดานเลือกแยกที่เมนู "สีกระดาน"</div></div>
 <details open><summary>🎨 สีกระดานและการแสดงผล</summary>
 <label for="balign">ตำแหน่งกระดานบนจอ</label><select id="balign"><option value="l">ชิดซ้าย (เมนูอยู่ขวาของกระดาน)</option><option value="c">กึ่งกลางจอ (แบบเดิม)</option></select>
 <label for="bcol">สีกระดาน</label><select id="bcol"><option value="theme">ตามธีมหน้าเกม</option><option value="wood1">ไม้อ่อน</option><option value="wood2">ไม้เข้ม</option><option value="mahog">ไม้มะฮอกกานี</option><option value="gray">เทา (แบบภาพ Lovemakruk)</option><option value="gray2">เทาอ่อน</option><option value="green">เขียวใบไม้</option><option value="olive">เขียวมะกอก</option><option value="teal">เขียวน้ำทะเล</option><option value="sky" selected>ฟ้าอ่อน</option><option value="blue">ฟ้าเข้ม</option><option value="pink">ชมพู</option><option value="purple">ม่วง</option><option value="brick">ส้มอิฐ</option><option value="red">แดงอ่อน</option><option value="cream">เหลืองครีม</option><option value="ivory">ขาวงาช้าง</option><option value="night">เทาเข้ม</option><option value="rose">ไม้ชิงชันลายทอง (จากภาพต้นแบบ)</option><option value="pb0">ชิงชันเส้นทอง (ภาพกระดาน 1)</option><option value="pb1">ทองแดงเส้นทอง (ภาพกระดาน 2)</option><option value="pb2">ชิงชันสลักลาย (ภาพกระดาน 3)</option><option value="pb3">สัมฤทธิ์สลักลาย (ภาพกระดาน 4)</option><option value="pb4">เหล็กขัดเส้นทอง (ภาพกระดาน 5)</option><option value="pb5">เงินสลักเทพพนม (ภาพกระดาน 6)</option><option value="pb6">ทองแดงสลับลาย (ภาพกระดาน 7)</option><option value="nb0">เบจอ่อนลายเส้นใย ขอบน้ำตาล</option><option value="nb1">ชาดแดงลายกระดาษ เส้นทอง</option><option value="nb2">งาช้างลายกระดาษ ขอบน้ำตาล</option><option value="nb3">อำพันลายเส้นใย ขอบเข้ม</option><option value="nb4">น้ำตาลลายกิ่งไม้ ขอบเข้ม</option><option value="nb5">ทองทรายลายละเอียด</option><option value="nb6">ไพลินเงา กรอบเงิน</option><option value="nb7">ครามลายหิน เส้นทอง</option><option value="nb8">น้ำเงินกำมะหยี่ เส้นทอง</option><option value="nb9">ครามเส้นใยธรรมชาติ เส้นทอง</option><option value="nb10">ฟ้าครามลายไม้ เส้นทอง</option><option value="nb11">ครามกลีบกุหลาบ กรอบทอง</option><option value="custom">เลือกสีเอง…</option></select>
 <div id="bcusw" hidden><label for="bcus">เลือกสีเอง</label><input type="color" id="bcus" value="#d9c69a" style="width:100%;height:42px;padding:2px;border-radius:6px;border:1px solid rgba(128,128,128,.5);background:var(--bg)"></div>
-<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="bgrain" style="width:auto"> ใส่ลายไม้บนสีที่เลือก</label>
-<label for="bpat">ลายไม้ (ด้าน ไม่สะท้อนแสง)</label><select id="bpat"></select>
 <label for="bbri">ความสว่างกระดาน <b id="bbriV"></b></label><input type="range" id="bbri" min="40" max="140" value="100" style="width:100%">
-<label for="bgs">ความชัดของลายไม้ <b id="bgsV"></b></label><input type="range" id="bgs" min="0" max="100" value="100" style="width:100%">
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="balt" style="width:auto"> ช่องสลับสี 2 เฉด</label>
 <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="cntShow" checked style="width:auto"> แสดงเลขนับที่หัวกระดาน (ข้างชื่อผู้เล่น)</label>
 <label for="stk">การตรึงกระดาน</label><select id="stk"><option value="on" selected>ตรึงกระดานไว้กับที่เสมอ</option><option value="auto">อัตโนมัติ (จอกว้างตรึง จอมือถือไม่ตรึง)</option><option value="off">ไม่ตรึง (เลื่อนตามหน้า)</option></select>
@@ -2204,7 +2212,7 @@ if(typeof module!=='undefined')module.exports={makeTB,makeTB3,makeTBX};
    เบราว์เซอร์ที่เคยบันทึกค่าเก่าไว้จะถูกปรับเป็นค่าใหม่ "ครั้งเดียว" หลังจากนั้นที่ผู้ใช้เปลี่ยนเองจะถูกจำไว้ตามปกติ */
 (function(){try{
   const V='2026-11-07a',L=localStorage;if(L.getItem('makruk-defver')===V)return;
-  L.setItem('makruk-theme','night');L.removeItem('makruk-theme-bg');L.removeItem('makruk-theme-pn');
+  L.setItem('makruk-theme','blue');L.removeItem('makruk-theme-bg');L.removeItem('makruk-theme-pn');
   let b={};try{b=JSON.parse(L.getItem('makruk-board3')||L.getItem('makruk-board2')||'{}')||{}}catch(e){}
   b.v='sky';b.g=false;L.setItem('makruk-board3',JSON.stringify(b));
   L.setItem('makruk-pack','7');
@@ -3143,15 +3151,40 @@ $('qHint').onclick=()=>{
   else{if(autoBusy)cancelEngine();hint=null;hintNote='';$('qst').textContent='';render();smsg('ปิดแนะนำตาเดินอัตโนมัติแล้ว')}
 };
 function setFull(on){
-  document.body.classList.toggle('fs',on);$('qFull').classList.toggle('on',on);$('qFull').innerHTML=on?ICON.small:ICON.full;
-  $('qFull').title=on?'ย่อกลับ':'ขยายกระดานเต็มหน้าจอ';render();
+  document.body.classList.toggle('fs',on);
+  syncBoardScreenButton();
+  render();
+}
+function syncBoardScreenButton(){
+  const button=$('qFull'), bar=$('olBar');
+  const online=!!bar && !bar.hidden;
+  const active=online ? !!document.fullscreenElement : document.body.classList.contains('fs');
+  const label=online ? (active?'ออกจากฟูลสกรีน':'ฟูลสกรีน') :
+    (active?'ย่อกระดานกลับ':'ขยายกระดานเต็มพื้นที่หน้าต่าง');
+  if(button.title!==label || button.getAttribute('aria-pressed')!==String(active)){
+    button.title=label;
+    button.setAttribute('aria-label',label);
+    button.setAttribute('aria-pressed',String(active));
+    button.classList.toggle('on',active);
+    button.innerHTML=active?ICON.small:ICON.full;
+  }
 }
 $('qFull').onclick=async()=>{
-  const on=!document.body.classList.contains('fs');setFull(on);
-  try{if(on&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else if(!on&&document.fullscreenElement)await document.exitFullscreen()}catch(x){}
+  if(!OL.room){setFull(!document.body.classList.contains('fs'));return}
+  const room=OL.room, root=document.documentElement;
+  try{
+    if(document.fullscreenElement)await document.exitFullscreen();
+    else if(document.fullscreenEnabled){
+      await root.requestFullscreen();
+      if(OL.room===room)olOwnsRoomFullscreen=true;
+      else if(document.fullscreenElement===root)await document.exitFullscreen();
+    }else olMsg('เบราว์เซอร์นี้เปิดฟูลสกรีนไม่ได้');
+  }catch(e){olMsg('เบราว์เซอร์ไม่อนุญาตให้สลับฟูลสกรีน')}
+  syncBoardScreenButton();
 };
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('fs'))setFull(false)});
-document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&document.body.classList.contains('fs')&&!document.fullscreenElement)setFull(false)});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'&&!OL.room&&document.body.classList.contains('fs'))setFull(false);
+});
 $('bwClose').onclick=()=>{bwarn('');warnMv=null;render()};
 $('bwUndo').onclick=()=>{bwarn('');$('un').click()};
 
@@ -5099,7 +5132,7 @@ async function renderPng(){
   g.fillText(whoStatic()+'   '+new Date().toLocaleString('th-TH'),PAD,PAD+54,BS+LAB);g.globalAlpha=1;
   if(PICM){const pbi=PB,pim=new Image();pim.src=pbi.img;try{await pim.decode()}catch(e){}g.save();if(PCAL){g.translate(x0-FL+OUT/2,y0-FT+OUT/2);if(flip)g.rotate(Math.PI);g.drawImage(pim,-OUT/2,-OUT/2,OUT,OUT)}else{g.translate(x0+BS/2,y0+BS/2);if(flip)g.rotate(Math.PI);g.drawImage(pim,-(BS/2+FRM),-(BS/2+FRM),BS+2*FRM,BS+2*FRM)}g.restore()}else{g.fillStyle=edge;g.fillRect(x0-FRM,y0-FRM,BS+2*FRM,BS+2*FRM)}
   const grain=document.documentElement.dataset.grain==='1';
-  if(grain&&!PICM){g.fillStyle=c1;g.fillRect(x0,y0,BS,BS);const wi=new Image();wi.src=WOODS[+document.documentElement.dataset.pat||0].img;try{await wi.decode()}catch(e){}g.save();g.globalCompositeOperation='multiply';g.drawImage(wi,x0,y0,BS,BS);g.restore();const gsv=(()=>{const v=parseFloat($('bgs').value);return isFinite(v)?Math.max(0,Math.min(1,v/100)):1})();if(gsv<1){g.save();g.globalAlpha=1-gsv;g.fillStyle=c1;g.fillRect(x0,y0,BS,BS);g.restore()}}
+  if(grain&&!PICM){g.fillStyle=c1;g.fillRect(x0,y0,BS,BS);const wi=new Image();wi.src=WOODS[+document.documentElement.dataset.pat||0].img;try{await wi.decode()}catch(e){}g.save();g.globalCompositeOperation='multiply';g.drawImage(wi,x0,y0,BS,BS);g.restore();}
   for(let d=0;d<64;d++){
     const i=flip?63-d:d,c=d&7,r=d>>3,cx=x0+XE[c],cy=y0+YE[r],SW=XE[c+1]-XE[c],SH=YE[r+1]-YE[r];
     if(!grain){g.fillStyle=((i>>3)+(i&7))%2?c2:c1;g.fillRect(cx,cy,SW,SH)}
@@ -5319,9 +5352,8 @@ $('lf2').onchange=async ev=>{
 $('tx').onclick=()=>{const s=JSON.stringify(gsave());$('sx').value=s;$('sx').select();smsg('คัดลอกข้อความในช่องไปเก็บไว้ได้เลย')};
 $('tl').onclick=()=>{let v=$('sx').value;try{if(isTcnText(v))v=tcnToPgn(v).pgn;if(isPgnText(v)){loadPgnText(v)}else{gload(JSON.parse(v));smsg('โหลดเกมจากข้อความแล้ว')}}catch(x){smsg('โหลดไม่ได้: '+x.message)}};
 /* ===== ฟีเจอร์เสริม: ธีม, ลากหมาก, เล่นซ้ำ, วิเคราะห์, ฝึก และบันทึกอัตโนมัติ ===== */
-// Set the new default once, without resetting other saved options.
-try{if(localStorage.getItem('rm-theme-default-ver')!=='night-1'){localStorage.setItem('makruk-theme','night');localStorage.setItem('rm-theme-default-ver','night-1')}}catch(e){}
-try{$('theme').value=localStorage.getItem('makruk-theme')||'night';document.documentElement.dataset.palette=$('theme').value}catch(e){$('theme').value='night';document.documentElement.dataset.palette='night'}
+// Restore the player's saved theme, using light blue on a new browser.
+try{$('theme').value=localStorage.getItem('makruk-theme')||'blue';document.documentElement.dataset.palette=$('theme').value}catch(e){$('theme').value='blue';document.documentElement.dataset.palette='blue'}
 $('theme').onchange=()=>{document.documentElement.dataset.palette=$('theme').value;try{localStorage.setItem('makruk-theme',$('theme').value)}catch(e){}};
 function setPaused(v){paused=!!v;$('pauseAll').textContent=paused?'▶ เล่นต่อ':'⏸ หยุดชั่วคราว';$('ap').textContent=paused?'เล่นต่อ':'หยุดชั่วคราว';render();if(!paused)kick()}
 $('pauseAll').onclick=()=>setPaused(!paused);
@@ -5605,26 +5637,24 @@ const BCOL={wood1:['#d9c69a','#3d3b38'],wood2:['#b98b5a','#4b3022'],mahog:['#b57
 function shade(hex,k){const n=parseInt(hex.slice(1),16);return '#'+[(n>>16)&255,(n>>8)&255,n&255].map(c=>Math.max(0,Math.round(c*(1-k))).toString(16).padStart(2,'0')).join('')}
 function applyBoardColor(save){
   const v=$('bcol').value,st=document.documentElement.style,root=document.documentElement;
-  const pi=Math.max(0,Math.min(WOODS.length-1,+$('bpat').value||0)),wp=WOODS[pi];
-  const bri=Math.max(.4,Math.min(1.4,(+$('bbri').value||100)/100)),gs=(()=>{const v=parseFloat($('bgs').value);return isFinite(v)?Math.max(0,Math.min(1,v/100)):1})();
-  $('bcusw').hidden=v!=='custom';$('bgrain').disabled=false;
-  $('bpat').disabled=(v==='theme')||!$('bgrain').checked;
-  $('bgs').disabled=$('bpat').disabled;$('bbri').disabled=(v==='theme');
-  $('bbriV').textContent=Math.round(bri*100)+'%';$('bgsV').textContent=Math.round(gs*100)+'%';
+  const bri=Math.max(.4,Math.min(1.4,(+$('bbri').value||100)/100));
+  $('bcusw').hidden=v!=='custom';
+  $('bbri').disabled=v==='theme';
+  $('bbriV').textContent=Math.round(bri*100)+'%';
   if(v==='theme'){['--sq1','--sq2','--board-edge','--dk','--gm'].forEach(k=>st.removeProperty(k));root.dataset.grain='0'}
   else{
     const base=v==='custom'?$('bcus').value:BCOL[v][0],e=v==='custom'?shade(base,.5):BCOL[v][1],c=scaleHex(base,bri);
     st.setProperty('--sq1',c);st.setProperty('--sq2',$('balt').checked?shade(c,.13):c);st.setProperty('--board-edge',e);
-    st.setProperty('--dk',$('balt').checked?'rgba(60,30,10,.22)':'transparent');st.setProperty('--gm',Math.round((1-gs)*100)+'%');
-    root.dataset.pat=String(pi);root.dataset.grain=$('bgrain').checked?'1':'0';
+    st.setProperty('--dk',$('balt').checked?'rgba(60,30,10,.22)':'transparent');st.removeProperty('--gm');
+    root.dataset.grain=v==='rose'?'1':'0';
+    if(v==='rose')root.dataset.pat=String(roseIdx());else delete root.dataset.pat;
   }
-  if(save)try{localStorage.setItem('makruk-board3',JSON.stringify({v,c:$('bcus').value,a:$('balt').checked,g:$('bgrain').checked,p:pi,b:Math.round(bri*100),s:Math.round(gs*100)}))}catch(x){}
+  if(save)try{localStorage.setItem('makruk-board3',JSON.stringify({v,c:$('bcus').value,a:$('balt').checked,b:Math.round(bri*100)}))}catch(x){}
 }
 function applyStick(save){document.documentElement.dataset.stick=$('stk').value;if(save)try{localStorage.setItem('makruk-stick',$('stk').value)}catch(x){}}
-$('bpat').innerHTML=WOODS.map((w,i)=>'<option value="'+i+'">'+(i+1)+'. '+w.n+'</option>').join('');
-try{const o=JSON.parse(localStorage.getItem('makruk-board3')||localStorage.getItem('makruk-board2')||'null');if(o&&(o.v==='theme'||o.v==='custom'||BCOL[o.v])){$('bcol').value=o.v;if(/^#[0-9a-f]{6}$/i.test(o.c||''))$('bcus').value=o.c;$('balt').checked=!!o.a;$('bgrain').checked=o.g!==false;if(o.p>=0&&o.p<WOODS.length)$('bpat').value=String(o.p);if(o.b>=40&&o.b<=140)$('bbri').value=String(o.b);if(o.s>=0&&o.s<=100)$('bgs').value=String(o.s)}}catch(x){}
+try{const o=JSON.parse(localStorage.getItem('makruk-board3')||localStorage.getItem('makruk-board2')||'null');if(o&&(o.v==='theme'||o.v==='custom'||BCOL[o.v])){$('bcol').value=o.v;if(/^#[0-9a-f]{6}$/i.test(o.c||''))$('bcus').value=o.c;$('balt').checked=!!o.a;if(o.b>=40&&o.b<=140)$('bbri').value=String(o.b)}}catch(x){}
 $('stk').value='on';
-$('bcol').onchange=$('bcus').oninput=$('balt').onchange=$('bgrain').onchange=$('bpat').onchange=$('bbri').oninput=$('bgs').oninput=()=>applyBoardColor(true);
+$('bcol').onchange=$('bcus').oninput=$('balt').onchange=$('bbri').oninput=()=>applyBoardColor(true);
 $('stk').onchange=()=>applyStick(true);
 applyBoardColor(false);applyStick(false);
 
@@ -9310,7 +9340,7 @@ Object.assign(BLIND_BTN,{
   qFlip:'ปุ่มพลิกกระดาน',qNew:'ปุ่มเริ่มเกมใหม่',
   qEye:()=>'ปุ่มแสดงลูกศรตาเดินที่เดินได้ทั้งหมด '+bsOn('qEye')+' แตะเพื่อสลับ',
   qHint:()=>'ปุ่มแนะนำตาเดินอัตโนมัติ '+bsOn('qHint')+' แตะเพื่อสลับ',
-  qLineBtn:'ปุ่มวิเคราะห์แนวเดินล่วงหน้า',qFull:'ปุ่มขยายกระดานเต็มหน้าจอ',
+  qLineBtn:'ปุ่มวิเคราะห์แนวเดินล่วงหน้า',qFull:()=>'ปุ่ม'+$('qFull').getAttribute('aria-label'),
   qOpn:'ปุ่มตำราเปิดเกม เลือกรูปแบบให้ AI เปิดเกม',
   qPrac:()=>'ปุ่มฝึกเปิดเกม เลือกรูปแบบแล้วฝึกเดินตามตำรา'+(opnPrac?' ตอนนี้กำลังฝึกอยู่':'')
 });
@@ -10386,8 +10416,7 @@ function roseSync(){
   try{pre=JSON.parse(localStorage.getItem(ROSE_KEY)||'null')}catch(e){}
   if(on){
     if(!pre)try{localStorage.setItem(ROSE_KEY,JSON.stringify(gridCfg))}catch(e){}
-    if(gold){const ri=roseIdx();if(ri>=0)$('bpat').value=String(ri)}
-    $('bgrain').checked=true;$('bgs').value='100';$('bbri').value='100';$('balt').checked=false;
+    $('bbri').value='100';$('balt').checked=false;
     applyBoardColor(true);
     if(gold)gridSet({w:1,o:100,a:false,c:ROSE_GOLD});
     else gridSet({w:0});
@@ -15147,10 +15176,6 @@ if (!window.MAKRUK_FULL_ASSETS) {
   const option = document.createElement('option');
   option.value = 'rose'; option.textContent = 'ไม้ชิงชัน แดงลายทอง (ชุดหลัก)';
   board.replaceChildren(option); board.value = 'rose';
-  const pattern = $('bpat');
-  const wood = document.createElement('option');
-  wood.value = String(roseIdx()); wood.textContent = WOODS[roseIdx()].n;
-  pattern.replaceChildren(wood); pattern.value = wood.value;
   roseSync();
   if (window.MAKRUK_CORE.preferences) {
     try {
@@ -16370,7 +16395,7 @@ const olStale=r=>false; // only the confirmed database transaction frees a room
   r.show=true;r.w=i.w?i.w.n:'รอคู่แข่ง…';r.b=i.b?i.b.n:'รอคู่แข่ง…';r.elo={w:e(i.w),b:e(i.b)};r.ev='';r.site='';r.date='';r.round='';r.res=''}}catch(x){}return r}}
 {const old=pnApplyOff;pnApplyOff=function(){const r=old.apply(this,arguments);try{if(OL.room)$('bd').classList.remove('pnoff')}catch(e){}return r}}
 {const old=olBarSync;olBarSync=function(){const r=old.apply(this,arguments);try{pnUpdate()}catch(e){}return r}}
-{const st=document.createElement('style');st.textContent=':root:not(.olOver):has(#olBar:not([hidden])) #qb>button:not(#qBcol):not(#qPcs):not(#qFull):not(#qFx):not(#qSnd):not(#rmSettingsToggle),:root:not(.olOver):has(#olBar:not([hidden])) #qb>.qsep{display:none!important}:root:has(#olBar:not([hidden])):has(#qb [aria-expanded=true]) #pnFoot{visibility:hidden}:root:has(#olBar:not([hidden])) #qb{margin-top:44px!important;position:relative;z-index:0}:root:has(#olBar:not([hidden])) #qBcol,:root:has(#olBar:not([hidden])) #qPcs,:root:has(#olBar:not([hidden])) #qFull,:root:has(#olBar:not([hidden])) #qFx,:root:has(#olBar:not([hidden])) #qSnd{width:auto!important;min-width:0;padding:0 12px 0 8px!important;display:inline-flex!important;align-items:center;gap:6px;font:700 14px/1 inherit}:root:has(#olBar:not([hidden])) #qBcol::after{content:"เปลี่ยนสีกระดาน"}:root:has(#olBar:not([hidden])) #qPcs::after{content:"เปลี่ยนตัวหมาก"}:root:has(#olBar:not([hidden])) #qFull::after{content:"ขยายกระดานเต็มจอ"}:root:has(#olBar:not([hidden])) #qFx::after{content:"แอนิเมชัน"}:root:has(#olBar:not([hidden])) #qSnd::after{content:"ตั้งค่าเสียง"}:root:has(#olBar:not([hidden])) #pnX{display:none!important}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent=':root:not(.olOver):has(#olBar:not([hidden])) #qb>button:not(#qBcol):not(#qPcs):not(#qFull):not(#qFx):not(#qSnd):not(#rmSettingsToggle),:root:not(.olOver):has(#olBar:not([hidden])) #qb>.qsep{display:none!important}:root:has(#olBar:not([hidden])):has(#qb [aria-expanded=true]) #pnFoot{visibility:hidden}:root:has(#olBar:not([hidden])) #qb{margin-top:44px!important;position:relative;z-index:0}:root:has(#olBar:not([hidden])) #qBcol,:root:has(#olBar:not([hidden])) #qPcs,:root:has(#olBar:not([hidden])) #qFull,:root:has(#olBar:not([hidden])) #qFx,:root:has(#olBar:not([hidden])) #qSnd{width:auto!important;min-width:0;padding:0 12px 0 8px!important;display:inline-flex!important;align-items:center;gap:6px;font:700 14px/1 inherit}:root:has(#olBar:not([hidden])) #qBcol::after{content:"เปลี่ยนสีกระดาน"}:root:has(#olBar:not([hidden])) #qPcs::after{content:"เปลี่ยนตัวหมาก"}:root:has(#olBar:not([hidden])) #qFull::after{content:attr(aria-label)}:root:has(#olBar:not([hidden])) #qFx::after{content:"แอนิเมชัน"}:root:has(#olBar:not([hidden])) #qSnd::after{content:"ตั้งค่าเสียง"}:root:has(#olBar:not([hidden])) #pnX{display:none!important}';document.head.appendChild(st)}
 
 /* ===== V8.9.78: ปุ่ม "เล่นกับ AI" (ไม่มีคนมานั่งด้วย) + เลือกระดับ AI · ออกจากห้องนี้แล้วเริ่มเกมกับ AI ===== */
 async function olPlayAi(){
@@ -16549,8 +16574,8 @@ function olBtnPlace(){const qb=$('qb');if(!qb)return;let row=$('olBtnRow');
    ค่าที่ตั้ง: ธีมหน้าเกม = ฟ้าเรียบ · กระดาน = ฟ้าครามลายไม้ เส้นทอง (nb10) ไม่ใส่ลายไม้ทับ · ตัวหมาก = ไม้เงา · เส้นตารางระดับ 1 สีเส้นไม่ตามขอบ (เสียง เสียงพูด ฯลฯ ไม่ถูกแตะ) */
 const OL_DEFVER='ol-2026-11-26e';
 function olApplyDefaults(){
-  try{const t=$('theme');if(t){t.value='night';document.documentElement.dataset.palette='night';localStorage.setItem('makruk-theme','night')}}catch(e){}
-  try{const c=$('bcol');if(c){const v=[...c.options].some(o=>o.value==='nb10')?'nb10':([...c.options].some(o=>o.value==='wood2')?'wood2':'');if(v){c.value=v;$('bgrain').checked=false;c.dispatchEvent(new Event('change'))}}}catch(e){}
+  try{const t=$('theme');if(t){t.value='blue';document.documentElement.dataset.palette='blue';localStorage.setItem('makruk-theme','blue')}}catch(e){}
+  try{const c=$('bcol');if(c){const v=[...c.options].some(o=>o.value==='nb10')?'nb10':([...c.options].some(o=>o.value==='wood2')?'wood2':'');if(v){c.value=v;c.dispatchEvent(new Event('change'))}}}catch(e){}
   try{gridCfg=Object.assign({},GRID_DEF);gridApply(true)}catch(e){}   // หลังเลือกกระดาน: กระดานลายภาพ/rose จะตั้งเส้นตารางของมันเอง (roseSync) จึงตั้งเส้นทับทีหลัง
   try{$('pr').click()}catch(e){}
   try{tntSet('txt',false);tntSet('snd',false)}catch(e){}   // V9.0.12: สำนวนหมากรุก (ตัวอักษร+เสียง) ปิดเป็นค่าเริ่มต้น · ผู้เล่นเปิดเองได้ที่ปุ่มสำนวน
@@ -16573,13 +16598,13 @@ const olHex=v=>/^#[0-9a-f]{6}$/i.test(String(v||''));
 function olCfgClean(j){
   if(!j||typeof j!=='object'||typeof j.ver!=='string'||!j.ver||j.ver.length>40)return null;
   const o={ver:j.ver};
-  if(['classic','wood','green','blue','night'].includes(j.theme))o.theme=j.theme;
+  if(typeof j.theme==='string'&&j.theme!=='custom'&&Array.from($('theme').options).some(option=>option.value===j.theme))o.theme=j.theme;
   const g=j.grid;if(g&&typeof g==='object'){const x={};
     if(Number.isInteger(g.w)&&g.w>=0&&g.w<=5)x.w=g.w;if(Number.isFinite(g.o)&&g.o>=10&&g.o<=100)x.o=Math.round(g.o);
     if(typeof g.a==='boolean')x.a=g.a;if(olHex(g.c))x.c=String(g.c).toLowerCase();o.grid=x}
   const b=j.board;if(b&&typeof b==='object'&&typeof b.v==='string'){const x={v:b.v};
-    if(olHex(b.c))x.c=b.c;x.a=!!b.a;x.g=!!b.g;
-    if(Number.isInteger(b.p)&&b.p>=0)x.p=b.p;if(Number.isFinite(b.b)&&b.b>=40&&b.b<=140)x.b=Math.round(b.b);if(Number.isFinite(b.s)&&b.s>=0&&b.s<=100)x.s=Math.round(b.s);o.board=x}
+    if(olHex(b.c))x.c=b.c;x.a=!!b.a;
+    if(Number.isFinite(b.b)&&b.b>=40&&b.b<=140)x.b=Math.round(b.b);o.board=x}
   if(typeof j.pieceSet==='string')o.pieceSet=j.pieceSet.slice(0,60);
   return o;
 }
@@ -16587,8 +16612,8 @@ function olApplyCfg(c){
   if(c.theme){try{const t=$('theme');t.value=c.theme;document.documentElement.dataset.palette=c.theme;localStorage.setItem('makruk-theme',c.theme)}catch(e){}}
   try{const b=c.board,el=$('bcol');
     if(b&&el&&[...el.options].some(o=>o.value===b.v)){
-      if(b.c)$('bcus').value=b.c;$('balt').checked=!!b.a;$('bgrain').checked=!!b.g;
-      if(b.p!=null&&$('bpat').options[b.p])$('bpat').value=String(b.p);if(b.b!=null)$('bbri').value=String(b.b);if(b.s!=null)$('bgs').value=String(b.s);
+      if(b.c)$('bcus').value=b.c;$('balt').checked=!!b.a;
+      if(b.b!=null)$('bbri').value=String(b.b);
       el.value=b.v;el.dispatchEvent(new Event('change'))}}catch(e){}
   try{gridCfg=Object.assign({},GRID_DEF,c.grid||{});gridApply(true)}catch(e){}   // หลังกระดาน (roseSync ของกระดานลายภาพจะตั้งเส้นตารางเอง)
   try{if(c.tnt===false||c.tnt===undefined){tntSet('txt',false);tntSet('snd',false)}}catch(e){}
@@ -16599,8 +16624,8 @@ function olCfgSnapshot(){
   let b=null;try{b=JSON.parse(localStorage.getItem('makruk-board3')||'null')}catch(e){}
   let ps='',warn='';
   try{const d=detectSet();if(d&&d.startsWith(BI))ps=d.slice(BI.length);else if(d)warn='ตัวหมากที่ใช้อยู่เป็นชุดที่บันทึกเอง ใส่ในไฟล์ไม่ได้ จึงบันทึกเป็นค่าเริ่มต้น (ไม้เงา)'}catch(e){}
-  const d=new Date(),p=n=>String(n).padStart(2,'0');
-  return{cfg:{ver:d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes()),theme:$('theme').value,board:b,grid:Object.assign({},gridCfg),pieceSet:ps},warn};
+  if(b){delete b.g;delete b.p;delete b.s}
+  return{cfg:{ver:new Date().toISOString(),theme:$('theme').value,board:b,grid:Object.assign({},gridCfg),pieceSet:ps},warn};
 }
 (function(){try{if(/[?&]admin=1(&|$)/.test(location.search))localStorage.setItem('makruk-admin','1')}catch(e){}})();
 (async function(){
@@ -17006,16 +17031,8 @@ function olRandSync(){const b=$('olRand');if(!b)return;const n=olWaitRooms().len
   const t=document.createElement('span');t.className='olRandS';t.textContent=inRoom?'คุณอยู่ในห้องแล้ว':n?'มีคนรออยู่ '+n+' ห้อง':'ยังไม่มีคนรอ';b.appendChild(t)}
 {const old=olOpen;olOpen=async function(){const r=await old.apply(this,arguments);try{
   const box=$('olBox');if(box&&!$('olRand')){const b=document.createElement('button');b.type='button';b.id='olRand';b.className='pri';
-    const top=box.querySelector('.olTop');
-    const actions=document.createElement('div');actions.id='rmLobbyTopActions';
-    const help=document.createElement('div');help.id='rmLobbyFullHelp';
-    const hint=document.createElement('span');hint.id='rmLobbyFullHint';hint.textContent='กด Esc ออกจากฟูลสกรีน';
-    const exit=document.createElement('button');exit.type='button';exit.id='rmLobbyExitFull';exit.textContent='⛶ ออกจากเต็มจอ';exit.setAttribute('aria-describedby',hint.id);
-    const syncFull=()=>{const active=!!document.fullscreenElement||document.body.classList.contains('fs');exit.disabled=!active;exit.title=active?'ออกจากเต็มจอ โดยยังอยู่ในห้องรวม':'หากเปิดเต็มจอด้วย F11 ให้กด F11 อีกครั้ง'};
-    exit.addEventListener('click',async()=>{try{if(document.fullscreenElement&&document.exitFullscreen)await document.exitFullscreen();if(document.body.classList.contains('fs'))setFull(false)}catch(e){hint.textContent='กด Esc เพื่อออกจากฟูลสกรีน'}finally{syncFull()}});
-    document.addEventListener('fullscreenchange',syncFull);
-    new MutationObserver(syncFull).observe(document.body,{attributes:true,attributeFilter:['class']});
-    help.append(hint,exit);actions.append(b,help);top.insertAdjacentElement('afterend',actions);b.onclick=()=>olRandJoin();syncFull()}
+    box.querySelector('.olTop').insertAdjacentElement('afterend',b);
+    b.onclick=()=>olRandJoin()}
   olRandSync()}catch(e){}return r}}
 {const old=olLobbyRender;olLobbyRender=function(){const r=old.apply(this,arguments);try{olRandSync()}catch(e){}return r}}
 {const st=document.createElement('style');st.textContent='#olRand{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;height:auto;min-height:64px;box-sizing:border-box;margin:8px 0;padding:8px 12px;border-radius:14px;cursor:pointer;line-height:1.25;white-space:normal;overflow:hidden}#olRand .olRandM{font-size:clamp(22px,6vw,28px);font-weight:800}#olRand .olRandS{font-size:clamp(13px,3.6vw,15px);font-weight:600;opacity:.9}#olRand:disabled{opacity:.55;cursor:default}';document.head.appendChild(st)}
@@ -17036,13 +17053,34 @@ function olDing(){try{const A=window.AudioContext||window.webkitAudioContext;if(
 {const old=olEnter;olEnter=function(){try{OL.chT0=Date.now()}catch(e){}return old.apply(this,arguments)}}
 {const old=olChatAdd;olChatAdd=function(v){try{if(v&&v.s&&v.n==='🔔'&&OL.room&&OL.me&&Date.now()-(OL.chT0||0)>1500&&/เข้าห้องแล้ว|เข้ามารับชม/.test(String(v.m||''))&&!String(v.m).includes(OL.me.name)){
   const L=$('olChatLog'),k=v.m+'|'+v.at;if(!(L&&[...L.children].some(x=>x.dataset.k===k)))olDing()}}catch(e){}return old.apply(this,arguments)}}
-/* V9.0.18: เข้าห้อง (ผู้เล่น/ผู้ชม) = ขยายกระดานเต็มหน้าจออัตโนมัติ 1 ครั้งต่อห้อง · ออกจากห้อง = ย่อกลับ · ผู้เล่นกดย่อเองได้ระหว่างเล่น (ไม่เด้งกลับ) · ใช้โหมดขยายของเกม (ปุ่ม ⛶) ไม่เรียก Fullscreen API ของเบราว์เซอร์ */
-{const old=olEnter;olEnter=function(){const r=old.apply(this,arguments);try{
-  if(OL.room&&OL.fsRoom!==OL.room){OL.fsRoom=OL.room;if(!document.body.classList.contains('fs')){setFull(true);OL.fsAuto=true}}}catch(e){}return r}}
-{const old=olLeaveLocal;olLeaveLocal=function(){const r=old.apply(this,arguments);try{OL.fsRoom=null;if(OL.fsAuto){OL.fsAuto=false;if(document.body.classList.contains('fs'))setFull(false)}}catch(e){}return r}}
-/* V9.0.18: โหมดขยายกระดานบนจอคอม (≥900px): ย้ายแถวปุ่ม/แถบปุ่มใต้กระดานไปแผงขวา (#fsTools) ให้กระดานสูงเกือบเต็มจอแบบ Playok · ออกจากโหมด/จอแคบลง = ย้ายกลับที่เดิม */
+/* ขยายกระดานภายในหน้าต่างเมื่อเข้าห้องสำเร็จครั้งแรกของแต่ละห้อง */
+{const old=olEnter;olEnter=function(){
+  const result=old.apply(this,arguments);
+  if(OL.room&&OL.fsRoom!==OL.room){
+    OL.fsRoom=OL.room;
+    if(!document.body.classList.contains('fs')){OL.fsAuto=true;setFull(true)}
+    else fsTools(true);
+  }
+  return result;
+}}
+{const old=olLeaveLocal;olLeaveLocal=function(){
+  const result=old.apply(this,arguments);
+  if(!OL.room){
+    if(olOwnsRoomFullscreen){
+      olOwnsRoomFullscreen=false;
+      if(document.fullscreenElement===document.documentElement)document.exitFullscreen().catch(()=>{});
+    }
+    const auto=OL.fsAuto;
+    OL.fsRoom=null;OL.fsAuto=false;
+    const full=document.body.classList.contains('fs');
+    if(auto&&full)setFull(false);
+    else fsTools(full);
+  }
+  return result;
+}}
+/* จอกว้าง: เมนูด้านขวาอยู่กับห้องออนไลน์ทั้งสองขนาดกระดาน */
 function fsTools(on){try{
-  const bw=$('bw'),rc=$('rc'),sc=$('sc');if(!bw||!rc)return;let t=$('fsTools');const want=!!on&&innerWidth>=700;
+  const bw=$('bw'),rc=$('rc'),sc=$('sc');if(!bw||!rc)return;let t=$('fsTools');const want=innerWidth>=700&&(on||!!OL.room);
   if(want){
     if(!t){t=document.createElement('div');t.id='fsTools';t.setAttribute('role','group');t.setAttribute('aria-label','ปุ่มและแถบเครื่องมือของกระดาน');(sc&&sc.parentNode===rc?sc.insertAdjacentElement('afterend',t):rc.appendChild(t))}
     const keep=new Set([$('who2'),$('bx'),$('tntBubble')]);
@@ -17053,17 +17091,11 @@ function fsTools(on){try{
     document.body.classList.remove('fsTl')}
   try{layFit()}catch(e){}try{render()}catch(e){}}catch(e){}}
 {const old=setFull;setFull=function(on){const r=old.apply(this,arguments);try{fsTools(on)}catch(e){}return r}}
-try{addEventListener('resize',()=>{try{if(document.body.classList.contains('fs')||$('fsTools'))fsTools(document.body.classList.contains('fs'))}catch(e){}})}catch(e){}
+try{addEventListener('resize',()=>{try{if(OL.room||document.body.classList.contains('fs')||$('fsTools'))fsTools(document.body.classList.contains('fs'))}catch(e){}})}catch(e){}
 {const st=document.createElement('style');st.textContent='body.fsTl #fsTools{flex:0 0 clamp(190px,24vw,260px);width:clamp(190px,24vw,260px);display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding-top:34px;max-height:calc(100vh - 12px);overflow-y:auto;position:sticky;top:6px;align-self:flex-start}'+
  'body.fsTl #fsTools>*{margin-top:0!important;width:100%;max-width:100%;box-sizing:border-box}'+
  'html body.fsTl #rc{flex-direction:row!important;gap:12px;align-items:flex-start}html body.fsTl #sc{position:sticky;top:var(--stk)}'+
  'html body.fs.fsTl{--bsz:max(260px,min(calc(100vh - 90px),calc(100vw - var(--sw) - clamp(190px,24vw,260px) - 130px)))}';document.head.appendChild(st)}
-/* V9.0.18: เต็มจอแบบ F11 (Fullscreen API ของเบราว์เซอร์ ซ่อนแถบที่อยู่/แท็บ) — เบราว์เซอร์ให้ทำได้เฉพาะตอนผู้ใช้คลิก: (1) คลิกในหน้าต่างล็อบบี้ครั้งแรก (2) กดนั่ง/เปิดห้อง/ท้าดวล/รับชม/สุ่มเล่น · ถ้าผู้ใช้กด Esc/F11 ออกเอง ล็อบบี้จะไม่บังคับซ้ำ (แต่กดเข้าห้องใหม่จะเข้าเต็มจออีกครั้ง) */
-function olGoFull(){try{const d=document.documentElement;if(document.fullscreenElement||!d.requestFullscreen)return;const p=d.requestFullscreen({navigationUI:'hide'});if(p&&p.catch)p.catch(()=>{})}catch(e){}}
-try{document.addEventListener('fullscreenchange',()=>{try{if(!document.fullscreenElement)OL.fsDeclined=true;else OL.fsDeclined=false}catch(e){}});
-  /* Fullscreen is requested on deliberate room actions, not arbitrary lobby clicks. */}catch(e){}
-{const old=olRoomAct;olRoomAct=function(i,a){if(a!=='x'){try{olGoFull()}catch(e){}}return old.apply(this,arguments)}}
-{const old=olRandJoin;olRandJoin=function(){try{olGoFull()}catch(e){}return old.apply(this,arguments)}}
 /* V9.0.18: กล่อง "📜 ตาเดิน" + ปุ่มคัดลอก (ข้อความไทย / PGN) — บนมือถือบันทึกไฟล์ไม่ได้ ใช้คัดลอกแทน · โหมดขยายกระดาน: อยู่ท้ายคอลัมน์เมนูขวา (กางไว้) · ที่อื่น: พับอยู่ใต้กระดาน */
 function mvRows(){const rows=[];let k=0;const st=(typeof hist!=='undefined'&&hist.length)?hist[0].turn:(typeof turn!=='undefined'?turn:'w');
   let n=1,cur=null;
@@ -17371,7 +17403,7 @@ setInterval(pnSafety,1200);
 async function olBookMove(side,lv){try{if(typeof opnTry!=='function')return null;const pv=pvp;let pr;const om=opnMode[side];pvp=false;if(!om||om==='off')opnMode[side]='random';try{pr=opnTry(side,lv,builtinEng,gid)}finally{pvp=pv;opnMode[side]=om}return (await pr)||null}catch(e){return null}}
 
 /* ===== v9028: บอท 🤖 เรียวเมืองทอง ประจำห้อง — เมื่อมีคนเปิดหน้านี้ในเครื่องคอมพิวเตอร์และเข้าส่วนออนไลน์ หน้านั้นจะเปิดเฟรมซ่อน (โหมดบอท) ไปนั่งรอในห้องที่ตั้งไว้
-   · ห้องไหนมีบอท/คนนั่งอยู่แล้วก็ข้าม (ห้องหนึ่งมีบอทตัวเดียว) · ปิดหน้า = บอทหายและห้องว่างเอง · เจ้าของหน้ากดปิดบอทได้จากป้ายมุมซ้ายล่าง · ไม่ทำงานบนมือถือ/จอแคบ ===== */
+   · ห้องไหนมีบอท/คนนั่งอยู่แล้วก็ข้าม (ห้องหนึ่งมีบอทตัวเดียว) · ปิดหน้า = บอทหายและห้องว่างเอง · เจ้าของหน้ากดปิดบอทได้ที่ท้ายห้องรวม · ไม่ทำงานบนมือถือ/จอแคบ ===== */
 const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียวเมืองทอง (AI)',level:'3',tc:7,minWidth:900};
 {let frames=[],chip=null,started=false;
  const pendingFrames=new Map();
@@ -17380,7 +17412,14 @@ const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียว�
  const eligible=()=>OL_AUTOBOT.on&&!OL_BOT&&q.get('embed')!=='1'&&(force||(!navigator.webdriver&&innerWidth>=OL_AUTOBOT.minWidth&&!/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)));
  function chipTxt(){let st='';try{st=frames.map(f=>{const S=f.contentWindow.OL_BOT.S;return S.st==='play'?'กำลังเล่น':S.st==='wait'?'นั่งรอ':'พัก'}).join('/')}catch(e){}
   return '🤖 เรียวเมืองทองประจำห้อง '+OL_AUTOBOT.rooms.join(', ')+(st?' · '+st:'')}
- function chipDraw(){if(!chip){chip=document.createElement('div');chip.id='abChip';chip.style.cssText='position:fixed;left:8px;bottom:8px;z-index:50;background:rgba(20,28,40,.9);color:#fff;padding:4px 8px;border-radius:9px;font:12px/1.3 system-ui,sans-serif;display:flex;gap:8px;align-items:center;opacity:.85';document.body.appendChild(chip)}
+ function chipDraw(){
+  const lobby=document.querySelector('#olBox .olIn');
+  if(!lobby)return;
+  if(!chip){
+    chip=document.createElement('div');chip.id='abChip';
+    chip.style.cssText='display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 8px;border-radius:8px;background:var(--bg);color:var(--fg);font-size:13px';
+  }
+  if(chip.parentNode!==lobby)lobby.appendChild(chip);
   chip.innerHTML='<span></span><button type="button" style="font:inherit;padding:1px 7px;border-radius:6px;border:1px solid #fff6;background:#0006;color:#fff;cursor:pointer"></button>';
   chip.firstChild.textContent=frames.length?chipTxt():'🤖 บอทเรียวเมืองทองประจำห้อง: ปิดอยู่';
   const b=chip.lastChild;b.textContent=frames.length?'ปิดบอท':'เปิดบอท';b.onclick=()=>{try{localStorage.setItem('makruk-autobot',frames.length?'0':'1')}catch(e){}frames.length?abStop():abStart();chipDraw()}}
@@ -17560,7 +17599,7 @@ function rmStartWaiting(){return !!(rmStartPending && !(typeof OL!=='undefined'&
  html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb>button{white-space:normal;overflow-wrap:anywhere;min-height:32px;height:auto;box-sizing:border-box;justify-content:flex-start;max-width:100%}
  html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb>#qFull,html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb>#qBcol,html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb>#qPcs{flex:1 1 100%;width:100%!important}
  html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb>#qFx,html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb>#qSnd{flex:1 1 calc(50% - 5px);padding:4px!important}
- html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb #qFull.on::after{content:'ย่อกระดานกลับ'}
+ html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb #qFull.on::after{content:attr(aria-label)}
  html:has(#olBar:not([hidden])) body.fsTl #fsTools #qPop,html:has(#olBar:not([hidden])) body.fsTl #fsTools #qLine{position:static!important;flex:1 1 100%;width:100%;max-height:320px!important;box-sizing:border-box;overflow:auto}
  html:has(#olBar:not([hidden])) body.fsTl #fsTools #qPop button,html:has(#olBar:not([hidden])) body.fsTl #fsTools #qLine button{height:auto;min-height:30px;white-space:normal;box-sizing:border-box}
  html:has(#olBar:not([hidden])) body.fsTl #fsTools>#mvBox{order:2;min-height:110px;flex:0 0 auto}
@@ -17624,20 +17663,28 @@ html:has(#olBar:not([hidden])) body #olUnder #mvList{font-size:12px}
 html:has(#olBar:not([hidden])) body #pnBtn{font-size:12px!important;padding:4px 8px;min-height:28px}
 /* Online full-board mode: player names and clocks are in the chat panel.
    Reserve space only for coordinates, frame and side panels, not old name strips. */
-html:has(#olBar:not([hidden])) body.fs #who2{display:none!important;min-height:0!important}
-html:has(#olBar:not([hidden])) body.fs :is(#pnHead,#pnFoot){display:none!important}
-html:has(#olBar:not([hidden])) body.fs #bw{gap:0;padding:0!important;top:4px!important;align-self:start}
+html:has(#olBar:not([hidden])) body #who2{display:none!important;min-height:0!important}
+html:has(#olBar:not([hidden])) body :is(#pnHead,#pnFoot){display:none!important}
+html:has(#olBar:not([hidden])) body.fsTl #bw{gap:0;padding:0!important;top:4px!important;align-self:start}
 @media(min-width:700px){
- html:has(#olBar:not([hidden])) body.fs.fsTl{--rm-chat:clamp(142px,15vw,215px);--rm-tools:clamp(166px,18vw,255px);--bsz:max(180px,min(calc(100dvh - 54px),calc(100vw - var(--rm-chat) - var(--rm-tools) - 64px)))!important}
- html:has(#olBar:not([hidden])) body.fs.fsTl main{grid-template-columns:0 max-content minmax(0,1fr);gap:0 8px;padding:4px 6px;align-items:start;min-height:100dvh}
- html:has(#olBar:not([hidden])) body.fs.fsTl #rc{gap:8px;margin:0}
- html:has(#olBar:not([hidden])) body.fs.fsTl #sc{width:var(--rm-chat)!important;flex:0 0 var(--rm-chat);top:4px;max-height:calc(100dvh - 8px);padding:0 2px 4px 0}
- html:has(#olBar:not([hidden])) body.fs.fsTl #fsTools{width:var(--rm-tools)!important;flex:0 0 var(--rm-tools);top:4px;max-height:calc(100dvh - 8px);padding:30px 2px 4px 0;gap:5px}
- html:has(#olBar:not([hidden])) body.fs.fsTl #olBtnRow #olUnder{gap:4px}
- html:has(#olBar:not([hidden])) body.fs.fsTl #fsTools #qb>button{min-height:28px!important}
+ html:has(#olBar:not([hidden])) body.fsTl{
+   --rm-chat:150px;
+   --rm-tools:clamp(156px,17vw,320px);
+   --rm-board-chrome:48px;
+   --bsz:max(180px,min(calc(100dvh - var(--rm-board-chrome)),calc(100vw - var(--rm-chat) - var(--rm-tools) - 106px)))!important;
+ }
+ html[data-pic]:has(#olBar:not([hidden])) body.fsTl{--rm-board-chrome:8px}
+ html:has(#olBar:not([hidden])) body.fsTl:not(.pnOpen) #pn{display:none!important}
+ html:has(#olBar:not([hidden])) body.fsTl #sc{display:block}
+ html:has(#olBar:not([hidden])) body.fsTl main{grid-template-columns:0 max-content minmax(0,1fr);gap:0 8px;padding:4px 6px;align-items:start;min-height:100dvh}
+ html:has(#olBar:not([hidden])) body.fsTl #rc{gap:8px;margin:0}
+ html:has(#olBar:not([hidden])) body.fsTl #sc{width:var(--rm-chat)!important;flex:0 0 var(--rm-chat);top:4px;max-height:calc(100dvh - 8px);padding:0 2px 4px 0}
+ html:has(#olBar:not([hidden])) body.fsTl #fsTools{width:var(--rm-tools)!important;flex:0 0 var(--rm-tools);top:4px;max-height:calc(100dvh - 8px);padding:30px 2px 4px 0;gap:5px}
+ html:has(#olBar:not([hidden])) body.fsTl #olBtnRow #olUnder{gap:4px}
+ html:has(#olBar:not([hidden])) body.fsTl #fsTools #qb>button{min-height:28px!important}
 }
 @media(max-width:699px){
- html:has(#olBar:not([hidden])) body.fs{--bsz:max(120px,min(calc(100vw - 48px),calc(100dvh - 44px)))!important}
+ html:has(#olBar:not([hidden])) body.fs{--bsz:max(120px,min(calc(100vw - 48px),calc(100dvh - 20px)))!important}
  html:has(#olBar:not([hidden])) body.fs main{padding:4px;gap:8px;min-height:0}
 }
 </style>
@@ -17648,21 +17695,48 @@ html:has(#olBar:not([hidden])) body.fs #bw{gap:0;padding:0!important;top:4px!imp
 </style>
 
 <script id="realmakruk-seat-choice">
+let olOwnsRoomFullscreen=false;
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement)olOwnsRoomFullscreen=false;
+  syncBoardScreenButton();
+});
+{const old=olBarSync;olBarSync=function(){
+  const result=old.apply(this,arguments);
+  syncBoardScreenButton();
+  return result;
+}}
+syncBoardScreenButton();
 function olChooseSeat(i){
   if(OL.room&&!OL.spect){olSt('⚠ คุณอยู่ในห้องที่ '+OL.room+' แล้ว ออกจากห้องเดิมก่อน');return}
   const d=document.createElement('dialog');d.id='olSeatChoice';d.setAttribute('aria-labelledby','olSeatTitle');
   d.innerHTML='<h3 id="olSeatTitle"></h3><p>เลือกฝ่ายที่ต้องการเล่น หรือเข้าชมโดยไม่จองที่นั่ง</p><div class="olSeatButtons"><button type="button" data-seat="w">⚪ ฝ่ายขาว<br><small>เดินก่อน</small></button><button type="button" data-seat="b">⚫ ฝ่ายดำ<br><small>เดินทีหลัง</small></button><button type="button" data-seat="s">👁️ ผู้ชม<br><small>เข้าดูเฉย ๆ ไม่จองที่นั่ง</small></button></div><button type="button" id="olSeatCancel">ยกเลิก</button>';
   if(document.getElementById(d.id))return;
+  const root=document.documentElement;
+  let requested,joining=false;
+  if(document.fullscreenEnabled && !document.fullscreenElement){
+    try{requested=root.requestFullscreen().then(()=>true,()=>false)}catch(e){}
+  }
   document.body.appendChild(d);d.querySelector('h3').textContent='ห้องที่ '+i+' '+olRn(i);
   function available(side){const r=(OL.lobby||{})['r'+i]||{},st=r.status||'empty';return st==='empty'||(st==='waiting'&&r.w&&side===(r.side==='b'?'w':'b')&&(!OL.me||r.w.k!==OL.me.key))}
   function refresh(){for(const b of d.querySelectorAll('[data-seat="w"],[data-seat="b"]')){const free=available(b.dataset.seat);b.disabled=!free;b.querySelector('small').textContent=free?(b.dataset.seat==='w'?'เดินก่อน':'เดินทีหลัง'):'มีผู้เล่นแล้ว';}}
   refresh();const watcher=setInterval(refresh,500);
-  d.addEventListener('close',()=>{clearInterval(watcher);d.remove()},{once:true});
+  d.addEventListener('close',async()=>{
+    clearInterval(watcher);d.remove();
+    if(!joining && await requested && document.fullscreenElement===root){
+      document.exitFullscreen().catch(()=>{});
+    }
+  },{once:true});
   d.querySelector('#olSeatCancel').onclick=()=>d.close();
   d.querySelectorAll('[data-seat]').forEach(b=>b.onclick=async()=>{const side=b.dataset.seat;
     if(side!=='s'&&!available(side)){refresh();return}
     const r=(OL.lobby||{})['r'+i]||{},action=side==='s'?'s':r.status==='waiting'?'join-'+side:side==='b'?'host-b':'w';
-    d.close();try{await olRoomAct(i,action)}catch(e){olSt('⚠ เข้าห้องไม่ได้: '+e.message)}});
+    joining=true;d.close();
+    try{await olRoomAct(i,action)}catch(e){olSt('⚠ เข้าห้องไม่ได้: '+e.message)}
+    if(await requested){
+      if(OL.room===i && document.fullscreenElement===root) olOwnsRoomFullscreen=true;
+      else if(document.fullscreenElement===root) document.exitFullscreen().catch(()=>{});
+    }
+  });
   d.showModal();
 }
 </script>
@@ -17688,9 +17762,9 @@ html:has(#olBar:not([hidden])) body #olSide #olChat:not([hidden]){display:flex;f
 html:has(#olBar:not([hidden])) body #olSide #olChatLog{flex:1 1 0;min-height:48px;height:auto!important;max-height:none!important;overflow:auto;overflow-wrap:anywhere;overscroll-behavior:contain}
 html:has(#olBar:not([hidden])) body #olSide .olCi{flex:0 0 auto;min-width:0;margin-top:5px}
 @media(min-width:700px){
- html:has(#olBar:not([hidden])) body.fs.fsTl #rc{width:100%;box-sizing:border-box;min-width:0;max-width:100%;align-items:flex-start}
- html:has(#olBar:not([hidden])) body.fs.fsTl #sc{flex:1 1 var(--rm-chat)!important;width:auto!important;min-width:0;max-width:none;box-sizing:border-box;height:calc(100dvh - 8px);max-height:none!important;overflow-y:auto;overflow-x:hidden;padding:0!important}
- html:has(#olBar:not([hidden])) body.fs.fsTl #sc #olSide{flex:1 0 auto;height:100%;min-height:360px}
+ html:has(#olBar:not([hidden])) body.fsTl #rc{width:100%;box-sizing:border-box;min-width:0;max-width:100%;align-items:flex-start}
+ html:has(#olBar:not([hidden])) body.fsTl #sc{flex:1 1 var(--rm-chat)!important;width:auto!important;min-width:0;max-width:none;box-sizing:border-box;height:calc(100dvh - 8px);max-height:none!important;overflow-y:auto;overflow-x:hidden;padding:0!important}
+ html:has(#olBar:not([hidden])) body.fsTl #sc #olSide{flex:1 0 auto;height:100%;min-height:360px}
 }
 @media(max-width:699px){
  html:has(#olBar:not([hidden])) body #sc{width:100%!important;max-width:100%;box-sizing:border-box}
@@ -17812,14 +17886,14 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)olPresence
 <style id="realmakruk-online-top-right">
 /* Lift competition controls to the top. Keep fixed menu in its own narrow gutter. */
 @media(min-width:700px){
- html:has(#olBar:not([hidden])) body.fs.fsTl #fsTools{padding-top:0!important;top:4px!important;max-height:calc(100dvh - 8px);align-self:flex-start}
- html:has(#olBar:not([hidden])) body.fs.fsTl #rc{padding-right:64px;box-sizing:border-box}
- html:has(#olBar:not([hidden])) body.fs.fsTl #pnBtn{right:6px;top:4px;box-sizing:border-box;max-width:58px;white-space:nowrap;padding:4px 6px!important}
- html:has(#olBar:not([hidden])) body.fs.fsTl #fsTools #olBtnRow{margin-top:0!important;padding-top:0}
+ html:has(#olBar:not([hidden])) body.fsTl #fsTools{padding-top:0!important;top:4px!important;max-height:calc(100dvh - 8px);align-self:flex-start}
+ html:has(#olBar:not([hidden])) body.fsTl.fs #rc{padding-right:64px;box-sizing:border-box}
+ html:has(#olBar:not([hidden])) body.fsTl #pnBtn{right:6px;top:4px;box-sizing:border-box;max-width:58px;white-space:nowrap;padding:4px 6px!important}
+ html:has(#olBar:not([hidden])) body.fsTl #fsTools #olBtnRow{margin-top:0!important;padding-top:0}
 }
 @media(min-width:700px) and (max-width:950px){
- html:has(#olBar:not([hidden])) body.fs.fsTl #rc{padding-right:0}
- html:has(#olBar:not([hidden])) body.fs.fsTl #fsTools{padding-top:30px!important}
+ html:has(#olBar:not([hidden])) body.fsTl #rc{padding-right:0}
+ html:has(#olBar:not([hidden])) body.fsTl.fs #fsTools{padding-top:30px!important}
 }
 </style>
 <style id="realmakruk-online-refined-ui">
@@ -17841,8 +17915,8 @@ html:has(#olBar:not([hidden])) #olChatLog .olMsg{overflow-wrap:anywhere}
 html:has(#olBar:not([hidden])) #olChatLog .olMsg .rm-chat-time{font-size:10px;font-weight:400;opacity:.72;margin-right:5px;font-variant-numeric:tabular-nums}
 html:has(#olBar:not([hidden])) #olChatLog .olMsg b{color:#3287cb}
 html:has(#olBar:not([hidden])) #olChatLog .olMsg.me b{color:#21844c}
-html[data-palette="night"]:has(#olBar:not([hidden])) #olChatLog .olMsg b{color:#8ccaff}
-html[data-palette="night"]:has(#olBar:not([hidden])) #olChatLog .olMsg.me b{color:#80dda3}
+html:is([data-palette="night"],[data-palette="deepblue"],[data-palette="pine"],[data-palette="plum"],[data-palette="wine"],[data-palette="coffee"],[data-palette="slate"]):has(#olBar:not([hidden])) #olChatLog .olMsg b{color:#8ccaff}
+html:is([data-palette="night"],[data-palette="deepblue"],[data-palette="pine"],[data-palette="plum"],[data-palette="wine"],[data-palette="coffee"],[data-palette="slate"]):has(#olBar:not([hidden])) #olChatLog .olMsg.me b{color:#80dda3}
 html:has(#olBar:not([hidden])) #bd .sq.lastF:not(.sel):not(.chk){outline:3px solid #ffd34d;outline-offset:-4px;box-shadow:inset 0 0 0 4px #ffd34d}
 html:has(#olBar:not([hidden])) #bd .sq.lastT:not(.sel):not(.chk){outline:3px solid #35dc8b;outline-offset:-4px;box-shadow:inset 0 0 0 4px #35dc8b}
 #rmRoomFilter{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;align-items:center}
@@ -18249,16 +18323,6 @@ html body #olBox #olRooms .olRoom button[data-a]:not([data-a="x"]){
  setInterval(()=>{const box=$('olBox');if(box&&!box.hidden)communityPaint();if(OL.room)roomPaint()},2000);
 }
 </script>
-
-<style id="rm-lobby-fullscreen-help">
-html body #olBox #rmLobbyTopActions{display:flex;align-items:center;gap:12px;width:100%;min-width:0;box-sizing:border-box;margin:8px 0}
-html body #olBox #rmLobbyTopActions #olRand{flex:1 1 0;width:auto;min-width:0;margin:0;box-sizing:border-box}
-html body #olBox #rmLobbyFullHelp{display:flex;flex:0 1 auto;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;max-width:48%;text-align:center}
-html body #olBox #rmLobbyFullHint{font-size:12px;font-weight:700;line-height:1.4;color:var(--fg);overflow-wrap:anywhere}
-html body #olBox #rmLobbyExitFull{width:auto;max-width:100%;margin:0;padding:5px 10px;min-height:30px;font-size:12px;font-weight:700;line-height:1.3;white-space:normal;border-radius:7px;background:rgba(128,128,128,.13);color:var(--fg);border:1px solid rgba(128,128,128,.6);box-sizing:border-box}
-html body #olBox #rmLobbyExitFull:disabled{opacity:.55;cursor:default}
-@media(max-width:420px){html body #olBox #rmLobbyTopActions{gap:6px}html body #olBox #rmLobbyFullHint,html body #olBox #rmLobbyExitFull{font-size:11px}html body #olBox #rmLobbyExitFull{padding:4px 5px}}
-</style>
 
 <style id="rm-all-name-fix">
 /* Local names are real rows, not overlays. Online names remain in the chat dock. */
