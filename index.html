@@ -443,6 +443,33 @@ html body #bw #qb #qLine button{width:auto;min-width:0;height:auto;min-height:30
 </style>
 <script>try{const o=JSON.parse(localStorage.getItem('makruk-av')||'null'),r=document.documentElement;if(o&&typeof o==='object'){if(o.on===false)r.setAttribute('data-av','off');r.setAttribute('data-avs',o.sz==='s'||o.sz==='l'?o.sz:'m')}else r.setAttribute('data-avs','m')}catch(e){}</script>
 <script>try{const c=JSON.parse(localStorage.getItem('makruk-coach')||'null');if(c&&c.on===true)document.documentElement.setAttribute('data-coach','on')}catch(e){}</script>
+<script id="rm-no-brand-speech">
+/* Block spoken branding and all speech from automatic bot pages; leave WebAudio/music alone. */
+(function(){
+  const bot=new URLSearchParams(location.search).get('bot')==='1';
+  function blocked(text){
+    if(bot)return true;
+    const t=String(text==null?'':text).normalize('NFKC').toLowerCase().replace(/[\s\p{P}\p{S}\p{Cf}]+/gu,'');
+    return /(?:เรียว|รีล|เรียล|ริว)หมากรุก|realmakruk|riewmakruk|riomakruk/.test(t);
+  }
+  window.rmSpeechBlocked=blocked;
+  window.rmSilentBot=bot;
+  // Protect direct callers (including assets.js), not just the game's speech queue.
+  try{
+    const synth=window.speechSynthesis;if(!synth||typeof synth.speak!=='function')return;
+    const original=synth.speak.bind(synth);
+    const safeSpeak=function(u){
+      if(u&&blocked(u.text)){
+        // Complete the caller's queue without sending anything to the speaker.
+        Promise.resolve().then(()=>{if(typeof u.onend==='function')u.onend.call(u,{type:'end',utterance:u})});
+        return;
+      }
+      return original(u);
+    };
+    try{Object.defineProperty(synth,'speak',{value:safeSpeak,configurable:true,writable:true})}catch(e){try{synth.speak=safeSpeak}catch(e2){}}
+  }catch(e){}
+})();
+</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gw" gradientUnits="userSpaceOnUse" x1="22" x2="78" y1="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#efebe0"/><stop offset="1" stop-color="#b6b0a0"/></linearGradient><linearGradient id="gk" gradientUnits="userSpaceOnUse" x1="22" x2="78" y1="0" y2="0"><stop offset="0" stop-color="#7a7a80"/><stop offset=".35" stop-color="#2c2c31"/><stop offset="1" stop-color="#060608"/></linearGradient></defs></svg>
@@ -3315,9 +3342,10 @@ const SP={q:[],cur:null,gapT:0,ready:0};
 let speechOK=null;                                                   // null = ยังไม่รู้ · true = เบราว์เซอร์ให้พูดได้ · false = ถูกบล็อก (ต้องมีคลิก/แตะ/กดแป้นก่อน)
 const spkEvents=()=>{try{return typeof speechSynthesis!=='undefined'&&('speaking' in speechSynthesis)}catch(e){return false}};
 function playCue(side){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=='suspended')AC.resume();if(side==='w'){osc(1320,0,.16,'sine',.22);osc(1760,.07,.18,'sine',.2)}else{osc(392,0,.18,'sine',.26);osc(294,.08,.2,'sine',.24)}}catch(e){}}
-function spkReset(){SP.q.length=0;clearTimeout(SP.gapT);SP.gapT=0;SP.cur=null;try{speechSynthesis.cancel()}catch(e){}SP.ready=Date.now()+90}
+function spkReset(){SP.q.length=0;clearTimeout(SP.gapT);SP.gapT=0;SP.cur=null;try{if(!window.rmSilentBot)speechSynthesis.cancel()}catch(e){}SP.ready=Date.now()+90}
 function spkAnnounce(items,opt){
-  if(!voiceOn||!hasSpeech()||!items.length)return;
+  if(!voiceOn||!hasSpeech()||!items.length||window.rmSilentBot)return;
+  items=items.filter(it=>!window.rmSpeechBlocked(it.t));if(!items.length)return;
   if(opt&&opt.tnt)for(let i=SP.q.length-1;i>=0;i--)if(SP.q[i].tnt&&!SP.q[i].started&&!SP.q[i].keep)SP.q.splice(i,1);
   SP.q.push({items:items.slice(),keep:!!(opt&&opt.keep),started:false,cue:(opt&&opt.cue)||null,cued:false,tnt:!!(opt&&opt.tnt)});
   let wait=SP.q.filter(g=>!g.started&&!g.tnt);
@@ -3339,6 +3367,7 @@ function spkPump(){
   });
 }
 function spkSpeak(it,done){
+  if(window.rmSpeechBlocked(it.t)){done();return}
   let fin=false,poll=0,hard=0,started=false;const mine={hold:!!it.hold};SP.cur=mine;
   const finish=()=>{if(fin)return;fin=true;clearInterval(poll);clearTimeout(hard);if(SP.cur!==mine)return;SP.cur=null;done()};
   try{
@@ -3355,7 +3384,7 @@ function spkSpeak(it,done){
   }catch(e){finish()}
 }
 function say(txt,queue,who,rateMul){
-  if(!voiceOn||!hasSpeech())return;
+  if(!voiceOn||!hasSpeech()||window.rmSpeechBlocked(txt))return;
   if(!queue)spkReset();
   spkAnnounce([{t:txt,who:who||'g',rate:rateMul||1}],{keep:true});
 }
@@ -8848,7 +8877,8 @@ function helloNow(){}
    ใช้ระบบเสียงพูด (เสียงไทยของเครื่อง) และคำอ่านชื่อช่องชุดเดียวกับเสียงประกาศตาเดิน ที่ตั้งไว้ใน "ตั้งค่าเสียง" */
 let blind=false,blindLast=-1,blindLastBtn=null,blindArm={id:'',t:0},blindPrev=null,blindPend=null,blindDown={t:0,type:'mouse'};
 function blindSayList(arr){
-  if(!hasSpeech()||!arr.length)return;
+  if(!hasSpeech()||!arr.length||window.rmSilentBot)return;
+  arr=arr.filter(t=>!window.rmSpeechBlocked(t));if(!arr.length)return;
   const h=helloTake();if(h)arr=[h].concat(arr);                       // ประโยคแรกหลังเบราว์เซอร์อนุญาตให้พูด: ทักทายนำก่อน
   spkReset();                                                       // ตัดเสียงเก่าและคิวเก่าทิ้งทันที แล้วพูดของใหม่
   SP.q.push({items:arr.map(t=>({t:t,who:'g',rate:1})),keep:true,started:false,cue:null,cued:false});
@@ -16833,7 +16863,7 @@ function anSpeakText(cc){
 let anVoiceOn=(()=>{try{return localStorage.getItem('makruk-anvoice')!=='0'}catch(e){return true}})(),anVT=0,anWarn=0;
 function anVoiceStop(){clearTimeout(anVT);anVT=0;try{spkReset()}catch(e){}try{if(hasSpeech())speechSynthesis.cancel()}catch(e){}}
 function anVoiceSay(txt){
-  if(!anVoiceOn||!hasSpeech())return;
+  if(!anVoiceOn||!hasSpeech()||window.rmSpeechBlocked(txt))return;
   anVoiceStop();
   anVT=setTimeout(()=>{anVT=0;try{
     const u=new SpeechSynthesisUtterance(txt);u.lang='th-TH';let c=null;try{c=cfgFor('g')}catch(e){}
@@ -17397,7 +17427,7 @@ const OL_AUTOBOT={on:true,rooms:[1,3],sides:{1:'b'},name:'🤖 เรียว�
  };
  window.abStart=function(){if(frames.length||!eligible()||!enabled())return;
   OL_AUTOBOT.rooms.forEach((r,i)=>{const f=document.createElement('iframe');f.setAttribute('aria-hidden','true');f.tabIndex=-1;f.style.cssText='position:fixed;width:0;height:0;border:0;opacity:0;pointer-events:none;left:-9999px';
-   f.src=location.pathname+'?bot=1&embed=1&stay=1&rooms='+r+'&level='+OL_AUTOBOT.level+'&tc='+OL_AUTOBOT.tc+((OL_AUTOBOT.sides||{})[r]==='b'?'&side=b':'')+'&name='+encodeURIComponent(OL_AUTOBOT.name);
+   f.src=location.pathname+'?bot=1&embed=1&stay=1&speechfix=2&rooms='+r+'&level='+OL_AUTOBOT.level+'&tc='+OL_AUTOBOT.tc+((OL_AUTOBOT.sides||{})[r]==='b'?'&side=b':'')+'&name='+encodeURIComponent(OL_AUTOBOT.name);
    pendingFrames.set(f,setTimeout(()=>{
     if(pendingFrames.delete(f))document.body.appendChild(f);
    },i*1500));
